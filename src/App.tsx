@@ -1,4 +1,6 @@
 import { useBujo, BujoProvider } from './context/BujoContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthScreen } from './features/auth/components/AuthScreen';
 import { Toast } from './components/common/Toast';
 import { CozyCabinBackground } from './components/common/CozyCabinBackground';
 import { TutorialOverlay } from './components/common/TutorialOverlay';
@@ -204,11 +206,34 @@ function AppContent() {
   );
 }
 
+function AppContentWithAuth() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] dark:bg-zinc-950 flex items-center justify-center font-mono">
+        <div className="flex flex-col items-center gap-3 animate-pulse">
+          <div className="w-10 h-10 border-4 border-bujo-highlight border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-xs text-zinc-555">Carregando BuJo Focus...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen />;
+  }
+
+  return <AppContent />;
+}
+
 function App() {
   return (
-    <BujoProvider>
-      <AppContent />
-    </BujoProvider>
+    <AuthProvider>
+      <BujoProvider>
+        <AppContentWithAuth />
+      </BujoProvider>
+    </AuthProvider>
   );
 }
 

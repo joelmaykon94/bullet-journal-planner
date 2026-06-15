@@ -1,5 +1,6 @@
-import { ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronRight, Sparkles, LogOut, Database, User } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
+import { useAuth } from '../../../context/AuthContext';
 
 export const SettingsTab = () => {
   const {
@@ -13,6 +14,8 @@ export const SettingsTab = () => {
     localLLMError,
     initLocalLLMWorker
   } = useBujo();
+
+  const { user, signOut, clearConfig } = useAuth();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -283,6 +286,53 @@ export const SettingsTab = () => {
           )}
         </div>
       </div>
+
+      {/* Supabase sync card */}
+      <div className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-4">
+        <span className="text-xs font-bold text-bujo-highlight uppercase tracking-wider flex items-center gap-1.5">
+          <Database className="w-4 h-4" />
+          Sincronização & Segurança da Conta
+        </span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/[0.02] border border-zinc-350 dark:border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-full bg-bujo-accent/10 border border-bujo-accent/20 text-bujo-accent">
+              <User className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wider">Usuário Logado</span>
+              <span className="text-sm font-semibold text-bujo-text font-sans">{user?.email}</span>
+            </div>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto shrink-0">
+            <button
+              onClick={() => {
+                if (confirm('Deseja desconectar este projeto do Supabase? Suas credenciais salvas localmente serão limpas.')) {
+                  clearConfig();
+                  window.location.reload();
+                }
+              }}
+              className="px-4 py-2 text-xs font-bold bg-zinc-200/40 dark:bg-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/20 text-bujo-text rounded-xl transition-all cursor-pointer border border-zinc-200/30 dark:border-white/10 flex-1 sm:flex-initial"
+            >
+              Desconectar DB
+            </button>
+            <button
+              onClick={async () => {
+                const { error } = await signOut();
+                if (error) {
+                  alert(`Erro ao deslogar: ${error.message}`);
+                } else {
+                  window.location.reload();
+                }
+              }}
+              className="px-4 py-2 text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer border border-red-500/25 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sair da Conta
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
