@@ -26,7 +26,7 @@ export const Sidebar = () => {
         }`}
       >
         <Sliders className="w-4 h-4" />
-        <span>📑 Índice</span>
+        <span>Índice</span>
       </button>
       <button
         onClick={() => setActiveTab('daily_log')}
@@ -37,7 +37,7 @@ export const Sidebar = () => {
         }`}
       >
         <CheckSquare className="w-4 h-4" />
-        <span>📝 Daily Log</span>
+        <span>Daily Log</span>
       </button>
       <button
         onClick={() => setActiveTab('weekly_log')}
@@ -48,7 +48,7 @@ export const Sidebar = () => {
         }`}
       >
         <LayoutGrid className="w-4 h-4" />
-        <span>📅 Weekly Log</span>
+        <span>Weekly Log</span>
       </button>
       <button
         onClick={() => setActiveTab('monthly_log')}
@@ -59,7 +59,7 @@ export const Sidebar = () => {
         }`}
       >
         <CalendarDays className="w-4 h-4" />
-        <span>🗓️ Monthly Log</span>
+        <span>Monthly Log</span>
       </button>
       <button
         onClick={() => setActiveTab('daily_spread')}
@@ -70,7 +70,7 @@ export const Sidebar = () => {
         }`}
       >
         <Calendar className="w-4 h-4" />
-        <span>⏱️ spread Diário</span>
+        <span>Spread Diário</span>
       </button>
       <button
         onClick={() => setActiveTab('future_log')}
@@ -81,7 +81,7 @@ export const Sidebar = () => {
         }`}
       >
         <BookOpen className="w-4 h-4" />
-        <span>📖 Future Log</span>
+        <span>Future Log</span>
       </button>
       <button
         onClick={() => setActiveTab('brain_dump')}
@@ -92,7 +92,7 @@ export const Sidebar = () => {
         }`}
       >
         <Brain className="w-4 h-4" />
-        <span>🧠 Despejo Mente</span>
+        <span>Despejo de Mente</span>
       </button>
       <button
         onClick={() => setActiveTab('collections')}
@@ -103,7 +103,7 @@ export const Sidebar = () => {
         }`}
       >
         <FolderOpen className="w-4 h-4" />
-        <span>📁 Coleções</span>
+        <span>Coleções</span>
       </button>
       <button
         onClick={() => setActiveTab('settings')}
@@ -114,7 +114,7 @@ export const Sidebar = () => {
         }`}
       >
         <Settings className="w-4 h-4" />
-        <span>⚙️ Ajustes</span>
+        <span>Ajustes</span>
       </button>
     </aside>
   );
