@@ -129,63 +129,73 @@ export const IndexTab = () => {
 
             {/* Quick Access Tools Grid */}
             <div className="md:col-span-4 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 flex flex-col gap-3 h-full justify-between">
-              <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
+              <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-zinc-200/20 dark:border-white/5 pb-2">
                 <Target className="w-3.5 h-3.5 text-bujo-highlight" />
                 Menu de Acesso Rápido
               </h4>
-              <div className="grid grid-cols-2 gap-2 flex-1 items-stretch">
+              <div className="flex flex-col gap-2 flex-1 justify-between mt-1.5">
                 <div 
                   onClick={() => setActiveTab('daily_spread')}
-                  className="p-2.5 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex flex-col justify-between"
+                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
                 >
-                  <Sliders className="w-4 h-4 text-bujo-highlight" />
-                  <div className="space-y-0.5">
+                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                    <Sliders className="w-4 h-4" />
+                  </div>
+                  <div className="text-left leading-tight">
                     <span className="text-[10px] font-bold text-zinc-200 block">Timeline</span>
-                    <span className="text-[8px] text-zinc-500 leading-tight block">Foco no Tempo</span>
+                    <span className="text-[8px] text-zinc-550 block">Foco e Organização no Tempo</span>
                   </div>
                 </div>
                 
                 <div 
                   onClick={() => setActiveTab('weekly_log')}
-                  className="p-2.5 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex flex-col justify-between"
+                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
                 >
-                  <LayoutGrid className="w-4 h-4 text-bujo-highlight" />
-                  <div className="space-y-0.5">
+                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                    <LayoutGrid className="w-4 h-4" />
+                  </div>
+                  <div className="text-left leading-tight">
                     <span className="text-[10px] font-bold text-zinc-200 block">Weekly Log</span>
-                    <span className="text-[8px] text-zinc-500 leading-tight block">Revisão Semanal</span>
+                    <span className="text-[8px] text-zinc-550 block">Revisão Semanal de Foco</span>
                   </div>
                 </div>
 
                 <div 
                   onClick={() => setActiveTab('monthly_log')}
-                  className="p-2.5 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex flex-col justify-between"
+                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
                 >
-                  <CalendarDays className="w-4 h-4 text-bujo-highlight" />
-                  <div className="space-y-0.5">
+                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                    <CalendarDays className="w-4 h-4" />
+                  </div>
+                  <div className="text-left leading-tight">
                     <span className="text-[10px] font-bold text-zinc-200 block">Monthly Log</span>
-                    <span className="text-[8px] text-zinc-500 leading-tight block">Revisão Mensal</span>
+                    <span className="text-[8px] text-zinc-550 block">Revisão Mensal e Metas</span>
                   </div>
                 </div>
 
                 <div 
                   onClick={() => setActiveTab('collections')}
-                  className="p-2.5 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex flex-col justify-between"
+                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
                 >
-                  <ListChecks className="w-4 h-4 text-bujo-highlight" />
-                  <div className="space-y-0.5">
+                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                    <ListChecks className="w-4 h-4" />
+                  </div>
+                  <div className="text-left leading-tight">
                     <span className="text-[10px] font-bold text-zinc-200 block">Listas</span>
-                    <span className="text-[8px] text-zinc-500 leading-tight block">Por Contexto</span>
+                    <span className="text-[8px] text-zinc-550 block">Coleções e Contextos</span>
                   </div>
                 </div>
 
                 <div 
                   onClick={() => setActiveTab('brain_dump')}
-                  className="col-span-2 p-2.5 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex items-center gap-3"
+                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
                 >
-                  <Brain className="w-4 h-4 text-bujo-highlight shrink-0" />
-                  <div className="text-left space-y-0.5">
-                    <span className="text-[10px] font-bold text-zinc-200 block leading-tight">Despejo de Mente</span>
-                    <span className="text-[8px] text-zinc-500 block leading-tight">Descarregar pensamentos</span>
+                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                    <Brain className="w-4 h-4" />
+                  </div>
+                  <div className="text-left leading-tight">
+                    <span className="text-[10px] font-bold text-zinc-200 block">Despejo de Mente</span>
+                    <span className="text-[8px] text-zinc-550 block">Descarregar Ansiedade</span>
                   </div>
                 </div>
               </div>

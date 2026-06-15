@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Check, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Check, CheckCircle2, Activity } from 'lucide-react';
 import { BujoItem } from '../../../types';
 
 interface HabitTrackerProps {
@@ -183,45 +183,43 @@ export const HabitTracker = ({
   };
 
   return (
-    <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-6 flex flex-col gap-5">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h4 className="text-sm font-bold text-bujo-text flex items-center gap-2">
-            📊 Rastreador de Hábitos
-          </h4>
-          <p className="text-[10px] text-zinc-500">Registre suas ações recorrentes nos últimos 7 dias.</p>
+    <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 flex flex-col gap-3.5">
+      <div className="flex items-center justify-between flex-wrap border-b border-zinc-200/20 dark:border-white/5 pb-2">
+        <div className="flex items-center gap-1.5">
+          <Activity className="w-3.5 h-3.5 text-bujo-highlight" />
+          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Rastreador de Hábitos</span>
         </div>
 
         <button
           type="button"
           onClick={handleAnalyzeHabits}
           disabled={isAnalyzing}
-          className="flex items-center gap-1.5 text-[10px] font-bold text-bujo-accent hover:text-bujo-highlight transition-colors shrink-0 disabled:opacity-50"
+          className="flex items-center gap-1 text-[9px] font-bold text-bujo-accent hover:text-bujo-highlight transition-colors shrink-0 disabled:opacity-50"
         >
           <Sparkles className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
           {isAnalyzing ? 'Analisando...' : 'Identificar com IA'}
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         {/* Days Header */}
         <div className="grid grid-cols-12 gap-2 text-center items-center">
-          <div className="col-span-5 text-[9px] font-bold text-zinc-500 text-left uppercase tracking-wider pl-1">Hábito</div>
+          <div className="col-span-5 text-[8.5px] font-bold text-zinc-500 text-left uppercase tracking-wider pl-1">Hábito</div>
           <div className="col-span-7 grid grid-cols-7 gap-1">
             {last7Days.map(d => (
               <div key={d} className="flex flex-col items-center">
-                <span className="text-[7.5px] font-bold text-zinc-450 font-mono">{formatDayOfWeek(d)}</span>
-                <span className="text-[9px] font-bold text-zinc-500 font-mono mt-0.5">{formatDayNum(d)}</span>
+                <span className="text-[7px] font-bold text-zinc-450 font-mono">{formatDayOfWeek(d)}</span>
+                <span className="text-[8.5px] font-bold text-zinc-500 font-mono mt-0.5">{formatDayNum(d)}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Habit Rows */}
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {habits.map(habit => (
             <div key={habit} className="grid grid-cols-12 gap-2 items-center">
-              <span className="col-span-5 text-xs text-bujo-text truncate font-medium pr-1" title={habit}>
+              <span className="col-span-5 text-[11px] text-bujo-text truncate font-medium pr-1" title={habit}>
                 {habit}
               </span>
               <div className="col-span-7 grid grid-cols-7 gap-1 justify-items-center">
@@ -232,13 +230,13 @@ export const HabitTracker = ({
                       key={dateStr}
                       type="button"
                       onClick={() => toggleHabitDate(habit, dateStr)}
-                      className={`w-6 h-6 rounded-full border transition-all flex items-center justify-center ${
+                      className={`w-5.5 h-5.5 rounded-full border transition-all flex items-center justify-center ${
                         isChecked
                           ? 'bg-bujo-accent border-bujo-accent text-white hover:opacity-95'
                           : 'bg-zinc-150 dark:bg-white/5 border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10'
                       }`}
                     >
-                      {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      {isChecked && <Check className="w-3 h-3 stroke-[2.5]" />}
                     </button>
                   );
                 })}
