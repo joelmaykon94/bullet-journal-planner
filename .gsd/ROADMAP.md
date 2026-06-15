@@ -52,9 +52,9 @@ updated: 2026-06-15T19:48:00Z
 **Requirements:** SPEC Goal 1, SPEC Goal 4
 
 **Plans:**
-- [ ] Plan 3.1: Extract items and settings state to `src/hooks/useBujoItems.ts` and `src/hooks/useBujoSettings.ts`.
-- [ ] Plan 3.2: Extract custom lists and collections state to `src/hooks/useCollections.ts`.
-- [ ] Plan 3.3: Extract Pomodoro timer state and audio ticking to `src/hooks/usePomodoroTimer.ts`.
+- [ ] Plan 3.1: Extract Items and Settings State Hooks
+- [ ] Plan 3.2: Extract Collections and Custom Lists State Hook
+- [ ] Plan 3.3: Extract Pomodoro Timer State Hook
 
 ---
 
