@@ -28,8 +28,8 @@ updated: 2026-06-15T19:48:00Z
 **Requirements:** SPEC Goal 3
 
 **Plans:**
-- [ ] Plan 1.1: Reorganize existing components in `src/` (moving custom/common components, updating paths, checking imports).
-- [ ] Plan 1.2: Initialize `src/context/BujoContext.tsx` context skeleton.
+- [ ] Plan 1.1: Context Skeleton and Hooks Directory Setup
+- [ ] Plan 1.2: Viewport-Locked Layout Integration (Option A)
 
 ---
 
