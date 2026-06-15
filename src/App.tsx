@@ -2322,7 +2322,7 @@ function App() {
   };
 
   return (
-    <div className={`relative min-h-screen ${currentFontClass()} flex flex-col text-bujo-text bg-bujo-bg transition-colors duration-300`}>
+    <div className={`relative layout-locked-viewport ${currentFontClass()} text-bujo-text bg-bujo-bg transition-colors duration-300`}>
       
       {/* Background Video for Dark Theme */}
       {settings.theme === 'dark' && (
@@ -2370,7 +2370,7 @@ function App() {
       />
 
       {/* MAIN WORKSPACE CONTENT */}
-      <div className="flex-1 max-w-6xl w-full mx-auto px-4 md:px-6 py-6 flex flex-col gap-6 relative z-10 overflow-hidden">
+      <div className="flex-1 min-h-0 max-w-6xl w-full mx-auto px-4 md:px-6 py-6 flex flex-col gap-6 relative z-10 overflow-hidden">
         {focoActive ? (
           <FocusMode
             pomodoroTime={pomodoroTime}
@@ -2385,13 +2385,13 @@ function App() {
             handleAskMaxForQuote={handleAskMaxForQuote}
           />
         ) : (
-          <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-6 overflow-hidden">
             <Sidebar
               userXp={userXp}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
-            <main id="bujo-export-area" className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1">
+            <main id="bujo-export-area" className="flex-1 min-h-0 flex flex-col gap-6 overflow-y-auto pr-1">
               {activeTab === 'indice' && (
                 <IndexTab
                   userXp={userXp}
