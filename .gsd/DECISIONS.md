@@ -27,6 +27,24 @@ Extract states (journal items, settings, collections, timer) and handlers into s
 #### Alternatives Considered
 - Using Redux or Zustand: Rejected because local React Context + Hooks is lightweight, requires no extra external dependencies, and is standard for single-developer projects.
 
+### [DECISION-002] Index Tab UI & Layout Optimization
+
+**Date**: 2026-06-15
+**Status**: Approved
+
+#### Context
+The `IndexTab` dashboard contains several heavy components (EnergyChart, HabitTracker, Quick Access Menu, and UserPersonaCard) that must fit within a viewport-locked layout (`100vh` root body) without overlapping text, squishing buttons, or triggering root vertical scrollbars.
+
+#### Decision
+- Re-architect the Quick Access Menu grid/flex columns with adaptive sizing and clean typography scaling.
+- Constrain sub-section heights (e.g. lists of habits or recommendations) using flex-grow/flex-shrink and `overflow-y-auto` so they stay within their containers.
+- Standardize card spacing using flex/grid gaps and implement sleek glassmorphic rectangular/square cards with glowing hover highlights for a modern ADHD-friendly UX.
+
+#### Rationale
+- Prevents text and card overlaps on smaller desktop resolutions.
+- Complies strictly with the viewport-locked layout constraint.
+- Delivers a premium, visual ADHD-friendly UX.
+
 ---
 
 *Last updated: 2026-06-15*

@@ -5,16 +5,17 @@ updated: 2026-06-15T19:46:00Z
 # Project State
 
 **Milestone:** v1.0
-**Phase:** 4 - App.tsx Slimming & Validation
-**Status:** complete
+**Phase:** 5 - Index Tab UI & Layout Optimization
+**Status:** planning
+**Plan:** Plan 5.1 & Plan 5.2 created
 
 ## Last Action
 
-Executed Phase 4 plans. Consolidated all global state/actions in `BujoContext.tsx` and refactored components to consume it via `useBujo()`. Slimmed `src/App.tsx` down to 216 lines. Resolved and verified compilation with production build.
+Created execution plans for Phase 5 (`1-PLAN.md` and `2-PLAN.md` under `.gsd/phases/5/`) to redesign and optimize spacing, card styles, and layout dimensions on the Index tab.
 
 ## Next Steps
 
-1. Milestone complete! All phases in v1.0 completed and verified.
+1. /execute 5 — Execute Phase 5 plans to redesign Index components and verify responsiveness.
 
 
 ## Active Decisions
