@@ -288,15 +288,15 @@ export function useAmbientAudio(showToast: (msg: string) => void) {
     if (ambientPlaying) {
       stopAmbientAudio();
       setAmbientPlaying(false);
-      showToast('Som ambiente desativado');
+      showToast('Som ambiente desativado 🤫');
     } else {
       startAmbientAudio();
       setAmbientPlaying(true);
       const soundLabels = {
-        chuva_lareira: 'Chuva & Lareira',
-        lofi_jazz: 'Lofi Jazz Café',
-        foco_marrom: 'Foco Marrom (Ruído)',
-        vento_floresta: 'Vento na Floresta'
+        chuva_lareira: 'Chuva e Lareira no Chalé 🌧️🔥',
+        lofi_jazz: 'Lofi Jazz Sintetizado 🎹🥁',
+        foco_marrom: 'Foco Marrom (Ruído Puro) 🤎💤',
+        vento_floresta: 'Vento e Chuva na Floresta 🍃🌧️'
       };
       showToast(`Som ambiente ativado: ${soundLabels[soundType]}`);
     }
