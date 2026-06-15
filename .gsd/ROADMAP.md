@@ -6,17 +6,17 @@ updated: 2026-06-15T19:48:00Z
 
 # Roadmap
 
-> **Current Phase:** 1 - Directory Organization & Context Foundation
-> **Status:** planning
+> **Current Phase:** 4 - App.tsx Slimming & Validation
+> **Status:** ✅ Complete
 
 ## Must-Haves (from SPEC)
 
-- [ ] Reorganize files inside `src/` to strictly align with `GEMINI.md` feature guidelines.
-- [ ] Move procedural audio generation from `src/App.tsx` to `src/hooks/useAmbientAudio.ts`.
-- [ ] Move Pomodoro timer state and ticking code from `src/App.tsx` to `src/hooks/usePomodoroTimer.ts`.
-- [ ] Refactor bullet journal states (items, collections, settings) to custom hooks and connect them through a React Context.
-- [ ] Shrink `src/App.tsx` to under 400 lines while maintaining 100% feature parity.
-- [ ] Ensure the project builds cleanly without TypeScript or lint errors.
+- [x] Reorganize files inside `src/` to strictly align with `GEMINI.md` feature guidelines.
+- [x] Move procedural audio generation from `src/App.tsx` to `src/hooks/useAmbientAudio.ts`.
+- [x] Move Pomodoro timer state and ticking code from `src/App.tsx` to `src/hooks/usePomodoroTimer.ts`.
+- [x] Refactor bullet journal states (items, collections, settings) to custom hooks and connect them through a React Context.
+- [x] Shrink `src/App.tsx` to under 400 lines while maintaining 100% feature parity.
+- [x] Ensure the project builds cleanly without TypeScript or lint errors.
 
 ---
 
@@ -59,14 +59,14 @@ updated: 2026-06-15T19:48:00Z
 ---
 
 ### Phase 4: App.tsx Slimming & Validation
-**Status:** ⬜ Not Started
+**Status:** ✅ Complete
 **Objective:** Wrap application in Context, wire child components, clean up App.tsx, and run full test verification.
 **Depends on:** Phase 3
 **Requirements:** SPEC Goal 4, Success Criteria
 
 **Plans:**
-- [ ] Plan 4.1: Simplify `src/App.tsx` to a layout shell, utilizing context for state sharing.
-- [ ] Plan 4.2: Verify and resolve import paths, type definitions, build correctness, and functionality.
+- [x] Plan 4.1: Simplify `src/App.tsx` to a layout shell, utilizing context for state sharing.
+- [x] Plan 4.2: Verify and resolve import paths, type definitions, build correctness, and functionality.
 
 ---
 
@@ -77,7 +77,7 @@ updated: 2026-06-15T19:48:00Z
 | 1 | ✅ | 2/2 | 2026-06-15 |
 | 2 | ✅ | 2/2 | 2026-06-15 |
 | 3 | ✅ | 3/3 | 2026-06-15 |
-| 4 | ⬜ | 0/2 | — |
+| 4 | ✅ | 2/2 | 2026-06-15 |
 
 ---
 
@@ -88,4 +88,4 @@ updated: 2026-06-15T19:48:00Z
 | 1 | 2026-06-15 | 2026-06-15 | 10m |
 | 2 | 2026-06-15 | 2026-06-15 | 5m |
 | 3 | 2026-06-15 | 2026-06-15 | 5m |
-| 4 | — | — | — |
+| 4 | 2026-06-15 | 2026-06-15 | 15m |

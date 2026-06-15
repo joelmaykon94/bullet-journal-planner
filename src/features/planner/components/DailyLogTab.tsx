@@ -1,93 +1,52 @@
 import { useState } from 'react';
 import { Download, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
-import { BujoItem, Collection } from '../../../types';
 import { BulletItem } from './BulletItem';
+import { useBujo } from '../../../context/BujoContext';
 
-interface DailyLogTabProps {
-  items: BujoItem[];
-  selectedDate: string;
-  setSelectedDate: (date: string) => void;
-  standardDate: string;
-  setStandardDate: (date: string) => void;
-  standardTime: string;
-  setStandardTime: (time: string) => void;
-  exportToPDF: () => void;
-  handlePrint: () => void;
-  handleSaveStandardInput: (e: React.FormEvent) => void;
-  standardType: 'task' | 'event' | 'note';
-  setStandardType: (type: 'task' | 'event' | 'note') => void;
-  standardInput: string;
-  setStandardInput?: (val: string) => void;
-  handleStandardInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleStandardInputKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  showAutocomplete: boolean;
-  filteredCollections: Collection[];
-  autocompleteIndex: number;
-  selectCollectionAutocomplete: (name: string) => void;
-  renderRealTimeSuggestions: (input: string, type: 'task' | 'event' | 'note', handler: any) => React.ReactNode;
-  createStandardTaskWithSuggestions: (subtasks: string[]) => void;
-  cycleStatus: (id: string) => void;
-  editingItemId: string | null;
-  editingItemContent: string;
-  setEditingItemContent: (content: string) => void;
-  handleSaveEditItem: (id: string) => void;
-  setEditingItemId: (id: string | null) => void;
-  handleStartEditItem: (id: string, content: string) => void;
-  handleDeleteItem: (id: string) => void;
-  handleAISplitTask: (id: string, content: string) => void;
-  breakingTaskIds: { [key: string]: boolean };
-  expandedTaskId: string | null;
-  setExpandedTaskId: (id: string | null) => void;
-  toggleSubtask: (taskId: string, subtaskId: string) => void;
-  deleteSubtask: (taskId: string, subtaskId: string) => void;
-  newSubtaskText: string;
-  setNewSubtaskText: (text: string) => void;
-  addSubtask: (taskId: string) => void;
-  getSubtaskCompletionString: (item: BujoItem) => string;
-}
+export const DailyLogTab = () => {
+  const {
+    items,
+    selectedDate,
+    setSelectedDate,
+    standardDate,
+    setStandardDate,
+    standardTime,
+    setStandardTime,
+    exportToPDF,
+    handlePrint,
+    handleSaveStandardInputForm,
+    standardType,
+    setStandardType,
+    standardInput,
+    setStandardInput,
+    handleStandardInputChange,
+    handleStandardInputKeyDown,
+    showAutocomplete,
+    collections,
+    autocompleteIndex,
+    selectCollectionAutocomplete,
+    renderRealTimeSuggestions,
+    createStandardTaskWithSuggestions,
+    cycleStatus,
+    editingItemId,
+    editingItemContent,
+    setEditingItemContent,
+    handleSaveEditItemForm,
+    setEditingItemId,
+    handleStartEditItem,
+    handleDeleteItem,
+    handleAISplitTask,
+    breakingTaskIds,
+    expandedTaskId,
+    setExpandedTaskId,
+    toggleSubtask,
+    deleteSubtask,
+    newSubtaskText,
+    setNewSubtaskText,
+    addSubtask,
+    getSubtaskCompletionString
+  } = useBujo();
 
-export const DailyLogTab = ({
-  items,
-  selectedDate,
-  setSelectedDate,
-  standardDate,
-  setStandardDate,
-  standardTime,
-  setStandardTime,
-  exportToPDF,
-  handlePrint,
-  handleSaveStandardInput,
-  standardType,
-  setStandardType,
-  standardInput,
-  setStandardInput,
-  handleStandardInputChange,
-  handleStandardInputKeyDown,
-  showAutocomplete,
-  filteredCollections,
-  autocompleteIndex,
-  selectCollectionAutocomplete,
-  renderRealTimeSuggestions,
-  createStandardTaskWithSuggestions,
-  cycleStatus,
-  editingItemId,
-  editingItemContent,
-  setEditingItemContent,
-  handleSaveEditItem,
-  setEditingItemId,
-  handleStartEditItem,
-  handleDeleteItem,
-  handleAISplitTask,
-  breakingTaskIds,
-  expandedTaskId,
-  setExpandedTaskId,
-  toggleSubtask,
-  deleteSubtask,
-  newSubtaskText,
-  setNewSubtaskText,
-  addSubtask,
-  getSubtaskCompletionString
-}: DailyLogTabProps) => {
   const today = new Date().toISOString().split('T')[0];
   const [selectedContext, setSelectedContext] = useState<string | null>(null);
   const dateItems = items.filter(i => i.date === selectedDate);
@@ -95,6 +54,10 @@ export const DailyLogTab = ({
     if (!selectedContext) return true;
     return item.content.toLowerCase().includes(selectedContext.toLowerCase());
   });
+
+  const filteredCollections = collections.filter((col: any) =>
+    col.name.toLowerCase().includes((standardInput.match(/\[(.*)/)?.[1] || '').toLowerCase())
+  );
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -162,7 +125,7 @@ export const DailyLogTab = ({
       </div>
 
       <div className="relative">
-        <form onSubmit={handleSaveStandardInput} className="flex flex-col md:flex-row gap-2 bg-zinc-200/30 dark:bg-white/5 p-2 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
+        <form onSubmit={handleSaveStandardInputForm} className="flex flex-col md:flex-row gap-2 bg-zinc-200/30 dark:bg-white/5 p-2 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
           <div className="flex gap-2 flex-1 items-center">
             <select
               value={standardType}
@@ -227,11 +190,9 @@ export const DailyLogTab = ({
                 key={ctx}
                 type="button"
                 onClick={() => {
-                  if (setStandardInput) {
-                    if (!standardInput.includes(ctx)) {
-                      const space = standardInput.length > 0 && !standardInput.endsWith(' ') ? ' ' : '';
-                      setStandardInput(standardInput + space + ctx);
-                    }
+                  if (!standardInput.includes(ctx)) {
+                    const space = standardInput.length > 0 && !standardInput.endsWith(' ') ? ' ' : '';
+                    setStandardInput(standardInput + space + ctx);
                   }
                 }}
                 className="px-2 py-1 bg-zinc-150 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-white/5 rounded-lg text-[10px] font-bold text-bujo-text transition-all cursor-pointer"
@@ -244,7 +205,7 @@ export const DailyLogTab = ({
 
         {showAutocomplete && filteredCollections.length > 0 && (
           <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
-            {filteredCollections.map((col, idx) => (
+            {filteredCollections.map((col: any, idx: number) => (
               <div
                 key={col.id}
                 onClick={() => selectCollectionAutocomplete(col.name)}
@@ -335,7 +296,7 @@ export const DailyLogTab = ({
             editingItemId={editingItemId}
             editingItemContent={editingItemContent}
             setEditingItemContent={setEditingItemContent}
-            handleSaveEditItem={handleSaveEditItem}
+            handleSaveEditItem={handleSaveEditItemForm}
             setEditingItemId={setEditingItemId}
             handleStartEditItem={handleStartEditItem}
             handleDeleteItem={handleDeleteItem}
@@ -347,7 +308,7 @@ export const DailyLogTab = ({
             deleteSubtask={deleteSubtask}
             newSubtaskText={newSubtaskText}
             setNewSubtaskText={setNewSubtaskText}
-            addSubtask={addSubtask}
+            addSubtask={(taskId) => addSubtask(taskId, newSubtaskText, setNewSubtaskText)}
             getSubtaskCompletionString={getSubtaskCompletionString}
           />
         ))}

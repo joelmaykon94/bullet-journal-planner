@@ -1,22 +1,16 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Sparkles, Calendar as CalendarIcon, CheckSquare, Plus } from 'lucide-react';
-import { BujoItem } from '../../../types';
+import { useBujo } from '../../../context/BujoContext';
 
-interface MonthlyLogTabProps {
-  items: BujoItem[];
-  selectedDate: string;
-  setSelectedDate: (date: string) => void;
-  setActiveTab: (tab: 'indice' | 'daily_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'weekly_log' | 'monthly_log') => void;
-}
+export const MonthlyLogTab = () => {
+  const {
+    items,
+    selectedDate,
+    setSelectedDate,
+    setActiveTab
+  } = useBujo();
 
-export const MonthlyLogTab = ({
-  items,
-  selectedDate,
-  setSelectedDate,
-  setActiveTab
-}: MonthlyLogTabProps) => {
   const [currentYearMonth, setCurrentYearMonth] = useState(() => {
-    // Extract YYYY-MM from selectedDate
     const [y, m] = selectedDate.split('-');
     return { year: parseInt(y), month: parseInt(m) - 1 }; // 0-indexed month
   });
@@ -35,9 +29,7 @@ export const MonthlyLogTab = ({
     const days = [];
     
     // Fill empty slots for days of previous month (Monday start)
-    // Sunday is 0, Monday is 1, ..., Saturday is 6
     let firstDayIndex = date.getDay();
-    // Adjust to Monday start (Monday = 0, ..., Sunday = 6)
     firstDayIndex = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
 
     for (let i = 0; i < firstDayIndex; i++) {
@@ -58,7 +50,7 @@ export const MonthlyLogTab = ({
     setCurrentYearMonth(prev => {
       let newMonth = prev.month + (direction === 'next' ? 1 : -1);
       let newYear = prev.year;
-      
+
       if (newMonth > 11) {
         newMonth = 0;
         newYear += 1;
@@ -66,31 +58,34 @@ export const MonthlyLogTab = ({
         newMonth = 11;
         newYear -= 1;
       }
-      
+
       return { year: newYear, month: newMonth };
     });
   };
 
-  const getMonthlyReview = () => {
-    const key = `bujo_monthly_review_${currentYearMonth.year}_${currentYearMonth.month + 1}`;
+  const getMonthReviewText = () => {
+    const key = `bujo_monthly_review_${currentYearMonth.year}_${currentYearMonth.month}`;
     return localStorage.getItem(key) || '';
   };
 
-  const saveMonthlyReview = (text: string) => {
-    const key = `bujo_monthly_review_${currentYearMonth.year}_${currentYearMonth.month + 1}`;
+  const saveMonthReviewText = (text: string) => {
+    const key = `bujo_monthly_review_${currentYearMonth.year}_${currentYearMonth.month}`;
     localStorage.setItem(key, text);
   };
 
-  const selectedDayItems = items.filter(i => i.date === activeCalendarDate);
+  const activeDateItems = items.filter(item => item.date === activeCalendarDate);
+  const activeDateTasks = activeDateItems.filter(item => item.type === 'task');
+  const activeDateEvents = activeDateItems.filter(item => item.type === 'event');
+  const activeDateNotes = activeDateItems.filter(item => item.type === 'note');
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200/50 dark:border-white/10 pb-4 gap-4">
         <div>
-          <span className="text-[10px] text-zinc-400 uppercase font-mono tracking-widest">REVISÃO & CALENDÁRIO VISUAL</span>
+          <span className="text-[10px] text-zinc-400 uppercase font-mono tracking-widest">VISÃO MACRO & ANÁLISE COMPORTAMENTAL</span>
           <h3 className="text-3xl font-light">
-            Monthly Log — <span className="italic font-normal" style={{ fontFamily: "'Instrument Serif', serif" }}>Revisão Mensal</span>
+            Monthly Log — <span className="italic font-normal" style={{ fontFamily: "'Instrument Serif', serif" }}>Visão Mensal</span>
           </h3>
         </div>
 
@@ -102,7 +97,7 @@ export const MonthlyLogTab = ({
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-xs font-bold px-3 font-mono text-bujo-text min-w-[120px] text-center">
+          <span className="text-xs font-bold px-3 font-mono text-bujo-text w-32 text-center">
             {monthsList[currentYearMonth.month]} {currentYearMonth.year}
           </span>
           <button
@@ -114,170 +109,156 @@ export const MonthlyLogTab = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar Grid Container */}
-        <div className="lg:col-span-2 rounded-3xl bg-zinc-200/15 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 p-6 space-y-4">
-          <div className="grid grid-cols-7 gap-1 text-center font-bold text-[10px] uppercase text-zinc-450 tracking-wider mb-2">
-            <div>Seg</div>
-            <div>Ter</div>
-            <div>Qua</div>
-            <div>Qui</div>
-            <div>Sex</div>
-            <div>Sáb</div>
-            <div>Dom</div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        {/* Left Side: Calendar Grid */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="grid grid-cols-7 gap-1 text-center font-mono text-[9px] font-bold text-zinc-550 uppercase tracking-widest py-1 border-b border-zinc-200/30 dark:border-white/5">
+            <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
           </div>
 
-          <div className="grid grid-cols-7 gap-2">
-            {calendarDays.map((dayStr, index) => {
-              if (!dayStr) {
-                return <div key={`empty-${index}`} className="aspect-square opacity-0 pointer-events-none" />;
+          <div className="grid grid-cols-7 gap-1.5">
+            {calendarDays.map((dayStr, idx) => {
+              if (dayStr === null) {
+                return <div key={`empty-${idx}`} className="aspect-square rounded-2xl bg-transparent"></div>;
               }
 
-              const isToday = dayStr === new Date().toISOString().split('T')[0];
-              const isSelected = dayStr === activeCalendarDate;
-              const dayNum = parseInt(dayStr.split('-')[2]);
-              const dayItems = items.filter(i => i.date === dayStr);
-              const hasTasks = dayItems.some(i => i.type === 'task');
-              const hasEvents = dayItems.some(i => i.type === 'event');
+              const isToday = new Date().toISOString().split('T')[0] === dayStr;
+              const isSelected = activeCalendarDate === dayStr;
+              
+              const dayItems = items.filter(item => item.date === dayStr);
+              const dayTasks = dayItems.filter(item => item.type === 'task');
+              const dayCompletedTasks = dayTasks.filter(item => item.status === 'completed');
+              const dayEvents = dayItems.filter(item => item.type === 'event');
 
+              const hasItems = dayItems.length > 0;
+              const hasUncompleted = dayTasks.length > dayCompletedTasks.length;
+
+              // Render simple visual bullets inside the cell
               return (
-                <button
+                <div
                   key={dayStr}
-                  onClick={() => setActiveCalendarDate(dayStr)}
+                  onClick={() => {
+                    setActiveCalendarDate(dayStr);
+                    setHoveredDate(dayStr);
+                  }}
                   onMouseEnter={() => setHoveredDate(dayStr)}
-                  onMouseLeave={() => setHoveredDate(null)}
-                  className={`aspect-square p-2 rounded-2xl border transition-all flex flex-col justify-between items-center relative hover:scale-105 ${
-                    isToday
-                      ? 'bg-bujo-highlight/10 border-bujo-highlight/40 shadow shadow-bujo-highlight/5'
-                      : isSelected
-                      ? 'bg-bujo-accent/15 border-bujo-accent/50 text-bujo-accent font-bold'
-                      : 'bg-zinc-200/15 dark:bg-white/5 border-zinc-200/30 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10'
+                  className={`aspect-square p-2 rounded-2xl border flex flex-col justify-between cursor-pointer transition-all relative group hover:border-bujo-highlight/40 ${
+                    isSelected
+                      ? 'bg-zinc-200/40 dark:bg-white/[0.04] border-bujo-highlight/50 shadow-md scale-[1.02]'
+                      : isToday
+                      ? 'bg-zinc-200/20 dark:bg-white/[0.02] border-zinc-300 dark:border-white/20'
+                      : 'bg-zinc-200/10 dark:bg-white/[0.01] border-zinc-200/30 dark:border-white/5'
                   }`}
                 >
-                  <span className={`text-xs font-mono font-bold ${isToday ? 'text-bujo-highlight' : 'text-bujo-text'}`}>
-                    {dayNum}
+                  <span className={`text-xs font-mono font-bold self-start ${isToday ? 'text-bujo-highlight' : 'text-zinc-400 group-hover:text-bujo-text'}`}>
+                    {dayStr.split('-')[2]}
                   </span>
 
                   {/* Indicators */}
-                  <div className="flex gap-1">
-                    {hasTasks && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-bujo-highlight" />
+                  <div className="flex gap-0.5 mt-auto">
+                    {dayEvents.length > 0 && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-bujo-accent" title={`${dayEvents.length} Eventos`}></span>
                     )}
-                    {hasEvents && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-bujo-accent" />
+                    {dayTasks.length > 0 && (
+                      <span className={`w-1.5 h-1.5 rounded-full ${hasUncompleted ? 'bg-amber-500' : 'bg-emerald-500'}`} title={`${dayTasks.length} Tarefas`}></span>
                     )}
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
         </div>
 
-        {/* Selected Day Sidebar and Details */}
-        <div className="lg:col-span-1 space-y-4">
-          <div className="p-5 rounded-3xl bg-zinc-200/35 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 flex flex-col min-h-[350px]">
-            <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center justify-between border-b border-zinc-200/40 dark:border-white/5 pb-2">
-              <span>Foco do Dia</span>
-              <span className="text-[10px] font-mono text-zinc-400">
-                {new Date(activeCalendarDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
-              </span>
-            </h4>
+        {/* Right Side: Day Details & Month Review */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Calendar Day Detail */}
+          <div className="p-5 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 flex-1 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-baseline border-b border-zinc-200/30 dark:border-white/5 pb-2.5 mb-4">
+                <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-widest">LOG DO DIA SELECIONADO</span>
+                <span className="text-xs font-bold font-mono text-bujo-highlight">
+                  {new Date(activeCalendarDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                </span>
+              </div>
 
-            {/* Tasks / events list */}
-            <div className="flex-1 space-y-2 overflow-y-auto max-h-[280px] pr-1">
-              {selectedDayItems.map(item => (
-                <div key={item.id} className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/40 dark:border-zinc-800 flex items-center justify-between text-xs gap-3">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${
-                      item.status === 'completed'
-                        ? 'bg-emerald-500'
-                        : item.type === 'event'
-                        ? 'bg-bujo-accent'
-                        : 'bg-zinc-400'
-                    }`} />
-                    <span className={`truncate ${item.status === 'completed' ? 'line-through opacity-50' : 'text-bujo-text font-medium'}`}>
-                      {item.content}
-                    </span>
+              <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+                {activeDateTasks.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Tarefas ({activeDateTasks.length})</span>
+                    {activeDateTasks.map(t => (
+                      <div key={t.id} className="flex items-center gap-2 text-xs text-zinc-400">
+                        <span className={`w-1.5 h-1.5 rounded-full ${t.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                        <span className={t.status === 'completed' ? 'line-through text-zinc-600' : ''}>{t.content}</span>
+                      </div>
+                    ))}
                   </div>
-                  {item.time && (
-                    <span className="text-[9px] font-mono text-zinc-500 shrink-0">{item.time}</span>
-                  )}
-                </div>
-              ))}
+                )}
 
-              {selectedDayItems.length === 0 && (
-                <p className="text-xs text-zinc-500 italic text-center py-12">Sem tarefas ou compromissos.</p>
-              )}
+                {activeDateEvents.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Eventos ({activeDateEvents.length})</span>
+                    {activeDateEvents.map(e => (
+                      <div key={e.id} className="flex items-center gap-2 text-xs text-zinc-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-bujo-accent"></span>
+                        <span>{e.time ? `[${e.time}] ` : ''}{e.content}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeDateNotes.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Notas ({activeDateNotes.length})</span>
+                    {activeDateNotes.map(n => (
+                      <div key={n.id} className="flex items-center gap-2 text-xs text-zinc-500 italic">
+                        <span>-</span>
+                        <span>{n.content}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeDateItems.length === 0 && (
+                  <span className="text-xs text-zinc-550 italic block text-center py-6">Nenhum registro para esta data.</span>
+                )}
+              </div>
             </div>
 
-            <button
-              onClick={() => {
-                setSelectedDate(activeCalendarDate);
-                setActiveTab('daily_log');
-              }}
-              className="mt-4 w-full py-2.5 bg-bujo-highlight text-white hover:opacity-95 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md shadow-bujo-highlight/10 cursor-pointer"
-            >
-              <CalendarIcon className="w-3.5 h-3.5" /> Ir para o Daily Log
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Monthly Review Notes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
-        {/* Monthly metrics summary */}
-        <div className="lg:col-span-1 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-6 space-y-4">
-          <h4 className="text-sm font-bold text-bujo-text flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-bujo-highlight" /> Estatísticas Mensais
-          </h4>
-
-          {(() => {
-            // Filter tasks that belong to the current year/month
-            const currentYearMonthPrefix = `${currentYearMonth.year}-${(currentYearMonth.month + 1).toString().padStart(2, '0')}`;
-            const monthTasks = items.filter(i => i.date.startsWith(currentYearMonthPrefix) && i.type === 'task');
-            const completed = monthTasks.filter(i => i.status === 'completed').length;
-            const completionPct = monthTasks.length > 0 ? Math.round((completed / monthTasks.length) * 100) : 0;
-
-            return (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-zinc-200/30 dark:bg-white/5 p-3 rounded-2xl text-center border border-zinc-200/40 dark:border-white/10">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Registradas</span>
-                    <span className="text-2xl font-bold font-mono text-bujo-highlight">{monthTasks.length}</span>
-                  </div>
-                  <div className="bg-zinc-200/30 dark:bg-white/5 p-3 rounded-2xl text-center border border-zinc-200/40 dark:border-white/10">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Taxa Reg.</span>
-                    <span className="text-2xl font-bold font-mono text-emerald-500">{completionPct}%</span>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 text-xs text-zinc-650 dark:text-zinc-300">
-                  <p className="leading-relaxed text-[11px] italic">
-                    "O Monthly Log serve para revisar metas e migrar tarefas que perderam a relevância, aliviando a carga mental no TDAH. Pratique a autocompaixão ao descartar tarefas obsoletas."
-                  </p>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-
-        {/* Notes Editor */}
-        <div className="lg:col-span-2 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-6 flex flex-col gap-4">
-          <div>
-            <h4 className="text-sm font-bold text-bujo-text flex items-center gap-2">
-              <CheckSquare className="w-4 h-4 text-bujo-accent" /> Registro de Metas e Revisão Mensal
-            </h4>
-            <p className="text-[10px] text-zinc-500 mt-1">Reflita sobre os maiores ganhos e aprendizados deste mês.</p>
+            {activeDateItems.length > 0 && (
+              <button
+                onClick={() => {
+                  setSelectedDate(activeCalendarDate);
+                  setActiveTab('daily_log');
+                }}
+                className="w-full mt-4 py-2 bg-zinc-200/50 hover:bg-zinc-200/70 dark:bg-white/10 dark:hover:bg-white/15 text-bujo-text font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer no-print"
+              >
+                <CalendarIcon className="w-4 h-4" />
+                Ir para Diário do Dia
+              </button>
+            )}
           </div>
 
-          <textarea
-            key={`${currentYearMonth.year}-${currentYearMonth.month}`}
-            defaultValue={getMonthlyReview()}
-            onChange={(e) => saveMonthlyReview(e.target.value)}
-            placeholder="Exemplo: Consegui manter um bom foco nos projetos criativos. O hiperfoco funcionou bem, mas preciso melhorar meu ritmo nos dias de baixa energia. Metas para o próximo mês..."
-            className="flex-1 min-h-[150px] w-full bg-zinc-200/30 dark:bg-white/5 border border-zinc-250 dark:border-white/10 rounded-2xl p-4 text-xs text-bujo-text placeholder:text-zinc-500 outline-none focus:border-bujo-highlight/30 resize-none transition-colors"
-          />
+          {/* Month retrospective */}
+          <div className="p-5 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-4">
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-bujo-highlight" />
+              Retrospectiva & Lições do Mês
+            </span>
+            <p className="text-[10px] text-zinc-500 leading-relaxed">
+              Resumo executivo do mês. Acompanhe se o seu hiperfoco foi direcionado às coleções corretas e se respeitou seus picos de energia.
+            </p>
+
+            <textarea
+              value={getMonthReviewText()}
+              onChange={(e) => saveMonthReviewText(e.target.value)}
+              placeholder="O que aprendi de mais valioso sobre minha energia neste mês? Quais objetivos principais eu consegui atacar? (Salva automaticamente)..."
+              rows={4}
+              className="w-full bg-zinc-200/30 dark:bg-white/5 border border-zinc-350/50 dark:border-white/10 rounded-2xl p-4 text-xs text-bujo-text placeholder:text-zinc-650 outline-none focus:border-bujo-highlight/30 resize-none transition-colors"
+            />
+          </div>
         </div>
+
       </div>
     </div>
   );

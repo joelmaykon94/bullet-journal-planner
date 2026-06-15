@@ -1,31 +1,20 @@
 import { Play, Pause, RotateCcw, Activity, Check } from 'lucide-react';
-import { BujoItem } from '../../../types';
+import { useBujo } from '../../../context/BujoContext';
 
-interface FocusModeProps {
-  pomodoroTime: number;
-  pomodoroRunning: boolean;
-  pomodoroMode: 'work' | 'break';
-  setPomodoroRunning: (running: boolean) => void;
-  setPomodoroTime: (time: number) => void;
-  items: BujoItem[];
-  cycleStatus: (id: string) => void;
-  toggleSubtask: (taskId: string, subtaskId: string) => void;
-  currentMaxQuote: string;
-  handleAskMaxForQuote: () => void;
-}
+export const FocusMode = () => {
+  const {
+    pomodoroTime,
+    pomodoroRunning,
+    pomodoroMode,
+    setPomodoroRunning,
+    setPomodoroTime,
+    items,
+    cycleStatus,
+    toggleSubtask,
+    currentMaxQuote,
+    handleAskMaxForQuote
+  } = useBujo();
 
-export const FocusMode = ({
-  pomodoroTime,
-  pomodoroRunning,
-  pomodoroMode,
-  setPomodoroRunning,
-  setPomodoroTime,
-  items,
-  cycleStatus,
-  toggleSubtask,
-  currentMaxQuote,
-  handleAskMaxForQuote
-}: FocusModeProps) => {
   const hourNum = new Date().getHours();
   const currentTasks = items.filter(item => {
     if (!item.time) return false;
@@ -58,118 +47,83 @@ export const FocusMode = ({
           >
             {pomodoroRunning ? <Pause className="w-5 h-5 fill-black" /> : <Play className="w-5 h-5 fill-black ml-0.5" />}
           </button>
+
           <button
             onClick={() => {
               setPomodoroRunning(false);
               setPomodoroTime(pomodoroMode === 'work' ? 25 * 60 : 5 * 60);
             }}
-            className="p-4 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center border border-white/10"
-            aria-label="Reiniciar Pomodoro"
+            className="p-4 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"
+            aria-label="Resetar Pomodoro"
           >
             <RotateCcw className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Right side: Current Hour Tasks */}
-      <div className="flex-1 flex flex-col justify-center gap-4 w-full">
-        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
-          <Activity className="w-4 h-4" />
-          Bloco de Horário Atual
-        </h3>
-
-        <div className="space-y-3">
-          <div className="p-4 rounded-2xl bg-bujo-highlight/10 border-l-4 border-l-bujo-highlight flex items-center justify-between">
-            <span className="font-mono text-xs font-bold text-bujo-highlight">
-              {hourNum.toString().padStart(2, '0')}:00 - {(hourNum + 1).toString().padStart(2, '0')}:00
+      {/* Right side: ADHD Assistant (Max) & Current Hour Tasks */}
+      <div className="flex-1 flex flex-col gap-6 w-full">
+        {/* Companion Card */}
+        <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md relative overflow-hidden flex flex-col gap-4 text-left shadow-lg">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl" role="img" aria-label="guaxinim">🦝</span>
+            <div>
+              <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest leading-none mb-1">Parceiro de Foco ADHD</h4>
+              <span className="text-sm font-bold text-zinc-200 block">Max, o Guaxinim</span>
+            </div>
+          </div>
+          
+          <div className="p-4 rounded-2xl bg-zinc-950/40 border border-white/5 text-xs text-zinc-300 italic leading-relaxed relative">
+            <span className="absolute -top-2 left-4 text-[9px] font-bold text-bujo-highlight bg-[#121214] px-1.5 rounded font-mono">
+              Conselho cognitivo do Max
             </span>
-            <span className="text-[10px] text-zinc-400 font-bold uppercase">AGORA</span>
+            "{currentMaxQuote}"
           </div>
 
-          <div className="space-y-2">
-            {currentTasks.map(task => (
-              <div 
-                key={task.id}
-                className="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => cycleStatus(task.id)}
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                      task.status === 'completed' ? 'bg-white border-white text-black' : 'border-white/30'
-                    }`}
-                  >
-                    {task.status === 'completed' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                  </button>
-                  <span className={`text-base ${task.status === 'completed' ? 'line-through opacity-50' : ''}`}>
-                    {task.content}
-                  </span>
-                </div>
+          <button
+            onClick={handleAskMaxForQuote}
+            className="w-full py-2 bg-bujo-highlight/20 hover:bg-bujo-highlight/30 text-bujo-highlight border border-bujo-highlight/30 hover:text-white transition-all text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer text-white"
+          >
+            <span>💬</span> Pedir ajuda ao Max
+          </button>
+        </div>
 
-                {/* Subtasks rendering inside focus mode */}
-                {task.subtasks && task.subtasks.length > 0 && (
-                  <div className="pl-8 space-y-1.5 border-l border-white/10">
-                    {task.subtasks.map(sub => (
-                      <div key={sub.id} className="flex items-center gap-2 text-xs">
-                        <button
-                          onClick={() => toggleSubtask(task.id, sub.id)}
-                          className={`w-4 h-4 rounded border flex items-center justify-center ${
-                            sub.completed ? 'bg-white border-white text-black' : 'border-white/20'
-                          }`}
-                        >
-                          {sub.completed && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                        </button>
-                        <span className={sub.completed ? 'line-through opacity-40' : 'text-zinc-300'}>
-                          {sub.content}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+        {/* Hour Tasks Panel */}
+        <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md shadow-lg text-left flex-1 flex flex-col">
+          <span className="text-xs font-bold text-zinc-450 uppercase tracking-widest flex items-center gap-2 mb-4">
+            <Activity className="w-4 h-4 text-bujo-highlight" />
+            Tarefas Pessoais Marcadas para Esta Hora
+          </span>
+
+          <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1 flex-1">
+            {currentTasks.map(item => (
+              <div 
+                key={item.id} 
+                className="p-3.5 rounded-2xl bg-zinc-950/20 border border-white/[0.03] hover:border-white/5 transition-all text-xs flex justify-between items-center group"
+              >
+                <span className={item.status === 'completed' ? 'line-through text-zinc-500' : 'text-zinc-300 font-medium'}>
+                  {item.content}
+                </span>
+
+                <button
+                  onClick={() => cycleStatus(item.id)}
+                  className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                    item.status === 'completed'
+                      ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-500 hover:bg-emerald-500/20'
+                      : 'bg-white/5 border-white/10 text-zinc-450 hover:text-bujo-text'
+                  }`}
+                  title={item.status === 'completed' ? 'Reabrir tarefa' : 'Concluir tarefa'}
+                >
+                  <Check className="w-3.5 h-3.5" />
+                </button>
               </div>
             ))}
 
             {currentTasks.length === 0 && (
-              <div className="p-8 rounded-2xl bg-white/[0.01] border border-white/5 text-center text-zinc-500 italic text-sm">
-                Sem tarefas agendadas para esta hora. Foco concluído!
+              <div className="py-8 text-center text-zinc-500 italic text-xs">
+                Nenhuma tarefa agendada para esta hora.
               </div>
             )}
-          </div>
-
-          {/* Focus Partner Max - Body Double Card */}
-          <div className="mt-4 p-5 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md shadow-lg relative overflow-hidden bg-gradient-to-br from-white/[0.02] to-transparent text-bujo-text">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-bujo-highlight/5 rounded-full blur-xl pointer-events-none -mr-8 -mt-8"></div>
-            
-            <div className="flex gap-4 items-start relative z-10">
-              {/* Companion Avatar */}
-              <div className="w-12 h-12 rounded-2xl bg-bujo-highlight/10 border border-bujo-highlight/20 flex items-center justify-center text-2xl flex-shrink-0 animate-bounce-slow select-none">
-                🦊
-              </div>
-              
-              <div className="space-y-1.5 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Parceiro de Foco Virtual</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-[8px] text-emerald-400 uppercase font-mono">Max está online</span>
-                </div>
-                <p className="text-sm font-semibold text-zinc-100">
-                  Max está focado silenciosamente ao seu lado.
-                </p>
-                
-                {/* Chat bubble advice */}
-                <div className="relative mt-2 p-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-none text-xs text-zinc-300 italic leading-relaxed">
-                  "{currentMaxQuote}"
-                </div>
-                
-                <button
-                  type="button"
-                  onClick={handleAskMaxForQuote}
-                  className="mt-2.5 px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/10 text-[10px] font-bold rounded-lg transition-colors text-white"
-                >
-                  💬 Pedir incentivo ao Max
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>

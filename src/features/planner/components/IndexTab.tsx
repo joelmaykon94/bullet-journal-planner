@@ -2,64 +2,37 @@ import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays } from 'lu
 import { EnergyChart } from '../../adhd/components/EnergyChart';
 import { HabitTracker } from './HabitTracker';
 import { UserPersonaCard } from './UserPersonaCard';
-import { BujoItem } from '../../../types';
+import { useBujo } from '../../../context/BujoContext';
 
-interface IndexTabProps {
-  userXp: number;
-  setUserXp: React.Dispatch<React.SetStateAction<number>>;
-  setActiveTab: (tab: any) => void;
-  setShowTutorial: (show: boolean) => void;
-  items: BujoItem[];
-  completedPomodoros: number;
-  getCognitiveLoad: () => number;
-  getHarmonyScore: () => number | null;
-  getHarmonyRecommendation: (score: number | null) => string;
-  showEnergyGuide: boolean;
-  setShowEnergyGuide: (show: boolean) => void;
-  selectedDate: string;
-  onOverloadReliefClick: () => void;
-  aiEngine: 'local_llm' | 'local';
-  aiWorkerRef: React.MutableRefObject<Worker | null>;
-  localLLMState: string;
-  showToast: (msg: string) => void;
-  currentEnergy: 'high' | 'low' | 'exhausted';
-  anxietyLevel: number;
-  // Audio controls from Focus Partner
-  soundType: 'chuva_lareira' | 'lofi_jazz' | 'foco_marrom' | 'vento_floresta';
-  setSoundType: (type: 'chuva_lareira' | 'lofi_jazz' | 'foco_marrom' | 'vento_floresta') => void;
-  toggleAmbientAudio: () => void;
-  ambientPlaying: boolean;
-  ambientVolume: number;
-  setAmbientVolume: (volume: number) => void;
-}
+export const IndexTab = () => {
+  const {
+    userXp,
+    setUserXp,
+    setActiveTab,
+    setShowTutorial,
+    items,
+    completedPomodoros,
+    getCognitiveLoad,
+    getHarmonyScore,
+    getHarmonyRecommendation,
+    showEnergyGuide,
+    setShowEnergyGuide,
+    selectedDate,
+    setShowOverloadReliefModal,
+    aiEngine,
+    aiWorkerRef,
+    localLLMState,
+    showToast,
+    currentEnergy,
+    anxietyLevel,
+    soundType,
+    setSoundType,
+    toggleAmbientAudio,
+    ambientPlaying,
+    ambientVolume,
+    setAmbientVolume
+  } = useBujo();
 
-export const IndexTab = ({
-  userXp,
-  setUserXp,
-  setActiveTab,
-  setShowTutorial,
-  items,
-  completedPomodoros,
-  getCognitiveLoad,
-  getHarmonyScore,
-  getHarmonyRecommendation,
-  showEnergyGuide,
-  setShowEnergyGuide,
-  selectedDate,
-  onOverloadReliefClick,
-  aiEngine,
-  aiWorkerRef,
-  localLLMState,
-  showToast,
-  currentEnergy,
-  anxietyLevel,
-  soundType,
-  setSoundType,
-  toggleAmbientAudio,
-  ambientPlaying,
-  ambientVolume,
-  setAmbientVolume
-}: IndexTabProps) => {
   const level = Math.floor(userXp / 100) + 1;
   const currentLevelXp = userXp % 100;
   const cognitiveLoad = getCognitiveLoad();
@@ -96,7 +69,7 @@ export const IndexTab = ({
         <div className="flex items-center gap-3 flex-wrap">
           {/* Carga Cognitiva */}
           <div 
-            onClick={onOverloadReliefClick}
+            onClick={() => setShowOverloadReliefModal(true)}
             className="px-3.5 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex flex-col justify-center text-center min-w-[95px]"
             title="Clique para Alívio Cognitivo IA"
           >

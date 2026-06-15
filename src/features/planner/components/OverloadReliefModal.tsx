@@ -1,17 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Brain, Clock, AlertTriangle, Check, ArrowRight, ShieldAlert, Heart, CalendarDays } from 'lucide-react';
 import { BujoItem } from '../../../types';
-
-interface OverloadReliefModalProps {
-  items: BujoItem[];
-  setItems: React.Dispatch<React.SetStateAction<BujoItem[]>>;
-  onClose: () => void;
-  showToast: (msg: string) => void;
-  aiEngine: 'local_llm' | 'local';
-  aiWorkerRef: React.MutableRefObject<Worker | null>;
-  localLLMState: string;
-  initLocalLLMWorker: () => void;
-}
+import { useBujo } from '../../../context/BujoContext';
 
 interface ProposalItem {
   id: string;
@@ -22,16 +12,19 @@ interface ProposalItem {
   proposedTime?: string;
 }
 
-export const OverloadReliefModal = ({
-  items,
-  setItems,
-  onClose,
-  showToast,
-  aiEngine,
-  aiWorkerRef,
-  localLLMState,
-  initLocalLLMWorker
-}: OverloadReliefModalProps) => {
+export const OverloadReliefModal = () => {
+  const {
+    items,
+    setItems,
+    setShowOverloadReliefModal,
+    showToast,
+    aiEngine,
+    aiWorkerRef,
+    localLLMState,
+    initLocalLLMWorker
+  } = useBujo();
+
+  const onClose = () => setShowOverloadReliefModal(false);
   const [anxiety, setAnxiety] = useState<number>(3); // 1 to 5
   const [energy, setEnergy] = useState<'high' | 'low' | 'exhausted'>('low');
   const [availableHours, setAvailableHours] = useState<number>(2); // 1, 2, 4, 8 hours

@@ -1,39 +1,24 @@
 import { Edit, X, Plus } from 'lucide-react';
-import { BujoItem } from '../../../types';
+import { useBujo } from '../../../context/BujoContext';
 
-interface FutureLogTabProps {
-  items: BujoItem[];
-  months: string[];
-  selectedMonth: number;
-  setSelectedMonth: (month: number) => void;
-  editingItemId: string | null;
-  editingItemContent: string;
-  setEditingItemContent: (content: string) => void;
-  handleSaveEditItem: (id: string) => void;
-  setEditingItemId: (id: string | null) => void;
-  handleStartEditItem: (id: string, content: string) => void;
-  handleDeleteItem: (id: string) => void;
-  handleAddFutureEvent: (e: React.FormEvent) => void;
-  futureLogEventContent: string;
-  setFutureLogEventContent: (content: string) => void;
-}
+export const FutureLogTab = () => {
+  const {
+    items,
+    months,
+    selectedMonth,
+    setSelectedMonth,
+    editingItemId,
+    editingItemContent,
+    setEditingItemContent,
+    handleSaveEditItemForm,
+    setEditingItemId,
+    handleStartEditItem,
+    handleDeleteItem,
+    handleAddFutureEvent,
+    futureLogEventContent,
+    setFutureLogEventContent
+  } = useBujo();
 
-export const FutureLogTab = ({
-  items,
-  months,
-  selectedMonth,
-  setSelectedMonth,
-  editingItemId,
-  editingItemContent,
-  setEditingItemContent,
-  handleSaveEditItem,
-  setEditingItemId,
-  handleStartEditItem,
-  handleDeleteItem,
-  handleAddFutureEvent,
-  futureLogEventContent,
-  setFutureLogEventContent
-}: FutureLogTabProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="border-b border-zinc-200/50 dark:border-white/10 pb-4">
@@ -96,19 +81,19 @@ export const FutureLogTab = ({
                       className="flex-1 bg-zinc-200/50 dark:bg-white/10 border border-bujo-highlight text-xs text-bujo-text px-2 py-1 rounded-lg outline-none font-medium"
                       autoFocus
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSaveEditItem(ev.id);
+                        if (e.key === 'Enter') handleSaveEditItemForm(ev.id);
                         if (e.key === 'Escape') setEditingItemId(null);
                       }}
                     />
                     <button
-                      onClick={() => handleSaveEditItem(ev.id)}
+                      onClick={() => handleSaveEditItemForm(ev.id)}
                       className="px-2 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-colors"
                     >
                       Salvar
                     </button>
                     <button
                       onClick={() => setEditingItemId(null)}
-                      className="px-2 py-1 bg-zinc-300 dark:bg-white/10 text-bujo-text rounded-lg text-[10px] font-bold hover:bg-zinc-400 dark:hover:bg-white/20 transition-colors"
+                      className="px-2 py-1 bg-zinc-350 dark:bg-white/10 text-bujo-text rounded-lg text-[10px] font-bold hover:bg-zinc-400 dark:hover:bg-white/20 transition-colors"
                     >
                       Cancelar
                     </button>
@@ -160,7 +145,7 @@ export const FutureLogTab = ({
               value={futureLogEventContent}
               onChange={(e) => setFutureLogEventContent(e.target.value)}
               placeholder="Reunião importante, consulta..."
-              className="w-full bg-zinc-200/30 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 rounded-xl p-3 text-xs text-bujo-text placeholder:text-zinc-600 outline-none focus:border-bujo-highlight/40"
+              className="w-full bg-zinc-200/30 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 rounded-xl p-3 text-xs text-bujo-text placeholder:text-zinc-650 outline-none focus:border-bujo-highlight/40"
             />
             <button
               type="submit"

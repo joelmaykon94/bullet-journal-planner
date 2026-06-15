@@ -1,39 +1,24 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { BujoItem } from '../../../types';
+import { useBujo } from '../../../context/BujoContext';
 
-interface TimelineTabProps {
-  items: BujoItem[];
-  selectedDate: string;
-  setSelectedDate: (date: string) => void;
-  timelineMobileView: 'timeline' | 'unscheduled';
-  setTimelineMobileView: (view: 'timeline' | 'unscheduled') => void;
-  hours: string[];
-  assignItemToTime: (id: string, time: string) => void;
-  setSelectedHourToSchedule: (hour: number | null) => void;
-  editingItemId: string | null;
-  editingItemContent: string;
-  setEditingItemContent: (content: string) => void;
-  handleSaveEditItem: (id: string) => void;
-  setEditingItemId: (id: string | null) => void;
-  openTasksUnscheduled: BujoItem[];
-}
+export const TimelineTab = () => {
+  const {
+    items,
+    selectedDate,
+    setSelectedDate,
+    timelineMobileView,
+    setTimelineMobileView,
+    hours,
+    assignItemToTime,
+    setSelectedHourToSchedule,
+    editingItemId,
+    editingItemContent,
+    setEditingItemContent,
+    handleSaveEditItemForm,
+    setEditingItemId,
+    openTasksUnscheduled
+  } = useBujo();
 
-export const TimelineTab = ({
-  items,
-  selectedDate,
-  setSelectedDate,
-  timelineMobileView,
-  setTimelineMobileView,
-  hours,
-  assignItemToTime,
-  setSelectedHourToSchedule,
-  editingItemId,
-  editingItemContent,
-  setEditingItemContent,
-  handleSaveEditItem,
-  setEditingItemId,
-  openTasksUnscheduled
-}: TimelineTabProps) => {
   const today = new Date().toISOString().split('T')[0];
 
   return (
@@ -176,12 +161,12 @@ export const TimelineTab = ({
                             className="flex-1 bg-zinc-200/50 dark:bg-white/10 border border-bujo-highlight text-xs text-bujo-text px-2 py-1 rounded-lg outline-none font-medium"
                             autoFocus
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveEditItem(item.id);
+                              if (e.key === 'Enter') handleSaveEditItemForm(item.id);
                               if (e.key === 'Escape') setEditingItemId(null);
                             }}
                           />
                           <button
-                            onClick={() => handleSaveEditItem(item.id)}
+                            onClick={() => handleSaveEditItemForm(item.id)}
                             className="px-1.5 py-0.5 bg-emerald-600 text-white rounded text-[10px] font-bold cursor-pointer"
                           >
                             ✓

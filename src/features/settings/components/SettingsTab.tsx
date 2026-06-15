@@ -1,29 +1,19 @@
 import { ChevronRight, Sparkles } from 'lucide-react';
-import { BujoSettings } from '../../../types';
+import { useBujo } from '../../../context/BujoContext';
 
-interface SettingsTabProps {
-  settings: BujoSettings;
-  setSettings: React.Dispatch<React.SetStateAction<BujoSettings>>;
-  setShowTutorial: (show: boolean) => void;
-  aiEngine: 'local_llm' | 'local';
-  setAiEngine: (engine: 'local_llm' | 'local') => void;
-  localLLMState: string;
-  localLLMProgress: { [key: string]: number };
-  localLLMError: string;
-  initLocalLLMWorker: () => void;
-}
+export const SettingsTab = () => {
+  const {
+    settings,
+    setSettings,
+    setShowTutorial,
+    aiEngine,
+    setAiEngine,
+    localLLMState,
+    localLLMProgress,
+    localLLMError,
+    initLocalLLMWorker
+  } = useBujo();
 
-export const SettingsTab = ({
-  settings,
-  setSettings,
-  setShowTutorial,
-  aiEngine,
-  setAiEngine,
-  localLLMState,
-  localLLMProgress,
-  localLLMError,
-  initLocalLLMWorker
-}: SettingsTabProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="border-b border-zinc-200/50 dark:border-white/10 pb-4">
@@ -60,200 +50,237 @@ export const SettingsTab = ({
               </button>
               <button
                 onClick={() => setSettings(prev => ({ ...prev, font: 'mono' }))}
-                className={`p-2.5 rounded-xl border text-xs font-mono font-semibold ${
+                className={`p-2.5 rounded-xl border text-xs font-semibold ${
                   settings.font === 'mono' ? 'bg-bujo-highlight text-white border-bujo-highlight' : 'bg-zinc-200/30 dark:bg-white/5 border-zinc-200/40 dark:border-white/10 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10'
                 }`}
               >
-                Monospace
+                Monoespaçada
+              </button>
+            </div>
+            <p className="text-[10px] text-zinc-550 leading-relaxed pl-0.5">
+              Fontes personalizadas auxiliam na diminuição do cansaço visual e aumentam a velocidade de leitura para mentes neurodivergentes.
+            </p>
+          </div>
+
+          {/* Color palette selector */}
+          <div className="space-y-3.5">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">Esquema de Cores de Hiperfoco</label>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {/* Ocre & Verde Sálvia */}
+              <button
+                onClick={() => setSettings(prev => ({ ...prev, highlightColor: '#E08E45', accentColor: '#4A7C6C' }))}
+                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between items-start gap-3 transition-all ${
+                  settings.highlightColor === '#E08E45' 
+                    ? 'border-bujo-highlight/85 bg-bujo-highlight/10 shadow-sm' 
+                    : 'bg-zinc-200/30 dark:bg-white/5 border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10'
+                }`}
+              >
+                <div className="flex gap-2">
+                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: '#E08E45' }}></span>
+                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: '#4A7C6C' }}></span>
+                </div>
+                <div className="space-y-0.5 text-left">
+                  <span className="text-xs font-bold text-bujo-text block">Terracota & Sálvia</span>
+                  <span className="text-[9px] text-zinc-550 block">Paleta Aconchegante</span>
+                </div>
+              </button>
+
+              {/* Classic Dark */}
+              <button
+                onClick={() => setSettings(prev => ({ ...prev, highlightColor: '#E11D48', accentColor: '#2563EB' }))}
+                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between items-start gap-3 transition-all ${
+                  settings.highlightColor === '#E11D48' 
+                    ? 'border-bujo-highlight/85 bg-bujo-highlight/10 shadow-sm' 
+                    : 'bg-zinc-200/30 dark:bg-white/5 border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10'
+                }`}
+              >
+                <div className="flex gap-2">
+                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: '#E11D48' }}></span>
+                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: '#2563EB' }}></span>
+                </div>
+                <div className="space-y-0.5 text-left">
+                  <span className="text-xs font-bold text-bujo-text block">Neon Dark</span>
+                  <span className="text-[9px] text-zinc-550 block">Foco de Alta Energia</span>
+                </div>
+              </button>
+
+              {/* Minimalist Silver */}
+              <button
+                onClick={() => setSettings(prev => ({ ...prev, highlightColor: '#A1A1AA', accentColor: '#71717A' }))}
+                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between items-start gap-3 transition-all ${
+                  settings.highlightColor === '#A1A1AA' 
+                    ? 'border-bujo-highlight/85 bg-bujo-highlight/10 shadow-sm' 
+                    : 'bg-zinc-200/30 dark:bg-white/5 border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10'
+                }`}
+              >
+                <div className="flex gap-2">
+                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: '#A1A1AA' }}></span>
+                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: '#71717A' }}></span>
+                </div>
+                <div className="space-y-0.5 text-left">
+                  <span className="text-xs font-bold text-bujo-text block">Monocromático</span>
+                  <span className="text-[9px] text-zinc-550 block">Baixa Estimulação Visual</span>
+                </div>
+              </button>
+
+              {/* Lavender Fields */}
+              <button
+                onClick={() => setSettings(prev => ({ ...prev, highlightColor: '#8B5CF6', accentColor: '#EC4899' }))}
+                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between items-start gap-3 transition-all ${
+                  settings.highlightColor === '#8B5CF6' 
+                    ? 'border-bujo-highlight/85 bg-bujo-highlight/10 shadow-sm' 
+                    : 'bg-zinc-200/30 dark:bg-white/5 border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10'
+                }`}
+              >
+                <div className="flex gap-2">
+                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: '#8B5CF6' }}></span>
+                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: '#EC4899' }}></span>
+                </div>
+                <div className="space-y-0.5 text-left">
+                  <span className="text-xs font-bold text-bujo-text block">Lavanda & Rosa</span>
+                  <span className="text-[9px] text-zinc-550 block">Calmante Antiestresse</span>
+                </div>
               </button>
             </div>
           </div>
 
-          {/* Color highlighting palette */}
-          <div className="space-y-2.5">
-            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">Cor de Destaque Primária (Salvo local)</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { name: 'Burned Orange', value: '#E08E45' },
-                { name: 'Warm Amber', value: '#D97706' },
-                { name: 'Classic Blue', value: '#2563EB' },
-                { name: 'Bright Pink', value: '#EC4899' }
-              ].map(color => (
-                <button
-                  key={color.value}
-                  onClick={() => setSettings(prev => ({ ...prev, highlightColor: color.value }))}
-                  className={`p-2 rounded-xl border text-[10px] font-semibold flex flex-col items-center gap-1.5 ${
-                    settings.highlightColor === color.value ? 'border-zinc-800 dark:border-white bg-zinc-200 dark:bg-white/10' : 'border-zinc-200/30 dark:border-white/5'
-                  }`}
-                >
-                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: color.value }} />
-                  <span className="truncate text-zinc-500 w-full text-center">{color.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Accent colors */}
-          <div className="space-y-2.5">
-            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">Cor Secundária (Acento)</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { name: 'Sage Green', value: '#4A7C6C' },
-                { name: 'Ocean Teal', value: '#0D9488' },
-                { name: 'Iris Purple', value: '#9333EA' },
-                { name: 'Stone Gray', value: '#52525b' }
-              ].map(color => (
-                <button
-                  key={color.value}
-                  onClick={() => setSettings(prev => ({ ...prev, accentColor: color.value }))}
-                  className={`p-2 rounded-xl border text-[10px] font-semibold flex flex-col items-center gap-1.5 ${
-                    settings.accentColor === color.value ? 'border-zinc-800 dark:border-white bg-zinc-200 dark:bg-white/10' : 'border-zinc-200/30 dark:border-white/5'
-                  }`}
-                >
-                  <span className="w-5 h-5 rounded-full" style={{ backgroundColor: color.value }} />
-                  <span className="truncate text-zinc-500 w-full text-center">{color.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Clear Storage */}
-          <div className="border-t border-zinc-200/40 dark:border-white/10 pt-4">
+          <div className="pt-2 border-t border-zinc-200/30 dark:border-white/5 flex flex-col sm:flex-row gap-3 justify-between">
             <button
               onClick={() => {
-                if (window.confirm('Tem certeza que deseja apagar todos os dados locais? Esta ação é irreversível.')) {
+                if (confirm('Deseja realmente apagar todos os seus registros do Bullet Journal local? Esta ação não pode ser desfeita.')) {
                   localStorage.clear();
                   window.location.reload();
                 }
               }}
-              className="px-4 py-2.5 bg-red-600/10 text-red-500 border border-red-500/20 rounded-xl text-xs font-semibold hover:bg-red-600/20 transition-colors"
+              className="px-4 py-2 text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer border border-red-500/25"
             >
               Apagar Banco de Dados Local
             </button>
-          </div>
 
-        </div>
-
-        {/* Tutorial / Help area */}
-        <div className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-4">
-          <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-500">Ajuda e Recursos</h4>
-          <div className="space-y-3 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            <p>
-              O <strong>BuJo Focus</strong> foi construído de acordo com os princípios neuro-cognitivos do TDAH:
-            </p>
-            <ul className="list-disc pl-4 space-y-1">
-              <li><strong>Zero Distrações</strong>: Interfaces minimalistas com alternância de Modo Foco.</li>
-              <li><strong>Atrito Mínimo</strong>: Salve lembretes instantâneos no botão flutuante "+".</li>
-              <li><strong>Passos acionáveis</strong>: Evite a paralisia utilizando o "Quebrar com IA".</li>
-              <li><strong>Feedback de Conclusão</strong>: Sinalizadores visuais para validar progresso.</li>
-            </ul>
             <button
-              type="button"
               onClick={() => setShowTutorial(true)}
-              className="mt-2 text-bujo-highlight font-semibold hover:underline flex items-center gap-1"
+              className="px-4 py-2 text-xs font-bold bg-zinc-200/40 dark:bg-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/20 text-bujo-text rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
-              Ver Tutorial de Símbolos <ChevronRight className="w-3.5 h-3.5" />
+              Ver Tutorial de Onboarding
             </button>
           </div>
         </div>
 
-        {/* Inteligência Artificial & Otimizações */}
-        <div id="local-llm-activation-center" className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-6 text-bujo-text scroll-mt-6 md:col-span-2">
-          <div className="flex items-center justify-between border-b border-zinc-200/30 dark:border-white/5 pb-3">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-              🧠 Configuração do Motor de Inteligência Artificial
-            </h4>
+        {/* AI & Worker Management Hub */}
+        <div id="local-llm-activation-center" className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-6">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-bujo-highlight uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              Configuração do Motor de Inteligência Artificial
+            </span>
+            <p className="text-[10px] text-zinc-400 leading-relaxed">
+              O BuJo Focus funciona de forma 100% offline e privada. Você pode rodar a IA localmente no browser usando modelos Transformers leves.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Engine Selection */}
-            <div className="space-y-4">
-              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Selecione o Motor de IA</span>
-              <p className="text-xs text-zinc-550 leading-normal">
-                Escolha como deseja gerar sugestões cognitivas de micro-tarefas e resumos semanais/mensais:
-              </p>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAiEngine('local_llm');
-                    initLocalLLMWorker();
-                  }}
-                  className={`py-3.5 px-4 rounded-2xl border text-left transition-all flex flex-col gap-1 cursor-pointer ${
-                    aiEngine === 'local_llm'
-                      ? 'bg-bujo-highlight/10 border-bujo-highlight text-zinc-100 shadow-sm'
-                      : 'bg-zinc-200/30 dark:bg-white/5 border-zinc-200/40 dark:border-white/10 text-zinc-500 hover:bg-zinc-200/60 dark:hover:bg-white/10'
-                  }`}
-                >
-                  <span className="font-bold text-xs flex items-center gap-1.5">
-                    🧠 IA no Browser (Qwen 2.5)
-                  </span>
-                  <span className="text-[10px] opacity-85 leading-normal">
-                    Executa um modelo LLM completo localmente no seu computador. Garante 100% de privacidade. Requer download inicial (~350MB).
-                  </span>
-                </button>
+          {/* Engine Selector Toggle */}
+          <div className="bg-zinc-200/40 dark:bg-white/5 p-1 rounded-2xl border border-zinc-300/40 dark:border-white/10 flex">
+            <button
+              onClick={() => setAiEngine('local')}
+              className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                aiEngine === 'local' 
+                  ? 'bg-bujo-highlight text-white shadow-md' 
+                  : 'text-zinc-500 hover:text-bujo-text'
+              }`}
+            >
+              Motor Simples (Regras / Rápido)
+            </button>
+            <button
+              onClick={() => setAiEngine('local_llm')}
+              className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                aiEngine === 'local_llm' 
+                  ? 'bg-bujo-highlight text-white shadow-md' 
+                  : 'text-zinc-500 hover:text-bujo-text'
+              }`}
+            >
+              IA Avançada (LLM no Browser)
+            </button>
+          </div>
 
-                <button
-                  type="button"
-                  onClick={() => setAiEngine('local')}
-                  className={`py-3.5 px-4 rounded-2xl border text-left transition-all flex flex-col gap-1 cursor-pointer ${
-                    aiEngine === 'local'
-                      ? 'bg-bujo-highlight/10 border-bujo-highlight text-zinc-100 shadow-sm'
-                      : 'bg-zinc-200/30 dark:bg-white/5 border-zinc-200/40 dark:border-white/10 text-zinc-500 hover:bg-zinc-200/60 dark:hover:bg-white/10'
-                  }`}
-                >
-                  <span className="font-bold text-xs flex items-center gap-1.5">
-                    ⚡ Dicionário de Sugestões (Heurística)
-                  </span>
-                  <span className="text-[10px] opacity-85 leading-normal">
-                    Sugestões baseadas em regras de termos comuns e dicionário local estático. Instantâneo e não consome processamento de CPU/GPU.
-                  </span>
-                </button>
+          {/* Local LLM Management Details */}
+          {aiEngine === 'local_llm' && (
+            <div className="p-5 rounded-2xl bg-zinc-200/30 dark:bg-white/[0.02] border border-zinc-350 dark:border-white/5 space-y-4 animate-fade-in">
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] font-bold text-zinc-450 uppercase tracking-widest">Status da IA Local</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                  localLLMState === 'ready' 
+                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/25' 
+                    : localLLMState === 'loading'
+                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/25 animate-pulse'
+                    : 'bg-zinc-500/10 text-zinc-550 border border-zinc-500/25'
+                }`}>
+                  {localLLMState === 'ready' ? 'Carregado' : localLLMState === 'loading' ? 'Baixando/Inicializando' : 'Inativo'}
+                </span>
               </div>
-            </div>
 
-            {/* Local LLM Control Panel */}
-            <div className="space-y-4 p-4 rounded-2xl bg-zinc-350/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Painel do Modelo Local</span>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-500">Status do Modelo:</span>
-                  <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wide ${
-                    localLLMState === 'ready' ? 'bg-emerald-600/10 text-emerald-500' : localLLMState === 'loading' ? 'bg-amber-600/10 text-amber-500 animate-pulse' : 'bg-zinc-500/10 text-zinc-500'
-                  }`}>
-                    {localLLMState === 'ready' ? 'Pronto para uso' : localLLMState === 'loading' ? 'Carregando weights' : 'Inativo / Não Carregado'}
-                  </span>
+              {localLLMState === 'idle' && (
+                <div className="space-y-3">
+                  <p className="text-[10px] text-zinc-500 leading-relaxed">
+                    O modelo de IA (Qwen 1.5B Chat quantizado, ~350MB) será baixado diretamente no cache do browser. O download acontece apenas uma vez e roda localmente, sem enviar dados para servidores externos.
+                  </p>
+                  <button
+                    onClick={initLocalLLMWorker}
+                    className="w-full py-2.5 bg-bujo-highlight hover:opacity-95 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    Ativar IA Avançada Local (350MB) <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-                {localLLMError && <p className="text-red-500 text-[10px]">{localLLMError}</p>}
+              )}
 
-                {localLLMState === 'loading' && (
-                  <div className="space-y-2 pt-2">
+              {localLLMState === 'loading' && (
+                <div className="space-y-3.5">
+                  <p className="text-[10px] text-zinc-400">
+                    Fazendo download e cacheando os arquivos do modelo. Por favor, aguarde e não feche a aba...
+                  </p>
+                  
+                  {/* Progress bar container */}
+                  <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
                     {Object.entries(localLLMProgress).map(([file, progress]) => (
                       <div key={file} className="space-y-1">
-                        <div className="flex justify-between text-[9px] text-zinc-500">
-                          <span className="truncate w-40">{file}</span>
-                          <span>{Math.round(progress)}%</span>
+                        <div className="flex justify-between text-[9px] font-mono text-zinc-500">
+                          <span className="truncate w-36">{file.split('/').pop()}</span>
+                          <span>{progress.toFixed(0)}%</span>
                         </div>
-                        <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1 rounded-full overflow-hidden">
-                          <div className="bg-bujo-highlight h-full transition-all" style={{ width: `${progress}%` }} />
+                        <div className="bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-bujo-highlight h-full rounded-full transition-all duration-150" 
+                            style={{ width: `${progress}%` }}
+                          ></div>
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              <button
-                type="button"
-                onClick={initLocalLLMWorker}
-                disabled={localLLMState === 'loading' || localLLMState === 'ready'}
-                className="w-full py-3 bg-bujo-highlight text-white rounded-xl text-xs font-bold disabled:opacity-50 hover:opacity-95 transition-opacity mt-4 cursor-pointer"
-              >
-                {localLLMState === 'ready' ? 'Modelo Pronto ✓' : 'Carregar / Iniciar IA Local (Transformers.js)'}
-              </button>
+              {localLLMState === 'ready' && (
+                <div className="space-y-2 text-[10px] text-zinc-400 leading-relaxed">
+                  <p>✓ Modelo carregado com sucesso no Web Worker da sua CPU/GPU local!</p>
+                  <p>💡 Você já pode clicar em <strong>"💡 Decompor Tarefa"</strong> no Daily Log ou em itens de Coleções para dividi-los em micro-passos cognitivos de forma instantânea e offline.</p>
+                </div>
+              )}
+
+              {localLLMState === 'error' && (
+                <div className="space-y-2">
+                  <p className="text-[10px] text-red-400 leading-relaxed font-mono">
+                    Erro no download ou alocação: {localLLMError}
+                  </p>
+                  <button
+                    onClick={initLocalLLMWorker}
+                    className="w-full py-2 bg-zinc-200/50 hover:bg-zinc-200/75 dark:bg-white/10 dark:hover:bg-white/15 text-bujo-text text-xs font-bold rounded-xl transition-all cursor-pointer"
+                  >
+                    Tentar Novamente
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

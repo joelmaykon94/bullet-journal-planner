@@ -1,8 +1,108 @@
 import { useEffect, useRef } from 'react';
+import { useBujo } from '../../context/BujoContext';
 
 export const CozyCabinBackground = () => {
+  const { settings } = useBujo();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const videoFadeFrameRef = useRef<number | null>(null);
+  const fadingOutRef = useRef<boolean>(false);
 
+  // Video looping engine logic
+  const animateOpacity = (targetOpacity: number, duration: number, callback?: () => void) => {
+    if (videoFadeFrameRef.current) {
+      cancelAnimationFrame(videoFadeFrameRef.current);
+    }
+    const video = videoRef.current;
+    if (!video) return;
+
+    const startOpacity = parseFloat(video.style.opacity || '0');
+    const startTime = performance.now();
+
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const currentOpacity = startOpacity + (targetOpacity - startOpacity) * progress;
+      video.style.opacity = currentOpacity.toString();
+
+      if (progress < 1) {
+        videoFadeFrameRef.current = requestAnimationFrame(step);
+      } else {
+        videoFadeFrameRef.current = null;
+        if (callback) callback();
+      }
+    };
+
+    videoFadeFrameRef.current = requestAnimationFrame(step);
+  };
+
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (!video || !video.duration) return;
+
+    const remainingTime = video.duration - video.currentTime;
+    if (remainingTime <= 0.55 && !fadingOutRef.current) {
+      fadingOutRef.current = true;
+      animateOpacity(0, 500);
+    }
+  };
+
+  const handleEnded = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.style.opacity = '0';
+    setTimeout(() => {
+      fadingOutRef.current = false;
+      video.currentTime = 0;
+      video.play()
+        .then(() => {
+          animateOpacity(1, 500);
+        })
+        .catch((err) => {
+          console.error("Video loop autoplay failed:", err);
+          animateOpacity(1, 500);
+        });
+    }, 100);
+  };
+
+  const handleLoadedData = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.style.opacity = '0';
+    video.play()
+      .then(() => {
+        animateOpacity(1, 500);
+      })
+      .catch((err) => {
+        console.error("Video autoplay on load failed:", err);
+        animateOpacity(1, 500);
+      });
+  };
+
+  useEffect(() => {
+    if (settings.theme === 'dark') {
+      const video = videoRef.current;
+      if (video) {
+        video.style.opacity = '0';
+        if (video.readyState >= 2) {
+          video.play()
+            .then(() => {
+              animateOpacity(1, 500);
+            })
+            .catch((err) => console.log("Video looper delayed setup:", err));
+        }
+      }
+    }
+    return () => {
+      if (videoFadeFrameRef.current) {
+        cancelAnimationFrame(videoFadeFrameRef.current);
+      }
+    };
+  }, [settings.theme]);
+
+  // Canvas Animation Logic
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -10,12 +110,13 @@ export const CozyCabinBackground = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationId: number;
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
     // Parallax mouse offset
     const parallax = { x: 0, y: 0 };
+
+    let animationId: number;
 
     // Fireflies particles
     const fireflies: Array<{
@@ -398,9 +499,29 @@ export const CozyCabinBackground = () => {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-    />
+    <div className="absolute inset-0 w-full h-full overflow-hidden z-0 pointer-events-none no-print">
+      {settings.theme === 'dark' && (
+        <>
+          <video
+            ref={videoRef}
+            className="absolute top-0 left-0 w-full h-full object-cover translate-y-[17%] transition-none pointer-events-none"
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_115001_bcdaa3b4-03de-47e7-ad63-ae3e392c32d4.mp4"
+            muted
+            playsInline
+            autoPlay
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleEnded}
+            onLoadedData={handleLoadedData}
+            style={{ opacity: 0 }}
+          />
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80" />
+          <div className="absolute inset-0 bg-radial-vignette pointer-events-none" />
+        </>
+      )}
+    </div>
   );
 };

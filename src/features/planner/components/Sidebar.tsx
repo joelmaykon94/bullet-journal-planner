@@ -1,12 +1,9 @@
 import { Sliders, CheckSquare, Calendar, BookOpen, Brain, FolderOpen, Settings, LayoutGrid, CalendarDays } from 'lucide-react';
+import { useBujo } from '../../../context/BujoContext';
 
-interface SidebarProps {
-  userXp: number;
-  activeTab: string;
-  setActiveTab: (tab: any) => void;
-}
+export const Sidebar = () => {
+  const { userXp, activeTab, setActiveTab } = useBujo();
 
-export const Sidebar = ({ userXp, activeTab, setActiveTab }: SidebarProps) => {
   return (
     <aside className="hidden md:flex md:flex-col w-56 flex-shrink-0 gap-2.5 no-print">
       {/* Sidebar gamification card */}
@@ -62,7 +59,7 @@ export const Sidebar = ({ userXp, activeTab, setActiveTab }: SidebarProps) => {
         }`}
       >
         <CalendarDays className="w-4 h-4" />
-        <span>📅 Monthly Log</span>
+        <span>🗓️ Monthly Log</span>
       </button>
       <button
         onClick={() => setActiveTab('daily_spread')}
@@ -73,7 +70,7 @@ export const Sidebar = ({ userXp, activeTab, setActiveTab }: SidebarProps) => {
         }`}
       >
         <Calendar className="w-4 h-4" />
-        <span>📅 Timeline</span>
+        <span>⏱️ spread Diário</span>
       </button>
       <button
         onClick={() => setActiveTab('future_log')}
@@ -84,7 +81,7 @@ export const Sidebar = ({ userXp, activeTab, setActiveTab }: SidebarProps) => {
         }`}
       >
         <BookOpen className="w-4 h-4" />
-        <span>📅 Future Log</span>
+        <span>📖 Future Log</span>
       </button>
       <button
         onClick={() => setActiveTab('brain_dump')}
@@ -95,7 +92,7 @@ export const Sidebar = ({ userXp, activeTab, setActiveTab }: SidebarProps) => {
         }`}
       >
         <Brain className="w-4 h-4" />
-        <span>🧠 Brain Dump</span>
+        <span>🧠 Despejo Mente</span>
       </button>
       <button
         onClick={() => setActiveTab('collections')}
@@ -106,7 +103,7 @@ export const Sidebar = ({ userXp, activeTab, setActiveTab }: SidebarProps) => {
         }`}
       >
         <FolderOpen className="w-4 h-4" />
-        <span>📚 Biblioteca</span>
+        <span>📁 Coleções</span>
       </button>
       <button
         onClick={() => setActiveTab('settings')}
