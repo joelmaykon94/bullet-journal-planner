@@ -40,8 +40,8 @@ updated: 2026-06-15T19:48:00Z
 **Requirements:** SPEC Goal 2, SPEC Goal 4
 
 **Plans:**
-- [ ] Plan 2.1: Extract lofi/rain/wind procedural audio logic to `src/hooks/useAmbientAudio.ts`.
-- [ ] Plan 2.2: Refactor sound controls in UI components to consume the new hook.
+- [ ] Plan 2.1: Extract Procedural Audio Synthesis to Custom Hook
+- [ ] Plan 2.2: Refactor UI Components to Consume Ambient Audio Hook
 
 ---
 
