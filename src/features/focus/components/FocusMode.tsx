@@ -22,9 +22,9 @@ export const FocusMode = () => {
   });
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-8 py-6 max-w-3xl mx-auto w-full animate-fade-in">
+    <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center justify-center gap-4 md:gap-8 py-2 md:py-6 max-w-3xl mx-auto w-full animate-fade-in overflow-y-auto max-h-full scroll-smooth pr-1">
       {/* Left side: Pomodoro Clock */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl w-full">
+      <div className="flex-1 flex flex-col items-center justify-center p-5 md:p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl w-full">
         <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 ${
           pomodoroMode === 'work' ? 'bg-bujo-highlight/10 text-bujo-highlight' : 'bg-bujo-accent/10 text-bujo-accent'
         }`}>
@@ -32,7 +32,7 @@ export const FocusMode = () => {
         </span>
 
         {/* Timer text */}
-        <div className="text-7xl font-mono font-bold tracking-tight mb-8">
+        <div className="text-5xl sm:text-6xl md:text-7xl font-mono font-bold tracking-tight mb-4 md:mb-8">
           {Math.floor(pomodoroTime / 60).toString().padStart(2, '0')}
           <span className="animate-pulse">:</span>
           {(pomodoroTime % 60).toString().padStart(2, '0')}
@@ -62,9 +62,9 @@ export const FocusMode = () => {
       </div>
 
       {/* Right side: ADHD Assistant (Max) & Current Hour Tasks */}
-      <div className="flex-1 flex flex-col gap-6 w-full">
+      <div className="flex-1 flex flex-col gap-4 md:gap-6 w-full">
         {/* Companion Card */}
-        <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md relative overflow-hidden flex flex-col gap-4 text-left shadow-lg">
+        <div className="p-4 md:p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md relative overflow-hidden flex flex-col gap-3.5 text-left shadow-lg">
           <div className="flex items-center gap-3">
             <span className="text-2xl" role="img" aria-label="guaxinim">🦝</span>
             <div>
@@ -89,7 +89,7 @@ export const FocusMode = () => {
         </div>
 
         {/* Hour Tasks Panel */}
-        <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md shadow-lg text-left flex-1 flex flex-col">
+        <div className="p-4 md:p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md shadow-lg text-left flex-1 flex flex-col min-h-[180px] md:min-h-0">
           <span className="text-xs font-bold text-zinc-450 uppercase tracking-widest flex items-center gap-2 mb-4">
             <Activity className="w-4 h-4 text-bujo-highlight" />
             Tarefas Pessoais Marcadas para Esta Hora
