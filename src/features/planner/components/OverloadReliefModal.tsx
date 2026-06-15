@@ -81,7 +81,7 @@ export const OverloadReliefModal = () => {
     if (aiEngine === 'local_llm' && localLLMState === 'ready' && aiWorkerRef.current) {
       aiWorkerRef.current.postMessage({
         type: 'generate',
-        data: { text: counselPrompt, maxTokens: 120 }
+        data: { text: counselPrompt, maxTokens: 120, mode: 'advise' }
       });
     } else {
       // Use fallback counsel

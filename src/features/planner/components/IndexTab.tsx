@@ -203,13 +203,7 @@ export const IndexTab = () => {
           </div>
 
           {/* Row B: Habit Tracker */}
-          <HabitTracker
-            items={items}
-            aiEngine={aiEngine}
-            aiWorkerRef={aiWorkerRef}
-            localLLMState={localLLMState}
-            showToast={showToast}
-          />
+          <HabitTracker />
         </div>
 
         {/* Right Area (Lg:col-span-4) -> Unified Persona & Focus Companion */}

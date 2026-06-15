@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Check, CheckCircle2, Activity } from 'lucide-react';
-import { BujoItem } from '../../../types';
-
-interface HabitTrackerProps {
-  items: BujoItem[];
-  aiEngine: 'local_llm' | 'local';
-  aiWorkerRef: React.MutableRefObject<Worker | null>;
-  localLLMState: string;
-  showToast: (msg: string) => void;
-}
+import { useBujo } from '../../../context/BujoContext';
 
 interface HabitLog {
   [habitName: string]: {
@@ -16,13 +8,15 @@ interface HabitLog {
   };
 }
 
-export const HabitTracker = ({
-  items,
-  aiEngine,
-  aiWorkerRef,
-  localLLMState,
-  showToast
-}: HabitTrackerProps) => {
+export const HabitTracker = () => {
+  const {
+    items,
+    aiEngine,
+    aiWorkerRef,
+    localLLMState,
+    showToast,
+    setUserXp
+  } = useBujo();
   const [habits, setHabits] = useState<string[]>(() => {
     const saved = localStorage.getItem('bujo_habits');
     if (saved) return JSON.parse(saved);
@@ -149,7 +143,7 @@ export const HabitTracker = ({
     if (aiEngine === 'local_llm' && localLLMState === 'ready' && aiWorkerRef.current) {
       aiWorkerRef.current.postMessage({
         type: 'generate',
-        data: { text: habitsPrompt, maxTokens: 80 }
+        data: { text: habitsPrompt, maxTokens: 80, mode: 'advise' }
       });
     } else {
       setTimeout(() => {
@@ -159,17 +153,27 @@ export const HabitTracker = ({
   };
 
   const toggleHabitDate = (habit: string, dateStr: string) => {
+    let isChecking = false;
     setLogs(prev => {
       const habitLogs = prev[habit] || {};
       const currentVal = habitLogs[dateStr] || false;
+      isChecking = !currentVal;
       return {
         ...prev,
         [habit]: {
           ...habitLogs,
-          [dateStr]: !currentVal
+          [dateStr]: isChecking
         }
       };
     });
+
+    if (isChecking) {
+      setUserXp(prev => prev + 10);
+      showToast(`🎯 Hábito "${habit}" concluído: +10 XP`);
+    } else {
+      setUserXp(prev => Math.max(0, prev - 10));
+      showToast(`↩️ Hábito desmarcado: -10 XP`);
+    }
   };
 
   const formatDayOfWeek = (dateStr: string) => {
