@@ -46,15 +46,15 @@ updated: 2026-06-15T19:48:00Z
 ---
 
 ### Phase 3: Core State & State Hooks Extraction
-**Status:** ⬜ Not Started
+**Status:** ✅ Complete
 **Objective:** Move all bullet log, collections, settings, and Pomodoro timer states from `App.tsx` to modular hooks.
 **Depends on:** Phase 2
 **Requirements:** SPEC Goal 1, SPEC Goal 4
 
 **Plans:**
-- [ ] Plan 3.1: Extract Items and Settings State Hooks
-- [ ] Plan 3.2: Extract Collections and Custom Lists State Hook
-- [ ] Plan 3.3: Extract Pomodoro Timer State Hook
+- [x] Plan 3.1: Extract Items and Settings State Hooks
+- [x] Plan 3.2: Extract Collections and Custom Lists State Hook
+- [x] Plan 3.3: Extract Pomodoro Timer State Hook
 
 ---
 
@@ -76,7 +76,7 @@ updated: 2026-06-15T19:48:00Z
 |-------|--------|-------|----------|
 | 1 | ✅ | 2/2 | 2026-06-15 |
 | 2 | ✅ | 2/2 | 2026-06-15 |
-| 3 | ⬜ | 0/3 | — |
+| 3 | ✅ | 3/3 | 2026-06-15 |
 | 4 | ⬜ | 0/2 | — |
 
 ---
@@ -87,5 +87,5 @@ updated: 2026-06-15T19:48:00Z
 |-------|---------|-----------|----------|
 | 1 | 2026-06-15 | 2026-06-15 | 10m |
 | 2 | 2026-06-15 | 2026-06-15 | 5m |
-| 3 | — | — | — |
+| 3 | 2026-06-15 | 2026-06-15 | 5m |
 | 4 | — | — | — |
