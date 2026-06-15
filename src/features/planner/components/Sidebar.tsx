@@ -1,0 +1,124 @@
+import { Sliders, CheckSquare, Calendar, BookOpen, Brain, FolderOpen, Settings, LayoutGrid, CalendarDays } from 'lucide-react';
+
+interface SidebarProps {
+  userXp: number;
+  activeTab: string;
+  setActiveTab: (tab: any) => void;
+}
+
+export const Sidebar = ({ userXp, activeTab, setActiveTab }: SidebarProps) => {
+  return (
+    <aside className="hidden md:flex md:flex-col w-56 flex-shrink-0 gap-2.5 no-print">
+      {/* Sidebar gamification card */}
+      <div className="p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 flex flex-col gap-2 mb-2 text-bujo-text select-none">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Progresso</span>
+          <span className="text-xs font-bold text-bujo-highlight font-mono">Nível {Math.floor(userXp / 100) + 1}</span>
+        </div>
+        <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+          <div className="bg-bujo-highlight h-full rounded-full transition-all duration-300" style={{ width: `${userXp % 100}%` }}></div>
+        </div>
+        <span className="text-[9px] text-zinc-400 text-right block font-mono">{userXp % 100} / 100 XP</span>
+      </div>
+      <button
+        onClick={() => setActiveTab('indice')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'indice' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <Sliders className="w-4 h-4" />
+        <span>📑 Índice</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('daily_log')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'daily_log' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <CheckSquare className="w-4 h-4" />
+        <span>📝 Daily Log</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('weekly_log')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'weekly_log' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <LayoutGrid className="w-4 h-4" />
+        <span>📅 Weekly Log</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('monthly_log')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'monthly_log' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <CalendarDays className="w-4 h-4" />
+        <span>📅 Monthly Log</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('daily_spread')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'daily_spread' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <Calendar className="w-4 h-4" />
+        <span>📅 Timeline</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('future_log')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'future_log' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <BookOpen className="w-4 h-4" />
+        <span>📅 Future Log</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('brain_dump')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'brain_dump' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <Brain className="w-4 h-4" />
+        <span>🧠 Brain Dump</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('collections')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'collections' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <FolderOpen className="w-4 h-4" />
+        <span>📚 Biblioteca</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('settings')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'settings' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <Settings className="w-4 h-4" />
+        <span>⚙️ Ajustes</span>
+      </button>
+    </aside>
+  );
+};
