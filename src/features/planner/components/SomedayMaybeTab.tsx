@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { BujoItem } from '../../../types';
+import { DateInput } from '../../../components/common/DateInput';
 
 // Categories for Someday/Maybe items
 const CATEGORIES = [
@@ -414,11 +415,10 @@ export const SomedayMaybeTab = () => {
 
                           {/* Quick Calendar Migration */}
                           <div className="flex items-center gap-1 bg-white/40 dark:bg-black/10 p-0.5 rounded-lg border border-zinc-400/20">
-                            <input
-                              type="date"
+                            <DateInput
                               value={scheduleDates[item.id] || ''}
-                              onChange={(e) => setScheduleDates(prev => ({ ...prev, [item.id]: e.target.value }))}
-                              className="bg-transparent border-none outline-none text-[8.5px] p-0 font-mono w-14 text-bujo-text focus:ring-0"
+                              onChange={(val) => setScheduleDates(prev => ({ ...prev, [item.id]: val }))}
+                              inputClassName="text-[8.5px] w-14"
                             />
                             <button
                               onClick={() => {
@@ -592,16 +592,15 @@ export const SomedayMaybeTab = () => {
 
                                 {/* Calendar picker sticker */}
                                 <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-white/5 px-1 rounded border border-zinc-300/30">
-                                  <input
-                                    type="date"
-                                    onChange={(e) => {
-                                      if (e.target.value) {
-                                        handleScheduleSomedayItem(item.id, e.target.value);
+                                  <DateInput
+                                    value=""
+                                    onChange={(val) => {
+                                      if (val) {
+                                        handleScheduleSomedayItem(item.id, val);
                                       }
                                     }}
-                                    className="bg-transparent border-none outline-none text-[8px] p-0 font-mono w-12 text-bujo-text focus:ring-0"
+                                    inputClassName="text-[8px] w-12"
                                   />
-                                  <Calendar className="w-2.5 h-2.5 text-zinc-500" />
                                 </div>
 
                                 <button

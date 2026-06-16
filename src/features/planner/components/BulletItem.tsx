@@ -3,6 +3,7 @@ import { Edit, Trash2, ChevronUp, ChevronDown, Check, ChevronRight, ChevronLeft,
 import { BujoItem } from '../../../types';
 import { useBujo } from '../../../context/BujoContext';
 import { BUJO_ICONS } from './DailyLogTab';
+import { DateInput } from '../../../components/common/DateInput';
 
 interface BulletItemProps {
   item: BujoItem;
@@ -397,11 +398,11 @@ export const BulletItem = ({
                 <div className="flex flex-col sm:flex-row gap-2.5">
                   <div className="flex-1 flex flex-col gap-1">
                     <span className="text-[11px] text-zinc-400 font-bold">Data:</span>
-                    <input
-                      type="date"
+                    <DateInput
                       value={localDate}
-                      onChange={(e) => setLocalDate(e.target.value)}
+                      onChange={setLocalDate}
                       className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-350 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none"
+                      inputClassName="w-full"
                     />
                   </div>
                   <div className="flex-1 flex flex-col gap-1">

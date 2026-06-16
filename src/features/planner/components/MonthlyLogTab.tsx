@@ -5,6 +5,7 @@ import { DayTasksModal } from './DayTasksModal';
 import { BulletItem } from './BulletItem';
 import { BUJO_ICONS } from './DailyLogTab';
 import { getLocalDateString } from '../../../utils/plannerUtils';
+import { DateInput } from '../../../components/common/DateInput';
 
 interface QuickAddFormProps {
   activeCalendarDate: string;
@@ -166,11 +167,10 @@ const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveSta
         {/* Date picker */}
         <div className="flex items-center gap-1 bg-zinc-300/40 dark:bg-zinc-955 px-1.5 py-0.5 rounded border border-zinc-200/40 dark:border-white/5">
           <span className="text-zinc-500 text-[8.5px] uppercase font-mono">Data:</span>
-          <input
-            type="date"
+          <DateInput
             value={activeCalendarDate}
-            onChange={(e) => setActiveCalendarDate(e.target.value)}
-            className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-[9.5px] font-mono py-0 w-24"
+            onChange={setActiveCalendarDate}
+            inputClassName="text-[9.5px] w-20"
           />
         </div>
       </div>

@@ -3,6 +3,7 @@ import { Download, Printer, ChevronLeft, ChevronRight, X, Search, ArrowDownAZ } 
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
 import { getLocalDateString } from '../../../utils/plannerUtils';
+import { DateInput } from '../../../components/common/DateInput';
 
 export const BUJO_ICONS = [
   { emoji: '📝', name: 'nota', tooltip: 'Anotação / Nota' },
@@ -653,11 +654,9 @@ export const DailyLogTab = () => {
               <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-zinc-200/40 dark:border-white/5">
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Data:</span>
-                  <input
-                    type="date"
+                  <DateInput
                     value={standardDate}
-                    onChange={(e) => setStandardDate(e.target.value)}
-                    className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-mono py-0"
+                    onChange={setStandardDate}
                   />
                 </div>
                 
