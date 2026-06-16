@@ -103,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearConfig = () => {
     localStorage.removeItem('bujo_supabase_config');
+    sessionStorage.removeItem('bujo_synced_reload');
     setConfig(null);
     setSupabase(null);
     setUser(null);
@@ -134,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     if (!supabase) return { error: new Error('Supabase client not initialized') };
     const { error } = await supabase.auth.signOut();
+    sessionStorage.removeItem('bujo_synced_reload');
     return { error };
   };
 

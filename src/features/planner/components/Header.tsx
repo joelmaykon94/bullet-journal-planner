@@ -1,4 +1,4 @@
-import { CheckSquare, Sparkles, Download, Trash2, Settings } from 'lucide-react';
+import { CheckSquare, Sparkles, Download, Trash2, Settings, Cloud, CloudOff } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 export const Header = () => {
@@ -10,7 +10,8 @@ export const Header = () => {
     localLLMState,
     setPomodoroRunning,
     showToast,
-    setShowAIDownloadModal
+    setShowAIDownloadModal,
+    syncStatus
   } = useBujo();
 
   const triggerPWAInstall = () => {
@@ -35,6 +36,39 @@ export const Header = () => {
         <div className="flex items-center gap-2">
           {!focoActive && (
             <>
+              {/* Cloud Sync Status Badge */}
+              <div 
+                className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-all ${
+                  syncStatus === 'synced'
+                    ? 'bg-emerald-600/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-600/20'
+                    : syncStatus === 'syncing'
+                    ? 'bg-amber-600/10 text-amber-500 border-amber-500/20 hover:bg-amber-600/20 animate-pulse'
+                    : syncStatus === 'error'
+                    ? 'bg-red-600/10 text-red-500 border-red-500/20 hover:bg-red-600/20'
+                    : 'bg-zinc-200/40 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10'
+                }`}
+                title={
+                  syncStatus === 'synced'
+                    ? 'Dados salvos na nuvem (Supabase)'
+                    : syncStatus === 'syncing'
+                    ? 'Sincronizando dados com o Supabase...'
+                    : syncStatus === 'error'
+                    ? 'Erro ao sincronizar com o Supabase'
+                    : 'Modo Offline: Salvo localmente no navegador'
+                }
+              >
+                {syncStatus === 'synced' ? (
+                  <Cloud className="w-3.5 h-3.5 text-emerald-500" />
+                ) : syncStatus === 'offline' ? (
+                  <CloudOff className="w-3.5 h-3.5 text-zinc-400" />
+                ) : (
+                  <Cloud className={`w-3.5 h-3.5 ${syncStatus === 'error' ? 'text-red-500' : 'text-amber-500'}`} />
+                )}
+                <span className="hidden md:inline">
+                  {syncStatus === 'synced' ? 'Nuvem' : syncStatus === 'syncing' ? 'Sincronizando' : syncStatus === 'error' ? 'Erro Sync' : 'Offline'}
+                </span>
+              </div>
+
               {/* AI Status Badge Button */}
               <button
                 id="tutorial-ai-badge"

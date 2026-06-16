@@ -14,7 +14,8 @@ export const SettingsTab = () => {
     localLLMError,
     initLocalLLMWorker,
     askConfirmation,
-    showToast
+    showToast,
+    syncStatus
   } = useBujo();
 
   const { user, signOut, clearConfig } = useAuth();
@@ -323,6 +324,18 @@ export const SettingsTab = () => {
             <div>
               <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wider">Usuário Logado</span>
               <span className="text-sm font-semibold text-bujo-text font-sans">{user?.email}</span>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className={`w-2 h-2 rounded-full ${
+                  syncStatus === 'synced' ? 'bg-emerald-500' :
+                  syncStatus === 'syncing' ? 'bg-amber-500 animate-pulse' :
+                  syncStatus === 'error' ? 'bg-red-500' : 'bg-zinc-400'
+                }`} />
+                <span className="text-[10.5px] text-zinc-400 font-mono">
+                  {syncStatus === 'synced' ? 'Backup na nuvem ativo e sincronizado ☁️' :
+                   syncStatus === 'syncing' ? 'Sincronizando dados com nuvem...' :
+                   syncStatus === 'error' ? 'Erro ao conectar à nuvem' : 'Modo offline (salvando localmente)'}
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex gap-2 w-full sm:w-auto shrink-0">
