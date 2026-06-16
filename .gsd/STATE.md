@@ -1,16 +1,16 @@
 ---
-updated: 2026-06-16T11:25:00Z
+updated: 2026-06-16T12:05:00Z
 ---
 
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 11 - Brag Document Integration
+**Phase:** 12 - Smart Add NLP Input
 **Status:** complete
 
 ## Last Action
 
-Completed Phase 11 with Plan 11.1. Refined the Brag Document markdown template based on industry standards. Implemented a fully functional Brag Document UI within the `KnowledgeEvolutionChart` component, allowing users to add daily achievements that boost their subject XP. Reordered the Index layout to place the Quick Access menu at the top and the Knowledge Evolution chart immediately below the Welcome/KPI banner. Verified functionality and build integrity.
+Completed Phase 12 with Plan 12.1. Implemented a Todoist-inspired Natural Language Processing (NLP) parser (`smartParser.ts`) that extracts relative dates, times, and priority codes from user input. Integrated this parser into `useBujoItems` so tasks are automatically assigned the correct metadata and the text is cleaned. Updated UI placeholders to hint at the new capability.
 
 ## Next Steps
 
@@ -34,4 +34,4 @@ None
 
 ## Session Context
 
-The user is focused on continuous career improvement and usability, recently prioritizing tools that aid in performance reviews and goal tracking.
+The user is focused on productivity enhancements, specifically rapid task entry mimicking established tools like Todoist to reduce friction in daily planning.

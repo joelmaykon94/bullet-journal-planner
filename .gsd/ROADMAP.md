@@ -82,6 +82,13 @@ updated: 2026-06-16T11:20:00Z
 **Plans**:
 - [x] Plan 11.1: Brag Document Integration, Sync & UI Layout.
 
+### Phase 12: Smart Add NLP Input
+**Status**: ✅ Complete
+**Objective**: Implement a Todoist-style natural language parser for rapid task entry.
+
+**Plans**:
+- [x] Plan 12.1: Todoist-style Smart Add NLP Parser.
+
 ---
 
 ## Progress Summary
@@ -99,6 +106,7 @@ updated: 2026-06-16T11:20:00Z
 | 9 | ✅ | 6/6 | 2026-06-16 |
 | 10 | ✅ | 1/1 | 2026-06-16 |
 | 11 | ✅ | 1/1 | 2026-06-16 |
+| 12 | ✅ | 1/1 | 2026-06-16 |
 
 ---
 
@@ -107,5 +115,5 @@ updated: 2026-06-16T11:20:00Z
 | Phase | Started | Completed | Duration |
 |-------|---------|-----------|----------|
 | 1-5 | 2026-06-15 | 2026-06-15 | 1 day |
-| 6-11 | 2026-06-16 | 2026-06-16 | 1 day |
+| 6-12 | 2026-06-16 | 2026-06-16 | 1 day |
 
