@@ -291,6 +291,7 @@ export const BulletItem = ({
                       👥 Delegado: <strong className="text-bujo-highlight">{item.delegatedTo}</strong>
                     </span>
                   )}
+                </div>
                 {item.time && (
                   <span className="text-[10px] text-zinc-500 font-mono mt-0.5">Agendado para: {item.time}</span>
                 )}
