@@ -15,9 +15,7 @@ const GoogleIcon = () => (
 export const AuthScreen = () => {
   const {
     needsConfig,
-    config,
     configError,
-    saveConfig,
     signIn,
     signUp,
     resetPassword,
@@ -28,8 +26,8 @@ export const AuthScreen = () => {
 
   const { showToast } = useBujo();
 
-  // Screen modes: 'login' | 'signup' | 'forgot' | 'recovery' | 'config'
-  const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'recovery' | 'config'>('login');
+  // Screen modes: 'login' | 'signup' | 'forgot' | 'recovery'
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'recovery'>('login');
   
   // Inputs
   const [email, setEmail] = useState('');
@@ -37,10 +35,6 @@ export const AuthScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-
-  // Supabase Manual Config
-  const [supabaseUrl, setSupabaseUrl] = useState(config?.url || '');
-  const [supabaseKey, setSupabaseKey] = useState(config?.key || '');
 
   // Detect recovery mode from URL
   useEffect(() => {
@@ -59,15 +53,6 @@ export const AuthScreen = () => {
     return () => window.removeEventListener('hashchange', handleUrlParsing);
   }, []);
 
-  // Set mode to config if credentials are missing
-  useEffect(() => {
-    if (needsConfig) {
-      setMode('config');
-    } else if (mode === 'config' && !needsConfig) {
-      setMode('login');
-    }
-  }, [needsConfig]);
-
   // Password Validation Metrics
   const passwordCriteria = {
     length: password.length >= 8,
@@ -81,22 +66,12 @@ export const AuthScreen = () => {
     passedCriteriaCount === 3 ? 'Média 👍' :
     passedCriteriaCount === 2 ? 'Fraca ⚠️' : 'Muito Fraca 🚨';
 
-  const handleConfigSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const url = supabaseUrl.trim();
-    const key = supabaseKey.trim();
-    
-    if (!url || !key) {
-      showToast('⚠️ URL e Anon Key são obrigatórios!');
-      return;
-    }
-    
-    saveConfig(url, key);
-    showToast('⚙️ Configurações do Supabase salvas com sucesso!');
-  };
-
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (needsConfig) {
+      showToast('⚠️ Erro: Banco de dados não configurado no .env!');
+      return;
+    }
     if (!email.trim() || !password) {
       showToast('⚠️ Preencha todos os campos!');
       return;
@@ -115,6 +90,10 @@ export const AuthScreen = () => {
 
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (needsConfig) {
+      showToast('⚠️ Erro: Banco de dados não configurado no .env!');
+      return;
+    }
     if (!email.trim() || !password || !confirmPassword) {
       showToast('⚠️ Preencha todos os campos!');
       return;
@@ -210,112 +189,30 @@ export const AuthScreen = () => {
         
         {/* Header Section */}
         <div className="flex flex-col items-center text-center gap-2 relative">
-          
-          {/* Supabase Config Toggle Button */}
-          {!needsConfig && (
-            <button
-              onClick={() => setMode(mode === 'config' ? 'login' : 'config')}
-              className="absolute right-0 top-0 p-2 rounded-xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/20 dark:border-white/10 hover:bg-zinc-200/50 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-all cursor-pointer"
-              title="Configurações do Banco de Dados"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-          )}
-
           <div className="p-3 rounded-full bg-bujo-highlight/10 border border-bujo-highlight/20 text-bujo-highlight shadow-sm">
             <CheckSquare className="w-8 h-8" />
           </div>
 
           <h1 className="text-xl font-bold tracking-tight text-bujo-text mt-1">BuJo Focus</h1>
           <p className="text-[10px] text-zinc-550 uppercase tracking-widest">
-            {mode === 'login' && 'Acesso Seguro'}
+            {mode === 'login' && 'Transformando o caos em foco'}
             {mode === 'signup' && 'Criar Nova Conta'}
             {mode === 'forgot' && 'Recuperar Acesso'}
             {mode === 'recovery' && 'Redefinir Senha'}
-            {mode === 'config' && 'Conectar Banco de Dados'}
           </p>
         </div>
 
-        {/* 1. CONFIGURATION MODE */}
-        {mode === 'config' && (
-          <form onSubmit={handleConfigSubmit} className="flex flex-col gap-4">
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] leading-relaxed flex gap-2.5 items-start">
-              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-              <div>
-                <strong>Requer Supabase:</strong> Insira a URL e a Anon Key do seu projeto Supabase para ativar a segurança de acesso e o login com conta Google.
-              </div>
+        {needsConfig && (
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] leading-relaxed flex gap-2.5 items-start">
+            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+            <div>
+              <strong>Configuração Necessária:</strong> O banco de dados (Supabase) não foi configurado corretamente no arquivo <code>.env</code>. O login e sincronização estão desabilitados.
             </div>
-
-            {configError && (
-              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-650 dark:text-red-400 text-[11px] leading-relaxed flex gap-2.5 items-start">
-                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                <div>
-                  <strong>Erro de Conexão:</strong> {configError}
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10.5px] font-bold text-zinc-500 uppercase pl-1">Supabase URL</label>
-              <div className="relative">
-                <Settings className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                <input
-                  type="text"
-                  placeholder="https://xxxx.supabase.co"
-                  value={supabaseUrl}
-                  onChange={(e) => setSupabaseUrl(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-zinc-250/20 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 text-bujo-text placeholder-zinc-500 focus:outline-none focus:border-bujo-highlight/50 transition-all font-sans"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10.5px] font-bold text-zinc-500 uppercase pl-1">Supabase Anon Key</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                <input
-                  type="password"
-                  placeholder="eyJhbGciOi..."
-                  value={supabaseKey}
-                  onChange={(e) => setSupabaseKey(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-zinc-250/20 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 text-bujo-text placeholder-zinc-500 focus:outline-none focus:border-bujo-highlight/50 transition-all font-sans"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-3 bg-bujo-highlight text-white text-xs font-bold rounded-2xl hover:opacity-95 shadow-md shadow-bujo-highlight/15 transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Salvar e Inicializar
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setOfflineMode(true);
-                showToast('📴 Modo offline ativado localmente!');
-              }}
-              className="w-full py-3 bg-zinc-200/40 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 text-xs font-bold rounded-2xl hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              Usar Modo Offline (Sem Nuvem)
-            </button>
-
-            {!needsConfig && (
-              <button
-                type="button"
-                onClick={() => setMode('login')}
-                className="w-full py-3 bg-zinc-200/40 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 text-xs font-bold rounded-2xl hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Cancelar
-              </button>
-            )}
-          </form>
+          </div>
         )}
 
         {/* 2. LOGIN MODE */}
+
         {mode === 'login' && (
           <div className="flex flex-col gap-5">
             <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4">

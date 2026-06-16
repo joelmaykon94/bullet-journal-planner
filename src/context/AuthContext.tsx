@@ -98,23 +98,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Load configuration from env or localStorage
+  // Load configuration from env only
   useEffect(() => {
-    let url = import.meta.env.VITE_SUPABASE_URL || '';
-    let key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-    if (!url || !key) {
-      const saved = localStorage.getItem('bujo_supabase_config');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          url = parsed.url;
-          key = parsed.key;
-        } catch (e) {
-          console.error('Error parsing Supabase config:', e);
-        }
-      }
-    }
+    const url = import.meta.env.VITE_SUPABASE_URL || '';
+    const key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
     if (url && key) {
       initSupabase(url, key);
@@ -126,21 +113,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const saveConfig = (url: string, key: string) => {
-    if (!url || !key) return;
-    localStorage.setItem('bujo_supabase_config', JSON.stringify({ url, key }));
-    setConfig({ url, key });
-    initSupabase(url, key);
+  const saveConfig = (_url: string, _key: string) => {
+    // Disabled: only via env
+    console.warn('saveConfig is disabled. Use environment variables.');
   };
 
   const clearConfig = () => {
-    localStorage.removeItem('bujo_supabase_config');
     sessionStorage.removeItem('bujo_synced_reload');
-    setConfig(null);
     setSupabase(null);
     setUser(null);
     setSession(null);
-    setNeedsConfig(true);
+    // Note: needsConfig will remain true if env vars are missing
   };
 
   const signUp = async (email: string, password: string, redirectTo?: string) => {
@@ -206,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         needsConfig,
         config,
         configError,
-        signUp,
+      signUp,
         signIn,
         signOut,
         resetPassword,
