@@ -1,106 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useBujo } from '../../context/BujoContext';
+import hashiraGif from '../../assets/hashira.gif';
 
 export const CozyCabinBackground = () => {
   const { settings } = useBujo();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const videoFadeFrameRef = useRef<number | null>(null);
-  const fadingOutRef = useRef<boolean>(false);
-
-  // Video looping engine logic
-  const animateOpacity = (targetOpacity: number, duration: number, callback?: () => void) => {
-    if (videoFadeFrameRef.current) {
-      cancelAnimationFrame(videoFadeFrameRef.current);
-    }
-    const video = videoRef.current;
-    if (!video) return;
-
-    const startOpacity = parseFloat(video.style.opacity || '0');
-    const startTime = performance.now();
-
-    const step = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const currentOpacity = startOpacity + (targetOpacity - startOpacity) * progress;
-      video.style.opacity = currentOpacity.toString();
-
-      if (progress < 1) {
-        videoFadeFrameRef.current = requestAnimationFrame(step);
-      } else {
-        videoFadeFrameRef.current = null;
-        if (callback) callback();
-      }
-    };
-
-    videoFadeFrameRef.current = requestAnimationFrame(step);
-  };
-
-  const handleTimeUpdate = () => {
-    const video = videoRef.current;
-    if (!video || !video.duration) return;
-
-    const remainingTime = video.duration - video.currentTime;
-    if (remainingTime <= 0.55 && !fadingOutRef.current) {
-      fadingOutRef.current = true;
-      animateOpacity(0, 500);
-    }
-  };
-
-  const handleEnded = () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.style.opacity = '0';
-    setTimeout(() => {
-      fadingOutRef.current = false;
-      video.currentTime = 0;
-      video.play()
-        .then(() => {
-          animateOpacity(1, 500);
-        })
-        .catch((err) => {
-          console.error("Video loop autoplay failed:", err);
-          animateOpacity(1, 500);
-        });
-    }, 100);
-  };
-
-  const handleLoadedData = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.style.opacity = '0';
-    video.play()
-      .then(() => {
-        animateOpacity(1, 500);
-      })
-      .catch((err) => {
-        console.error("Video autoplay on load failed:", err);
-        animateOpacity(1, 500);
-      });
-  };
-
-  useEffect(() => {
-    if (settings.theme === 'dark') {
-      const video = videoRef.current;
-      if (video) {
-        video.style.opacity = '0';
-        if (video.readyState >= 2) {
-          video.play()
-            .then(() => {
-              animateOpacity(1, 500);
-            })
-            .catch((err) => console.log("Video looper delayed setup:", err));
-        }
-      }
-    }
-    return () => {
-      if (videoFadeFrameRef.current) {
-        cancelAnimationFrame(videoFadeFrameRef.current);
-      }
-    };
-  }, [settings.theme]);
 
   // Canvas Animation Logic
   useEffect(() => {
@@ -118,8 +22,8 @@ export const CozyCabinBackground = () => {
 
     let animationId: number;
 
-    // Fireflies particles
-    const fireflies: Array<{
+    // Sakura petals (replacing fireflies)
+    const petals: Array<{
       x: number;
       y: number;
       vx: number;
@@ -139,7 +43,7 @@ export const CozyCabinBackground = () => {
       alpha: number;
     }> = [];
 
-    // Chimney sparks (embers) mouse trail & chimney emissions
+    // Blade aura slashes (replacing chimney sparks)
     const sparks: Array<{
       x: number;
       y: number;
@@ -158,17 +62,17 @@ export const CozyCabinBackground = () => {
       { x: width * 0.4, y: height * 0.62, vx: 0.08, radiusX: 160, radiusY: 35 }
     ];
 
-    // Initialize 35 drifting fireflies
+    // Initialize 35 drifting sakura petals
     for (let i = 0; i < 35; i++) {
-      fireflies.push({
+      petals.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        size: Math.random() * 2 + 1,
+        vx: (Math.random() - 0.3) * 0.35,
+        vy: Math.random() * 0.35 + 0.25, // Drift downwards
+        size: Math.random() * 2.5 + 1.2,
         alpha: Math.random(),
         alphaSpeed: Math.random() * 0.01 + 0.005,
-        color: Math.random() > 0.5 ? 'rgba(163, 230, 53, 0.7)' : 'rgba(234, 179, 8, 0.7)'
+        color: Math.random() > 0.5 ? 'rgba(244, 63, 94, 0.7)' : 'rgba(251, 207, 232, 0.7)'
       });
     }
 
@@ -204,15 +108,20 @@ export const CozyCabinBackground = () => {
             const ratio = k / spawnCount;
             const px = lastMouseX + (mouse.x - lastMouseX) * ratio;
             const py = lastMouseY + (mouse.y - lastMouseY) * ratio;
+            
+            // Randomly choose between Flame (orange/red) or Water (blue) slashes based on mouse speed
+            const isFlame = Math.random() > 0.5;
             sparks.push({
               x: px,
               y: py,
-              vx: (Math.random() - 0.5) * 0.6,
-              vy: -Math.random() * 1.2 - 0.6,
+              vx: (Math.random() - 0.5) * 0.8,
+              vy: -Math.random() * 1.0 - 0.5,
               size: Math.random() * 2 + 1,
-              color: Math.random() > 0.4 ? 'rgba(251, 146, 60, 1)' : 'rgba(239, 68, 68, 1)',
-              life: 40,
-              maxLife: 40
+              color: isFlame 
+                ? (Math.random() > 0.4 ? 'rgba(251, 146, 60, 1)' : 'rgba(239, 68, 68, 1)')
+                : (Math.random() > 0.4 ? 'rgba(56, 189, 248, 1)' : 'rgba(37, 99, 235, 1)'),
+              life: 30,
+              maxLife: 30
             });
           }
         }
@@ -230,19 +139,23 @@ export const CozyCabinBackground = () => {
       parallax.y = 0;
     };
 
+    // Slash explosion on mouse click
     const handleMouseDown = (e: MouseEvent) => {
-      for (let k = 0; k < 15; k++) {
+      for (let k = 0; k < 20; k++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 2 + 0.8;
+        const speed = Math.random() * 3.5 + 1.2;
+        const isFlame = Math.random() > 0.4;
         sparks.push({
           x: e.clientX,
           y: e.clientY,
           vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 0.8,
-          size: Math.random() * 2.5 + 1,
-          color: Math.random() > 0.4 ? 'rgba(251, 191, 36, 1)' : 'rgba(249, 115, 22, 1)',
-          life: 45,
-          maxLife: 45
+          vy: Math.sin(angle) * speed - 0.5,
+          size: Math.random() * 2.5 + 1.2,
+          color: isFlame 
+            ? (Math.random() > 0.4 ? 'rgba(251, 191, 36, 1)' : 'rgba(249, 115, 22, 1)')
+            : (Math.random() > 0.4 ? 'rgba(14, 165, 233, 1)' : 'rgba(6, 182, 212, 1)'),
+          life: 40,
+          maxLife: 40
         });
       }
     };
@@ -261,104 +174,78 @@ export const CozyCabinBackground = () => {
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Sky Background Gradient
+      // Sky Background Gradient (Deep anime night sky)
       const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
-      skyGrad.addColorStop(0, '#030206');
-      skyGrad.addColorStop(0.6, '#080816');
-      skyGrad.addColorStop(1, '#1a1226');
+      skyGrad.addColorStop(0, '#06040b');
+      skyGrad.addColorStop(0.5, '#0c0b1e');
+      skyGrad.addColorStop(1, '#1b122b');
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, width, height);
 
       // Layer 1: Distant Hills
-      ctx.fillStyle = '#0a0d18';
+      ctx.fillStyle = '#0a0b16';
       ctx.beginPath();
       ctx.moveTo(0, height);
       ctx.quadraticCurveTo(
         width * 0.25, 
-        height * 0.65 + parallax.y * 0.2, 
+        height * 0.68 + parallax.y * 0.2, 
         width * 0.5, 
-        height * 0.72 + parallax.y * 0.2
+        height * 0.74 + parallax.y * 0.2
       );
       ctx.quadraticCurveTo(
         width * 0.75, 
-        height * 0.78 + parallax.y * 0.2, 
+        height * 0.8 + parallax.y * 0.2, 
         width, 
-        height * 0.68 + parallax.y * 0.2
+        height * 0.7 + parallax.y * 0.2
       );
       ctx.lineTo(width, height);
       ctx.closePath();
       ctx.fill();
 
-      // Layer 2: Midground Hills & Chalet
-      ctx.fillStyle = '#05070e';
+      // Layer 2: Midground Hills
+      ctx.fillStyle = '#05060d';
       ctx.beginPath();
       ctx.moveTo(0, height);
       ctx.quadraticCurveTo(
         width * 0.35, 
-        height * 0.78 + parallax.y * 0.45, 
+        height * 0.81 + parallax.y * 0.45, 
         width * 0.65, 
-        height * 0.75 + parallax.y * 0.45
+        height * 0.78 + parallax.y * 0.45
       );
       ctx.quadraticCurveTo(
         width * 0.85, 
-        height * 0.82 + parallax.y * 0.45, 
+        height * 0.84 + parallax.y * 0.45, 
         width, 
-        height * 0.76 + parallax.y * 0.45
+        height * 0.79 + parallax.y * 0.45
       );
       ctx.lineTo(width, height);
       ctx.closePath();
       ctx.fill();
 
-      // A-frame Cozy Chalet
+      // Pagoda / Shinto Gate silhouette (instead of A-frame cozy cabin)
       const cx = width * 0.65 + parallax.x * 0.45;
-      const cy = height * 0.76 + parallax.y * 0.45;
+      const cy = height * 0.79 + parallax.y * 0.45;
 
-      ctx.fillStyle = '#020305';
-      ctx.beginPath();
-      ctx.moveTo(cx - 35, cy);
-      ctx.lineTo(cx, cy - 60);
-      ctx.lineTo(cx + 35, cy);
-      ctx.closePath();
-      ctx.fill();
+      // Draw Shinto Torii Gate Silhouette
+      ctx.fillStyle = '#020204';
+      // Pillars
+      ctx.fillRect(cx - 20, cy - 35, 3.5, 35);
+      ctx.fillRect(cx + 17, cy - 35, 3.5, 35);
+      // Top beams
+      ctx.fillRect(cx - 28, cy - 35, 56, 4.5);
+      ctx.fillRect(cx - 24, cy - 40, 48, 3.5);
+      // Center tie beam
+      ctx.fillRect(cx - 20, cy - 26, 40, 2.5);
 
-      // Fireplace Flicker
-      const fireFlicker = Math.random();
-      const fireAlpha = 0.55 + fireFlicker * 0.25;
-      ctx.fillStyle = `rgba(249, 115, 22, ${fireAlpha})`;
-      ctx.beginPath();
-      ctx.rect(cx - 7, cy - 18, 14, 18);
-      ctx.fill();
-
-      ctx.fillStyle = '#070a14';
-      ctx.fillRect(cx - 5, cy - 3, 10, 3);
-
-      // Triangular loft window glow
-      ctx.fillStyle = `rgba(251, 191, 36, ${0.4 + Math.sin(Date.now() / 350) * 0.15})`;
-      ctx.beginPath();
-      ctx.moveTo(cx - 6, cy - 35);
-      ctx.lineTo(cx, cy - 47);
-      ctx.lineTo(cx + 6, cy - 35);
-      ctx.closePath();
-      ctx.fill();
-
-      // Roof glow
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.22)';
-      ctx.lineWidth = 2.2;
-      ctx.beginPath();
-      ctx.moveTo(cx - 36, cy);
-      ctx.lineTo(cx, cy - 61);
-      ctx.lineTo(cx + 36, cy);
-      ctx.stroke();
-
-      // Fireplace ambient radial glow
-      const glowPulse = 0.1 + Math.sin(Date.now() / 650) * 0.03;
-      const windowGlow = ctx.createRadialGradient(cx, cy - 10, 0, cx, cy - 10, 80);
-      windowGlow.addColorStop(0, `rgba(251, 146, 60, ${glowPulse})`);
-      windowGlow.addColorStop(0.6, `rgba(239, 68, 68, ${glowPulse * 0.3})`);
+      // Shinto Gate ambient radial glow
+      const glowPulse = 0.08 + Math.sin(Date.now() / 650) * 0.02;
+      const windowGlow = ctx.createRadialGradient(cx, cy - 20, 0, cx, cy - 20, 70);
+      windowGlow.addColorStop(0, `rgba(239, 68, 68, ${glowPulse})`);
+      windowGlow.addColorStop(0.6, `rgba(244, 63, 94, ${glowPulse * 0.3})`);
       windowGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = windowGlow;
       ctx.beginPath();
-      ctx.arc(cx, cy - 10, 80, 0, Math.PI * 2);
+      ctx.arc(cx, cy - 20, 70, 0, Math.PI * 2);
       ctx.fill();
 
       // Layer 3: Mist Clouds
@@ -373,20 +260,20 @@ export const CozyCabinBackground = () => {
       }
 
       // Layer 4: Foreground Hills
-      ctx.fillStyle = '#020306';
+      ctx.fillStyle = '#010103';
       ctx.beginPath();
       ctx.moveTo(0, height);
       ctx.quadraticCurveTo(
         width * 0.2, 
-        height * 0.88 + parallax.y * 0.9, 
+        height * 0.91 + parallax.y * 0.9, 
         width * 0.5, 
-        height * 0.85 + parallax.y * 0.9
+        height * 0.88 + parallax.y * 0.9
       );
       ctx.quadraticCurveTo(
         width * 0.8, 
-        height * 0.9 + parallax.y * 0.9, 
+        height * 0.92 + parallax.y * 0.9, 
         width, 
-        height * 0.84 + parallax.y * 0.9
+        height * 0.87 + parallax.y * 0.9
       );
       ctx.lineTo(width, height);
       ctx.closePath();
@@ -414,13 +301,17 @@ export const CozyCabinBackground = () => {
         ctx.stroke();
       }
 
-      // B. Fireflies
-      for (const f of fireflies) {
+      // B. Sakura Petals (drifting)
+      for (const f of petals) {
         f.x += f.vx;
         f.y += f.vy;
 
-        if (f.x < 0 || f.x > width) f.vx *= -1;
-        if (f.y < 0 || f.y > height) f.vy *= -1;
+        if (f.y > height) {
+          f.y = -5;
+          f.x = Math.random() * width;
+        }
+        if (f.x < 0) f.x = width;
+        if (f.x > width) f.x = 0;
 
         const dx = mouse.x - f.x;
         const dy = mouse.y - f.y;
@@ -437,31 +328,22 @@ export const CozyCabinBackground = () => {
         }
 
         ctx.beginPath();
-        ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2);
+        // Slightly oval shape representing sakura petals
+        ctx.ellipse(f.x, f.y, f.size, f.size * 0.6, Math.PI / 4 + f.y * 0.005, 0, Math.PI * 2);
         ctx.fillStyle = f.color.replace('0.7', `${f.alpha * 0.65}`);
         
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 4;
         ctx.shadowColor = f.color;
         ctx.fill();
         ctx.shadowBlur = 0;
       }
 
-      // C. Chimney Sparks
-      if (Math.random() < 0.18) {
-        sparks.push({
-          x: cx - 10 + (Math.random() - 0.5) * 6,
-          y: cy - 42,
-          vx: (Math.random() - 0.5) * 0.4 + windForce * 0.5,
-          vy: -Math.random() * 1.5 - 0.8,
-          size: Math.random() * 1.8 + 0.8,
-          color: 'rgba(251, 146, 60, 1)',
-          life: 45,
-          maxLife: 45
-        });
-      }
-
+      // C. Blade Aura Slashes
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
+        const prevX = s.x;
+        const prevY = s.y;
+
         s.x += s.vx + Math.sin(s.life * 0.08) * 0.2;
         s.y += s.vy;
         s.life--;
@@ -472,15 +354,18 @@ export const CozyCabinBackground = () => {
         }
 
         const pct = s.life / s.maxLife;
-        const opacity = pct * 0.8;
+        const opacity = pct * 0.85;
 
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size * (0.3 + pct * 0.7), 0, Math.PI * 2);
-        ctx.fillStyle = s.color.replace('1)', `${opacity})`);
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(s.x, s.y);
+        ctx.strokeStyle = s.color.replace('1)', `${opacity})`);
+        ctx.lineWidth = s.size * (0.4 + pct * 1.6);
+        ctx.lineCap = 'round';
         
-        ctx.shadowBlur = 4;
+        ctx.shadowBlur = 8;
         ctx.shadowColor = s.color;
-        ctx.fill();
+        ctx.stroke();
         ctx.shadowBlur = 0;
       }
 
@@ -502,23 +387,16 @@ export const CozyCabinBackground = () => {
     <div className="absolute inset-0 w-full h-full overflow-hidden z-0 pointer-events-none no-print">
       {settings.theme === 'dark' && (
         <>
-          <video
-            ref={videoRef}
-            className="absolute top-0 left-0 w-full h-full object-cover translate-y-[17%] transition-none pointer-events-none"
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_115001_bcdaa3b4-03de-47e7-ad63-ae3e392c32d4.mp4"
-            muted
-            playsInline
-            autoPlay
-            onTimeUpdate={handleTimeUpdate}
-            onEnded={handleEnded}
-            onLoadedData={handleLoadedData}
-            style={{ opacity: 0 }}
+          <img
+            src={hashiraGif}
+            className="absolute top-0 left-0 w-full h-full object-cover pointer-events-none opacity-[0.22] mix-blend-screen"
+            alt="Hashiras Background"
           />
           <canvas
             ref={canvasRef}
             className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/75" />
           <div className="absolute inset-0 bg-radial-vignette pointer-events-none" />
         </>
       )}

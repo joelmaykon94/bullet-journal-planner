@@ -153,10 +153,10 @@ export const FocusPartnerControls = ({
               onChange={(e) => setSoundType(e.target.value as any)}
               className="w-full bg-zinc-900 border border-white/10 rounded-xl p-1.5 text-[10px] font-semibold text-white outline-none cursor-pointer hover:bg-zinc-800 transition-colors"
             >
-              <option value="chuva_lareira">🌧️🔥 Chuva & Lareira</option>
-              <option value="lofi_jazz">🎹🥁 Lofi Jazz Synth</option>
-              <option value="vento_floresta">🍃🌧️ Vento & Chuva</option>
-              <option value="foco_marrom">🤎💤 Foco Marrom</option>
+              <option value="chuva_lareira">Respiração da Água (Chuva Calmante) 🌊</option>
+              <option value="lofi_jazz">Respiração da Névoa (Jazz Lofi) 🌫️</option>
+              <option value="vento_floresta">Respiração do Inseto (Floresta de Glicínias) 🦋</option>
+              <option value="foco_marrom">Respiração das Chamas (Foco Ardente) 🔥</option>
             </select>
           </div>
 

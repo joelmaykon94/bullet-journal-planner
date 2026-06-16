@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Download, Printer, ChevronLeft, ChevronRight, X, Search, ArrowDownAZ } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
+import { getLocalDateString } from '../../../utils/plannerUtils';
 
 export const BUJO_ICONS = [
   { emoji: '📝', name: 'nota', tooltip: 'Anotação / Nota' },
@@ -78,10 +79,11 @@ export const DailyLogTab = () => {
     newSubtaskText,
     setNewSubtaskText,
     addSubtask,
-    getSubtaskCompletionString
+    getSubtaskCompletionString,
+    migrateUncompletedTasksToNextDay
   } = useBujo();
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const [selectedContext, setSelectedContext] = useState<string | null>(null);
   const [standardIcon, setStandardIcon] = useState<string>('');
   const [showIconDropdown, setShowIconDropdown] = useState<boolean>(false);
@@ -156,8 +158,10 @@ export const DailyLogTab = () => {
 
     // Status filter
     if (statusFilter === 'pending') {
+      if (item.type !== 'task') return false;
       if (item.status === 'completed' || item.status === 'cancelled') return false;
     } else if (statusFilter === 'completed') {
+      if (item.type !== 'task') return false;
       if (item.status !== 'completed') return false;
     }
 
@@ -222,7 +226,7 @@ export const DailyLogTab = () => {
               onClick={() => {
                 const prev = new Date(selectedDate + 'T00:00:00');
                 prev.setDate(prev.getDate() - 1);
-                const prevStr = prev.toISOString().split('T')[0];
+                const prevStr = getLocalDateString(prev);
                 setSelectedDate(prevStr);
                 setStandardDate(prevStr);
               }}
@@ -239,7 +243,7 @@ export const DailyLogTab = () => {
               onClick={() => {
                 const next = new Date(selectedDate + 'T00:00:00');
                 next.setDate(next.getDate() + 1);
-                const nextStr = next.toISOString().split('T')[0];
+                const nextStr = getLocalDateString(next);
                 setSelectedDate(nextStr);
                 setStandardDate(nextStr);
               }}
@@ -248,8 +252,27 @@ export const DailyLogTab = () => {
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
+            {selectedDate !== today && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDate(today);
+                  setStandardDate(today);
+                }}
+                className="px-2 py-0.5 bg-bujo-highlight text-white text-[10px] font-bold rounded-lg hover:opacity-90 transition-opacity ml-1"
+              >
+                Hoje
+              </button>
+            )}
           </div>
 
+          <button
+            onClick={() => migrateUncompletedTasksToNextDay(selectedDate)}
+            className="p-2.5 rounded-xl bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            title="Migrar tarefas não concluídas para amanhã"
+          >
+            <ChevronRight className="w-3.5 h-3.5 text-bujo-highlight" /> <span className="hidden sm:inline">Migrar Pendentes</span>
+          </button>
           <button
             onClick={exportToPDF}
             className="p-2.5 rounded-xl bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10 text-xs font-semibold flex items-center gap-1.5 transition-colors"

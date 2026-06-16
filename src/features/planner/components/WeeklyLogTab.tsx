@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, CheckSquare, Sparkles, AlertCircle } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
+import { DayTasksModal } from './DayTasksModal';
+import { getLocalDateString } from '../../../utils/plannerUtils';
 
 export const WeeklyLogTab = () => {
   const {
@@ -8,6 +11,8 @@ export const WeeklyLogTab = () => {
     setSelectedDate,
     setActiveTab
   } = useBujo();
+
+  const [activeModalDay, setActiveModalDay] = useState<string | null>(null);
 
   // Calculate the days of the current week (Monday to Sunday) based on selectedDate
   const getWeekDays = (baseDateStr: string) => {
@@ -62,6 +67,8 @@ export const WeeklyLogTab = () => {
     localStorage.setItem(`bujo_weekly_review_${weekDays[0]}`, text);
   };
 
+  const todayStr = getLocalDateString();
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -90,6 +97,14 @@ export const WeeklyLogTab = () => {
           >
             <ChevronRight className="w-4 h-4" />
           </button>
+          {weekDays.indexOf(todayStr) === -1 && (
+            <button
+              onClick={() => setSelectedDate(todayStr)}
+              className="p-1 px-2.5 rounded-lg bg-bujo-highlight text-white text-[10px] font-bold transition-all ml-1"
+            >
+              Semana Atual
+            </button>
+          )}
         </div>
       </div>
 
@@ -112,7 +127,10 @@ export const WeeklyLogTab = () => {
               return (
                 <div
                   key={dayStr}
-                  onClick={() => setSelectedDate(dayStr)}
+                  onClick={() => {
+                    setSelectedDate(dayStr);
+                    setActiveModalDay(dayStr);
+                  }}
                   className={`p-4 rounded-3xl border text-left cursor-pointer transition-all flex flex-col justify-between hover:border-bujo-highlight/40 ${
                     isSelected 
                       ? 'bg-zinc-200/40 dark:bg-white/[0.04] border-bujo-highlight/50 shadow-md' 
@@ -139,7 +157,7 @@ export const WeeklyLogTab = () => {
                         </div>
                       ))}
                       {dayEvents.slice(0, 2).map(e => (
-                        <div key={e.id} className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+                        <div key={e.id} className="flex items-center gap-1.5 text-[10px] text-zinc-555">
                           <span className="w-1.5 h-1.5 rounded-full bg-bujo-accent shrink-0"></span>
                           <span className="truncate">{e.content}</span>
                         </div>
@@ -159,11 +177,11 @@ export const WeeklyLogTab = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedDate(dayStr);
-                      setActiveTab('daily_log');
+                      setActiveModalDay(dayStr);
                     }}
                     className="text-[9px] font-bold text-bujo-highlight hover:underline self-start mt-auto flex items-center gap-0.5"
                   >
-                    Ver log completo
+                    Abrir Agenda
                   </button>
                 </div>
               );
@@ -200,6 +218,12 @@ export const WeeklyLogTab = () => {
         </div>
 
       </div>
+
+      <DayTasksModal
+        isOpen={activeModalDay !== null}
+        onClose={() => setActiveModalDay(null)}
+        dateStr={activeModalDay}
+      />
     </div>
   );
 };

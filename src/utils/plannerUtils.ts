@@ -113,3 +113,10 @@ export const getRealTimeSuggestions = (text: string) => {
 
   return { classification, category, subtasks };
 };
+
+export const getLocalDateString = (d: Date = new Date()): string => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};

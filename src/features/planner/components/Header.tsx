@@ -1,4 +1,5 @@
-import { CheckSquare, Sparkles, Download, Trash2, Settings, Cloud, CloudOff } from 'lucide-react';
+import { useState } from 'react';
+import { CheckSquare, Sparkles, Download, Trash2, Settings, Cloud, CloudOff, Menu, X, Sliders, Calendar, BookOpen, Brain, FolderOpen, LayoutGrid, CalendarDays } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 export const Header = () => {
@@ -6,6 +7,7 @@ export const Header = () => {
     focoActive,
     setFocoActive,
     setActiveTab,
+    activeTab,
     aiEngine,
     localLLMState,
     setPomodoroRunning,
@@ -14,23 +16,54 @@ export const Header = () => {
     syncStatus
   } = useBujo();
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const menuItems = [
+    { id: 'indice', label: 'Índice', icon: Sliders },
+    { id: 'daily_log', label: 'Daily Log', icon: CheckSquare },
+    { id: 'weekly_log', label: 'Weekly Log', icon: LayoutGrid },
+    { id: 'monthly_log', label: 'Monthly Log', icon: CalendarDays },
+    { id: 'daily_spread', label: 'Spread Diário', icon: Calendar },
+    { id: 'future_log', label: 'Future Log', icon: BookOpen },
+    { id: 'brain_dump', label: 'Despejo de Mente', icon: Brain },
+    { id: 'collections', label: 'Coleções', icon: FolderOpen },
+    { id: 'dream_board', label: 'Quadro dos Sonhos', icon: Sparkles },
+    { id: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
+    { id: 'trash', label: 'Lixeira', icon: Trash2 },
+    { id: 'settings', label: 'Ajustes', icon: Settings },
+    { id: 'landing_page', label: 'Apresentação 🚀', icon: Sparkles },
+  ];
+
   const triggerPWAInstall = () => {
     showToast('Para instalar: toque nos 3 pontinhos do navegador e selecione "Instalar aplicativo" ou "Adicionar à tela de início".');
   };
 
   return (
-    <header className="relative z-20 px-4 md:px-6 py-4 border-b border-zinc-200/50 dark:border-white/10 backdrop-blur-md no-print">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <div 
-          onClick={() => { if (!focoActive) setActiveTab('indice'); }}
-          className="flex items-center gap-2 cursor-pointer group"
-        >
-          <div className="p-1.5 rounded-full bg-bujo-highlight/10 border border-bujo-highlight/20 text-bujo-highlight">
-            <CheckSquare className="w-5 h-5 group-hover:rotate-12 transition-transform duration-350" />
+    <>
+      <header className="relative z-20 px-4 md:px-6 py-4 border-b border-zinc-200/50 dark:border-white/10 backdrop-blur-md no-print">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          {/* Hamburger Menu & Logo */}
+          <div className="flex items-center gap-3">
+            {!focoActive && (
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-1.5 rounded-lg border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-white md:hidden cursor-pointer bg-zinc-200/20 dark:bg-white/5"
+                title="Abrir Menu"
+              >
+                <Menu className="w-4.5 h-4.5" />
+              </button>
+            )}
+
+            <div 
+              onClick={() => { if (!focoActive) setActiveTab('indice'); }}
+              className="flex items-center gap-2 cursor-pointer group"
+            >
+              <div className="p-1.5 rounded-full bg-bujo-highlight/10 border border-bujo-highlight/20 text-bujo-highlight">
+                <CheckSquare className="w-5 h-5 group-hover:rotate-12 transition-transform duration-350" />
+              </div>
+              <span className="font-semibold text-lg tracking-tight">BuJo Focus</span>
+            </div>
           </div>
-          <span className="font-semibold text-lg tracking-tight">BuJo Focus</span>
-        </div>
 
         {/* Nav Controls */}
         <div className="flex items-center gap-2">
@@ -166,7 +199,61 @@ export const Header = () => {
             {focoActive ? 'Sair do Foco' : 'Iniciar Foco ⚡'}
           </button>
         </div>
-      </div>
-    </header>
+        </div>
+      </header>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex no-print md:hidden">
+          {/* Backdrop blur overlay */}
+          <div 
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          
+          {/* Drawer Panel Container */}
+          <div className="relative flex w-full max-w-xs flex-col bg-zinc-950 border-r border-white/10 p-5 shadow-3xl overflow-y-auto animate-slide-in-right">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-1 rounded-full bg-bujo-highlight/10 text-bujo-highlight">
+                  <CheckSquare className="w-5 h-5" />
+                </div>
+                <span className="font-bold text-sm text-white font-mono">Menu BuJo Focus</span>
+              </div>
+              <button 
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1 text-zinc-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <nav className="flex flex-col gap-1.5">
+              {menuItems.map(item => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id as any);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-medium transition-all text-left cursor-pointer ${
+                      isActive 
+                        ? 'bg-bujo-highlight text-white font-bold shadow-lg shadow-bujo-highlight/15' 
+                        : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

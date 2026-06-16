@@ -1,4 +1,5 @@
 import { BujoItem } from '../../../types';
+import { getLocalDateString } from '../../../utils/plannerUtils';
 
 interface KPIRowProps {
   items: BujoItem[];
@@ -9,7 +10,7 @@ interface KPIRowProps {
 
 export const KPIRow = ({ items, completedPomodoros, getCognitiveLoad, onOverloadReliefClick }: KPIRowProps) => {
   const cognitiveLoad = getCognitiveLoad();
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const todayTasks = items.filter(i => i.date === today && i.type === 'task');
   const completedToday = todayTasks.filter(i => i.status === 'completed').length;
   const completionRate = todayTasks.length === 0 ? 0 : Math.round((completedToday / todayTasks.length) * 100);

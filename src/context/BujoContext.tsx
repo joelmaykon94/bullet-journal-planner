@@ -7,7 +7,7 @@ import { useBujoSettings } from '../hooks/useBujoSettings';
 import { useCollections } from '../hooks/useCollections';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useAmbientAudio } from '../hooks/useAmbientAudio';
-import { maxQuotes, getRealTimeSuggestions, adhdTriggers } from '../utils/plannerUtils';
+import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString } from '../utils/plannerUtils';
 
 import { useAuth } from './AuthContext';
 
@@ -69,6 +69,7 @@ export interface BujoContextType {
   ) => void;
   toggleSubtask: (taskId: string, subtaskId: string) => void;
   deleteSubtask: (taskId: string, subtaskId: string) => void;
+  migrateUncompletedTasksToNextDay: (dateStr: string) => void;
 
   // Lixeira & Someday
   trashItems: BujoItem[];
@@ -164,8 +165,8 @@ export interface BujoContextType {
   setAnxietyLevel: React.Dispatch<React.SetStateAction<number>>;
   currentEnergy: 'high' | 'low' | 'exhausted';
   setCurrentEnergy: React.Dispatch<React.SetStateAction<'high' | 'low' | 'exhausted'>>;
-  activeTab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board';
-  setActiveTab: React.Dispatch<React.SetStateAction<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board'>>;
+  activeTab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board' | 'landing_page';
+  setActiveTab: React.Dispatch<React.SetStateAction<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board' | 'landing_page'>>;
   selectedDate: string;
   setSelectedDate: React.Dispatch<React.SetStateAction<string>>;
   showOverloadReliefModal: boolean;
@@ -341,8 +342,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     return (saved as any) || 'high';
   });
 
-  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board'>('indice');
-  const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board' | 'landing_page'>('indice');
+  const [selectedDate, setSelectedDate] = useState<string>(() => getLocalDateString());
   const [showOverloadReliefModal, setShowOverloadReliefModal] = useState<boolean>(false);
   const [focoActive, setFocoActive] = useState<boolean>(false);
   const [selectedHourToSchedule, setSelectedHourToSchedule] = useState<number | null>(null);
@@ -684,7 +685,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
                   type: 'task',
                   status: 'open',
                   content: cleanedLine,
-                  date: new Date().toISOString().split('T')[0]
+                  date: getLocalDateString()
                 });
               } else if (line.toUpperCase().startsWith('E:')) {
                 const parts = cleanedLine.split('|');
@@ -695,7 +696,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
                   type: 'event',
                   status: 'open',
                   content,
-                  date: new Date().toISOString().split('T')[0],
+                  date: getLocalDateString(),
                   time
                 });
               } else if (line.toUpperCase().startsWith('N:')) {
@@ -704,7 +705,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
                   type: 'note',
                   status: 'open',
                   content: cleanedLine,
-                  date: new Date().toISOString().split('T')[0]
+                  date: getLocalDateString()
                 });
               }
             });
@@ -941,6 +942,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   };
 
   const collectionsData = useCollections(
+    collections,
+    setCollections,
     setItems,
     showToast,
     aiEngine,
@@ -994,7 +997,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       type: 'task',
       status: 'open',
       content: `[${collectionName}] ${item.title}`,
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       subtasks: (item.subtasks || []).map((st: any) => ({
         id: `st-${Date.now()}-${Math.random()}`,
         content: st.content,
@@ -1042,7 +1045,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   const [standardInput, setStandardInput] = useState<string>('');
   const [standardType, setStandardType] = useState<'task' | 'event' | 'note'>('task');
-  const [standardDate, setStandardDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [standardDate, setStandardDate] = useState<string>(() => getLocalDateString());
   const [standardTime, setStandardTime] = useState<string>('');
 
   const [rapidText, setRapidText] = useState<string>('');
@@ -1084,7 +1087,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   // Harmony and Cognitive Load calculators
   const getCognitiveLoad = () => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
     const todayItems = items.filter(i => i.date === todayStr);
     const openTasks = todayItems.filter(i => i.type === 'task' && i.status === 'open').length;
     const openEvents = todayItems.filter(i => i.type === 'event' && i.status === 'open').length;
@@ -1097,7 +1100,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   };
 
   const getHarmonyScore = () => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
     const todayTasks = items.filter(item => item.date === todayStr && item.type === 'task' && item.time);
     if (todayTasks.length === 0) return null;
     
@@ -1243,7 +1246,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       type: rapidType,
       status: 'open',
       content: rapidText.trim(),
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       time: rapidTime || undefined,
       priority: rapidPriority,
       subtasks: rapidType === 'task' ? [] : undefined
@@ -1350,7 +1353,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       type: 'task',
       status: 'open',
       content: standardInput.trim(),
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       subtasks: subtasks.map(s => ({ id: Math.random().toString(), content: s, completed: false }))
     };
     setItems(prev => [newItem, ...prev]);
@@ -1366,7 +1369,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       type: 'task',
       status: 'open',
       content: rapidText.trim(),
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       subtasks: subtasks.map(s => ({ id: Math.random().toString(), content: s, completed: false }))
     };
     setItems(prev => [newItem, ...prev]);
@@ -1495,7 +1498,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
             type: 'event',
             status: 'open',
             content: eventContent,
-            date: new Date().toISOString().split('T')[0],
+            date: getLocalDateString(),
             time: time
           });
         } else if (['sinto', 'estou', 'pensando', 'acho', 'triste', 'feliz', 'ansioso', 'cansado', 'bonito', 'legal'].some(w => lowerCleaned.includes(w))) {
@@ -1504,7 +1507,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
             type: 'note',
             status: 'open',
             content: cleaned,
-            date: new Date().toISOString().split('T')[0]
+            date: getLocalDateString()
           });
         } else {
           dumpTasks.push({
@@ -1512,7 +1515,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
             type: 'task',
             status: 'open',
             content: cleaned,
-            date: new Date().toISOString().split('T')[0]
+            date: getLocalDateString()
           });
         }
       });
@@ -1636,23 +1639,183 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   // PDF Exportation
   const exportToPDF = async () => {
-    const element = document.getElementById('bujo-export-area');
-    if (!element) return;
-    showToast('Gerando PDF do layout...');
+    showToast('Gerando PDF com os dados das tarefas...');
 
     try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: settings.theme === 'light' ? '#FAF7F2' : '#0c0a09'
+      const dateStr = selectedDate;
+      const formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
       });
-      const imgData = canvas.toDataURL('image/png');
+      const dateItems = items.filter(item => item.date === dateStr);
+      const tasks = dateItems.filter(item => item.type === 'task');
+
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save('bujo-focus-layout.pdf');
+      let y = 20;
+      const pageHeight = 297;
+      const margin = 15;
+
+      const checkPageBreak = (neededHeight: number) => {
+        if (y + neededHeight > pageHeight - margin) {
+          pdf.addPage();
+          y = 20; // reset y coordinate for new page
+        }
+      };
+
+      // Header
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(16);
+      pdf.setTextColor(45, 42, 36);
+      pdf.text(`Lista de Tarefas — ${formattedDate}`, margin, y);
+      y += 8;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(110, 110, 110);
+      pdf.text('ADHD Bullet Journal & Planner — Central de Organização e Hiperfoco', margin, y);
+      y += 6;
+
+      pdf.setDrawColor(220, 220, 220);
+      pdf.line(margin, y, 210 - margin, y);
+      y += 10;
+
+      if (tasks.length === 0) {
+        pdf.setFont('helvetica', 'italic');
+        pdf.setFontSize(10);
+        pdf.setTextColor(120, 120, 120);
+        pdf.text('Nenhuma tarefa registrada para este dia.', margin, y);
+      } else {
+        tasks.forEach((task, idx) => {
+          const subtasksCount = task.subtasks?.length || 0;
+          const textLines = pdf.splitTextToSize(`${idx + 1}. ${task.content}`, 170);
+          const neededHeight = (textLines.length * 6) + (subtasksCount * 5) + 8;
+          checkPageBreak(neededHeight);
+
+          // Draw status badge
+          let statusText = 'Pendente';
+          let statusBg = [254, 243, 199]; // amber-100
+          let statusFg = [217, 119, 6];   // amber-600
+          if (task.status === 'completed') {
+            statusText = 'Concluída';
+            statusBg = [209, 250, 229]; // emerald-100
+            statusFg = [5, 150, 105];   // emerald-600
+          } else if (task.status === 'migrated') {
+            statusText = 'Migrada';
+            statusBg = [243, 244, 246]; // gray-100
+            statusFg = [107, 114, 128];  // gray-500
+          } else if (task.status === 'cancelled') {
+            statusText = 'Cancelada';
+            statusBg = [254, 226, 226]; // red-100
+            statusFg = [239, 68, 68];   // red-500
+          }
+
+          // Draw status badge rectangle
+          pdf.setFillColor(statusBg[0], statusBg[1], statusBg[2]);
+          pdf.roundedRect(margin, y - 4, 16, 5, 0.8, 0.8, 'F');
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(7);
+          pdf.setTextColor(statusFg[0], statusFg[1], statusFg[2]);
+          pdf.text(statusText, margin + 1.5, y - 0.5);
+
+          // Clean tags from description text for visual rendering
+          let textWithoutTags = task.content;
+          const contextRegex = /(@[a-zA-ZÀ-ÿ0-9_-]+)/g;
+          const tagsFound = task.content.match(contextRegex) || [];
+          tagsFound.forEach(tag => {
+            textWithoutTags = textWithoutTags.replace(tag, '');
+          });
+          textWithoutTags = textWithoutTags.replace(/\s+/g, ' ').trim();
+
+          // Print task description text
+          pdf.setFont('helvetica', task.status === 'completed' ? 'normal' : 'bold');
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(task.status === 'completed' ? 130 : 45, task.status === 'completed' ? 130 : 42, task.status === 'completed' ? 130 : 36);
+
+          const mainTextLines = pdf.splitTextToSize(`${idx + 1}. ${textWithoutTags}`, 145);
+          pdf.text(mainTextLines, margin + 19, y);
+          const taskHeightUsed = mainTextLines.length * 4.5;
+
+          // Draw tag badges next to/below description
+          let tagX = margin + 19;
+          const tagY = y + taskHeightUsed + 1.5;
+          let drawTagLine = false;
+
+          tagsFound.forEach(tag => {
+            const lowerTag = tag.toLowerCase();
+            let tagBg = [243, 244, 246];
+            let tagFg = [107, 114, 128];
+            if (lowerTag === '@computador') { tagBg = [219, 234, 254]; tagFg = [37, 99, 235]; }
+            else if (lowerTag === '@online') { tagBg = [207, 250, 254]; tagFg = [8, 145, 178]; }
+            else if (lowerTag === '@rua') { tagBg = [254, 243, 199]; tagFg = [217, 119, 6]; }
+            else if (lowerTag === '@casa') { tagBg = [209, 250, 229]; tagFg = [5, 150, 105]; }
+            else if (lowerTag === '@trabalhando') { tagBg = [243, 232, 255]; tagFg = [147, 51, 234]; }
+            else if (lowerTag === '@mestrado') { tagBg = [224, 231, 255]; tagFg = [79, 70, 229]; }
+            else if (lowerTag === '@programando') { tagBg = [255, 237, 213]; tagFg = [234, 88, 12]; }
+            else if (lowerTag === '@aguardando') { tagBg = [255, 228, 230]; tagFg = [225, 29, 72]; }
+
+            const textWidth = pdf.getTextWidth(tag);
+            const badgeW = textWidth + 3;
+
+            if (tagX + badgeW > 200 - margin) return;
+
+            pdf.setFillColor(tagBg[0], tagBg[1], tagBg[2]);
+            pdf.roundedRect(tagX, tagY - 3, badgeW, 4.2, 0.8, 0.8, 'F');
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(6.5);
+            pdf.setTextColor(tagFg[0], tagFg[1], tagFg[2]);
+            pdf.text(tag, tagX + 1.5, tagY);
+            tagX += badgeW + 1.5;
+            drawTagLine = true;
+          });
+
+          y += taskHeightUsed + (drawTagLine ? 6 : 2.5);
+
+          // Draw metadata
+          const metaList = [];
+          if (task.delegatedTo) metaList.push(`Delegado: @${task.delegatedTo}`);
+          if (task.energy) metaList.push(`Energia: ${'⚡'.repeat(task.energy)}`);
+          if (task.complexity) metaList.push(`Dificuldade: ${'🧠'.repeat(task.complexity)}`);
+          if (task.executionTime) metaList.push(`Tempo: ${task.executionTime} min`);
+
+          if (metaList.length > 0) {
+            pdf.setFont('helvetica', 'italic');
+            pdf.setFontSize(8);
+            pdf.setTextColor(120, 120, 120);
+            pdf.text(`   • ${metaList.join(' | ')}`, margin + 19, y);
+            y += 4.5;
+          }
+
+          // Draw subtasks
+          if (task.subtasks && task.subtasks.length > 0) {
+            task.subtasks.forEach(sub => {
+              const subIcon = sub.completed ? '[X]' : '[ ]';
+              const subText = `${subIcon} ${sub.icon || ''} ${sub.content}${sub.executionTime ? ` (${sub.executionTime} min)` : ''}`;
+              const splitSub = pdf.splitTextToSize(subText, 140);
+              
+              pdf.setFont('helvetica', 'normal');
+              pdf.setFontSize(8);
+              pdf.setTextColor(sub.completed ? 160 : 90);
+              pdf.text(splitSub, margin + 24, y);
+              y += (splitSub.length * 4);
+            });
+          }
+
+          y += 3.5; // space between tasks
+        });
+      }
+
+      // Format filename with current export date and time
+      const now = new Date();
+      const exportDay = String(now.getDate()).padStart(2, '0');
+      const exportMonth = String(now.getMonth() + 1).padStart(2, '0');
+      const exportYear = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const filename = `bujo-export-${exportDay}-${exportMonth}-${exportYear}_${hours}h${minutes}m${seconds}s.pdf`;
+
+      pdf.save(filename);
       showToast('Exportado com sucesso!');
     } catch (e) {
       console.error(e);

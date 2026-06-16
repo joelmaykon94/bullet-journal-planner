@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Shield, Sparkles, Smile, RefreshCw, Edit2, Check, Brain, Flame, Activity, Volume2 } from 'lucide-react';
+import { Shield, Sparkles, Smile, RefreshCw, Edit2, Check, Brain, Flame, Activity, Volume2, Play, Pause, Clock } from 'lucide-react';
 import { BujoItem } from '../../../types';
+import { useBujo } from '../../../context/BujoContext';
 
 interface UserPersonaCardProps {
   userXp: number;
@@ -38,47 +39,47 @@ interface Archetype {
 const archetypes: Archetype[] = [
   {
     id: 'zari',
-    name: 'Zari',
-    emoji: '🦄',
-    defaultTitle: 'Entusiasta do Foco',
-    themeColor: 'from-pink-500 to-rose-450',
+    name: 'Nezuko 🌸',
+    emoji: '🌸',
+    defaultTitle: 'Oni Aliada',
+    themeColor: 'from-pink-550 to-rose-450',
     textColor: 'text-pink-650 dark:text-pink-400',
     bgColor: 'bg-pink-500/10 hover:bg-pink-500/15',
     borderColor: 'border-pink-500/20',
-    role: 'Otimista & Animada'
+    role: 'Protetora Silenciosa'
   },
   {
     id: 'lily',
-    name: 'Lily',
-    emoji: '💀',
-    defaultTitle: 'Sarcástica Apática',
+    name: 'Shinobu 🦋',
+    emoji: '🦋',
+    defaultTitle: 'Hashira do Inseto',
     themeColor: 'from-purple-600 to-indigo-500',
     textColor: 'text-purple-650 dark:text-purple-400',
     bgColor: 'bg-purple-500/10 hover:bg-purple-500/15',
     borderColor: 'border-purple-500/20',
-    role: 'Rebelde & Sarcástica'
+    role: 'Gentil & Venenosa'
   },
   {
     id: 'eddy',
-    name: 'Eddy',
-    emoji: '⚡',
-    defaultTitle: 'Guerreiro de Foco',
-    themeColor: 'from-amber-500 to-orange-500',
-    textColor: 'text-amber-650 dark:text-amber-400',
-    bgColor: 'bg-amber-500/10 hover:bg-amber-500/15',
-    borderColor: 'border-amber-500/20',
-    role: 'Determinado & Atlético'
+    name: 'Rengoku 🔥',
+    emoji: '🔥',
+    defaultTitle: 'Hashira das Chamas',
+    themeColor: 'from-red-500 to-orange-500',
+    textColor: 'text-red-650 dark:text-red-400',
+    bgColor: 'bg-red-500/10 hover:bg-red-500/15',
+    borderColor: 'border-red-500/20',
+    role: 'Ardente & Motivador'
   },
   {
     id: 'oscar',
-    name: 'Oscar',
-    emoji: '🎭',
-    defaultTitle: 'Esteta Sofisticado',
-    themeColor: 'from-teal-500 to-emerald-500',
-    textColor: 'text-teal-650 dark:text-teal-400',
-    bgColor: 'bg-teal-500/10 hover:bg-teal-500/15',
-    borderColor: 'border-teal-500/20',
-    role: 'Perfeccionista & Dramático'
+    name: 'Giyu 🌊',
+    emoji: '🌊',
+    defaultTitle: 'Hashira da Água',
+    themeColor: 'from-blue-500 to-cyan-500',
+    textColor: 'text-blue-650 dark:text-blue-400',
+    bgColor: 'bg-blue-500/10 hover:bg-blue-500/15',
+    borderColor: 'border-blue-500/20',
+    role: 'Estóico & Silencioso'
   }
 ];
 
@@ -134,6 +135,14 @@ export const UserPersonaCard = ({
   const [customAdvice, setCustomAdvice] = useState<string>('');
   const [isGeneratingAdvice, setIsGeneratingAdvice] = useState<boolean>(false);
 
+  const { setItems } = useBujo();
+
+  // Active focus timer states
+  const [focusTaskId, setFocusTaskId] = useState<string>('');
+  const [focusDuration, setFocusDuration] = useState<number>(25);
+  const [focusTimerSeconds, setFocusTimerSeconds] = useState<number>(0);
+  const [focusTimerActive, setFocusTimerActive] = useState<boolean>(false);
+
   const level = Math.floor(userXp / 100) + 1;
   const currentLevelXp = userXp % 100;
   const cognitiveLoad = getCognitiveLoad();
@@ -161,12 +170,11 @@ export const UserPersonaCard = ({
     setSelectedArchId(id);
     localStorage.setItem('bujo_persona_archetype', id);
     const defaultArch = archetypes.find(a => a.id === id);
-    const savedName = localStorage.getItem('bujo_persona_name');
-    if (!savedName) {
-      setCustomName(defaultArch?.name || 'Companheiro');
-    }
+    const newName = defaultArch?.name || 'Companheiro';
+    setCustomName(newName);
+    localStorage.setItem('bujo_persona_name', newName);
     setCustomAdvice(''); // Clear any custom generated advice when switching character
-    showToast(`Companheiro alterado para ${defaultArch?.name}!`);
+    showToast(`Companheiro alterado para ${newName}!`);
   };
 
   // Persist customized name changes
@@ -206,6 +214,33 @@ export const UserPersonaCard = ({
       if (interval) clearInterval(interval);
     };
   }, [activeTimer, timerSeconds]);
+
+  // Focus timer effect
+  useEffect(() => {
+    let interval: any = null;
+    if (focusTimerActive && focusTimerSeconds > 0) {
+      interval = setInterval(() => {
+        setFocusTimerSeconds(prev => prev - 1);
+      }, 1000);
+    } else if (focusTimerActive && focusTimerSeconds === 0) {
+      setFocusTimerActive(false);
+      setUserXp(prev => prev + 25);
+      
+      // Mark task as completed
+      setItems(prevItems => prevItems.map(item => {
+        if (item.id === focusTaskId) {
+          return { ...item, status: 'completed' as const };
+        }
+        return item;
+      }));
+
+      showToast(`🎯 Foco Ativo Concluído! Você completou sua tarefa! +25 XP!`);
+      setFocusTaskId('');
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [focusTimerActive, focusTimerSeconds, focusTaskId]);
 
   // Listener to worker messages for custom advice generation
   useEffect(() => {
@@ -295,21 +330,21 @@ export const UserPersonaCard = ({
 
     switch (activeArch.id) {
       case 'zari':
-        if (overdueCount > 0) return `Ei! Temos ${overdueCount} pendências acumuladas! Vamos respirar fundo, pegar a mais fácil e riscar da lista? Eu sei que você consegue! 💖`;
-        if (completedCount > 0) return `Nossa, já vencemos ${completedCount} tarefas hoje! Você está brilhando demais! Continue assim! 🚀`;
-        return `Que momento maravilhoso para dar um gás nas tarefas! Vamos começar com algo pequeno e divertido? ✨`;
+        if (overdueCount > 0) return `Humph! Humph! (Nezuko aponta para as ${overdueCount} tarefas atrasadas preocupada! Vamos focar juntos?) 🌸`;
+        if (completedCount > 0) return `Mmm-hmmm! (Nezuko brilha de alegria ao ver suas ${completedCount} conquistas hoje! Continue assim!) ✨`;
+        return `Humph! (Nezuko te olha com determinação e cabeça inclinada, pronta para te apoiar!) 🌸`;
       case 'lily':
-        if (overdueCount > 0) return `Temos ${overdueCount} tarefas atrasadas. Que surpresa. Mas não se culpe, a procrastinação é nossa melhor habilidade. 🥱`;
-        if (completedCount > 0) return `Olha só, fizemos ${completedCount} tarefas. Parabéns, você merece um prêmio ou uma soneca de 3 horas. 🙄`;
-        return `Ok, o dia está passando. Se você quiser fazer alguma tarefa, faça. Se não, eu também não vou te julgar. 🦥`;
+        if (overdueCount > 0) return `Olá, olá! Que situação curiosa, temos ${overdueCount} pendências acumuladas. Vamos eliminá-las com calma, sem pressa? 🦋`;
+        if (completedCount > 0) return `Arra, incrível! Você concluiu ${completedCount} tarefas com a precisão de uma picada. Estou muito impressionada! 🦋`;
+        return `Para manter o foco, é preciso respirar fundo e acalmar a mente. Posso te ajudar a preparar o dia? 🦋`;
       case 'eddy':
-        if (overdueCount > 0) return `Guerreiro! Temos ${overdueCount} alvos atrasados na retaguarda! Limpe essa pendência antes de avançar! Força! 🥊`;
-        if (completedCount > 0) return `Excelente! ${completedCount} baixas nas tarefas hoje! O progresso é real, continue empurrando! 💪`;
-        return `Foco total! Ajuste sua postura, respire fundo e execute a próxima repetição. Vamos pro topo! 🏃`;
+        if (overdueCount > 0) return `Mantenha o coração ardente! Temos ${overdueCount} pendências a resolver! Não vacile, encare o desafio de frente! 🔥`;
+        if (completedCount > 0) return `Magnífico! Você derrotou ${completedCount} obrigações com vigor! Que energia espetacular! Continue queimando sua determinação! 🔥`;
+        return `A vida é cheia de batalhas diárias! Coma bem, durma bem e execute suas tarefas com foco total! 🔥`;
       case 'oscar':
-        if (overdueCount > 0) return `Que desorganização estética, ${overdueCount} tarefas pendentes! Isso desarmoniza o nosso dia. Vamos polir isso. 🎨`;
-        if (completedCount > 0) return `Magnífico! ${completedCount} obras finalizadas com absoluta sofisticação hoje. Um brinde ao seu intelecto! 🍷`;
-        return `O progresso requer paciência e refinamento. Vamos realizar nossa arte diária com calma e capricho. 🍵`;
+        if (overdueCount > 0) return `Não dê aos outros o poder de decidir seu destino. Resolva essas ${overdueCount} tarefas atrasadas de uma vez. 🌊`;
+        if (completedCount > 0) return `Você cumpriu com seu dever hoje (${completedCount} concluídas). Bom trabalho. Mas não baixe a guarda ainda. 🌊`;
+        return `Foco é silenciar o ruído ao redor. Apenas respire e faça o que precisa ser feito. 🌊`;
     }
     return 'Estou aqui para acompanhar sua evolução!';
   };
@@ -326,9 +361,9 @@ export const UserPersonaCard = ({
     ].filter(Boolean).join(' e ');
 
     const promptText = `<|im_start|>system
-Você é o companheiro cognitivo "${customName}" com a personalidade "${activeArch.name}" (${activeArch.role}). Fale de forma curta, natural e direta ao usuário em pt-BR.
+Você é o companheiro cognitivo "${customName}" com a personalidade do personagem de anime "${activeArch.name}" (${activeArch.role}). Fale de forma curta, natural e direta ao usuário em pt-BR.
 Contexto: Ansiedade ${anxietyLevel}/5, Energia física "${currentEnergy}", Carga cognitiva ${cognitiveLoad}%, Demandas: ${taskSummary || 'nenhuma tarefa pendente'}.
-Escreva um conselho ou comentário no seu tom de voz em no máximo 2 frases. Seja fiel a você mesmo (Zari é feliz, Lily é apática/irônica, Eddy é motivador bruto, Oscar é dramático e polido). Não adicione saudações como 'Olá'.<|im_end|>
+Escreva um conselho ou comentário no seu tom de voz em no máximo 2 frases. Seja fiel ao seu personagem (Nezuko faz sons de mmm/humph expressivos, Shinobu é gentil mas levemente irônica, Rengoku é ardente/motivado gritante, Giyu é frio/curto). Não adicione saudações como 'Olá'.<|im_end|>
 <|im_start|>assistant
 `;
 
@@ -344,6 +379,12 @@ Escreva um conselho ou comentário no seu tom de voz em no máximo 2 frases. Sej
         setIsGeneratingAdvice(false);
       }, 600);
     }
+  };
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
   const currentQuote = customAdvice || getStaticVoiceAdvice();
@@ -388,6 +429,117 @@ Escreva um conselho ou comentário no seu tom de voz em no máximo 2 frases. Sej
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Foco Ativo Section */}
+      <div className="p-3 bg-zinc-200/40 dark:bg-zinc-950/60 border border-zinc-200/30 dark:border-white/5 rounded-2xl space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[9.5px] text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5 text-bujo-highlight" /> Foco Ativo 🎯
+          </span>
+          {focusTimerSeconds > 0 && (
+            <span className="text-xs font-black text-white bg-bujo-highlight/20 px-2 py-0.5 rounded-lg border border-bujo-highlight/30 animate-pulse font-mono">
+              {formatTime(focusTimerSeconds)}
+            </span>
+          )}
+        </div>
+
+        {/* Dropdown containing open tasks */}
+        <select
+          value={focusTaskId}
+          onChange={(e) => setFocusTaskId(e.target.value)}
+          disabled={focusTimerActive}
+          className="w-full bg-zinc-300/40 dark:bg-zinc-900/80 border border-zinc-250/20 dark:border-white/5 rounded-xl px-2.5 py-2 text-[10px] text-zinc-300 outline-none cursor-pointer"
+        >
+          <option value="">🎯 Escolha uma tarefa para focar...</option>
+          {items.filter(item => item.type === 'task' && (item.status === 'open' || item.status === 'scheduled')).map(task => (
+            <option key={task.id} value={task.id}>
+              {task.content.length > 35 ? `${task.content.substring(0, 35)}...` : task.content}
+            </option>
+          ))}
+        </select>
+
+        {/* Timer Controls and Preset */}
+        <div className="flex gap-2">
+          {!focusTimerActive && (
+            <select
+              value={focusDuration}
+              onChange={(e) => {
+                const mins = parseInt(e.target.value, 10);
+                setFocusDuration(mins);
+                setFocusTimerSeconds(mins * 60);
+              }}
+              disabled={focusTimerActive}
+              className="bg-zinc-300/40 dark:bg-zinc-900/80 border border-zinc-250/20 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] text-zinc-300 outline-none cursor-pointer shrink-0"
+            >
+              <option value={5}>5m</option>
+              <option value={15}>15m</option>
+              <option value={25}>25m (Pomodoro)</option>
+              <option value={45}>45m</option>
+              <option value={60}>60m</option>
+            </select>
+          )}
+
+          {focusTimerActive ? (
+            <div className="flex gap-1.5 w-full">
+              <button
+                type="button"
+                onClick={() => setFocusTimerActive(false)}
+                className="flex-1 py-1.5 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-500 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1"
+              >
+                <Pause className="w-3 h-3" /> Pausar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFocusTimerActive(false);
+                  setFocusTimerSeconds(0);
+                }}
+                className="flex-1 py-1.5 bg-red-650/20 hover:bg-red-600/30 border border-red-500/30 text-red-500 rounded-xl text-[10px] font-bold transition-all cursor-pointer"
+              >
+                Zerar
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                if (!focusTaskId) {
+                  showToast('Selecione uma tarefa para focar! 🎯');
+                  return;
+                }
+                if (focusTimerSeconds === 0) {
+                  setFocusTimerSeconds(focusDuration * 60);
+                }
+                setFocusTimerActive(true);
+                if (!ambientPlaying) {
+                  toggleAmbientAudio();
+                }
+                showToast('🔥 Foco ativado! Respira fundo e concentre-se.');
+              }}
+              className="w-full py-1.5 bg-bujo-highlight hover:opacity-95 text-white font-bold rounded-xl text-[10px] transition-all cursor-pointer shadow-md shadow-bujo-highlight/15 flex items-center justify-center gap-1"
+            >
+              <Play className="w-3 h-3 fill-current" />
+              {focusTimerSeconds > 0 ? 'Retomar Foco' : 'Iniciar Foco'}
+            </button>
+          )}
+        </div>
+
+        {/* Focus progress bar */}
+        {focusTimerSeconds > 0 && (
+          <div className="space-y-1 pt-1">
+            <div className="w-full h-1.5 bg-zinc-300 dark:bg-zinc-950 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-bujo-highlight transition-all duration-1000"
+                style={{ width: `${(focusTimerSeconds / (focusDuration * 60)) * 100}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[8px] text-zinc-500 uppercase font-bold pl-0.5">
+              <span>{formatTime(focusTimerSeconds)} restantes</span>
+              <span>Progresso: {Math.round((focusTimerSeconds / (focusDuration * 60)) * 100)}%</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Character Profile Section */}
@@ -442,13 +594,6 @@ Escreva um conselho ou comentário no seu tom de voz em no máximo 2 frases. Sej
             {activeArch.defaultTitle}
           </span>
 
-          {/* Level Progress */}
-          <div className="w-full h-1 rounded-full bg-zinc-250 dark:bg-zinc-950 overflow-hidden border border-zinc-300/10 mt-1">
-            <div 
-              className="h-full bg-bujo-highlight rounded-full transition-all duration-500"
-              style={{ width: `${currentLevelXp}%` }}
-            />
-          </div>
         </div>
       </div>
 
@@ -557,10 +702,10 @@ Escreva um conselho ou comentário no seu tom de voz em no máximo 2 frases. Sej
               onChange={(e) => setSoundType(e.target.value as any)}
               className="flex-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-250/20 rounded-lg px-1.5 py-1 text-[9px] text-zinc-300 outline-none cursor-pointer"
             >
-              <option value="chuva_lareira">🌧️ Chuva & Lareira</option>
-              <option value="lofi_jazz">🎹 Lofi Jazz Synth</option>
-              <option value="vento_floresta">🍃 Vento & Floresta</option>
-              <option value="foco_marrom">🟫 Foco Marrom</option>
+              <option value="chuva_lareira">Respiração da Água (Chuva Calmante) 🌊</option>
+              <option value="lofi_jazz">Respiração da Névoa (Jazz Lofi) 🌫️</option>
+              <option value="vento_floresta">Respiração do Inseto (Floresta de Glicínias) 🦋</option>
+              <option value="foco_marrom">Respiração das Chamas (Foco Ardente) 🔥</option>
             </select>
           </div>
 

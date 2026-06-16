@@ -1,15 +1,279 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Sparkles, Calendar as CalendarIcon, CheckSquare, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Calendar as CalendarIcon, CheckSquare, Plus, Search, X } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
+import { DayTasksModal } from './DayTasksModal';
+import { BulletItem } from './BulletItem';
+import { BUJO_ICONS } from './DailyLogTab';
+import { getLocalDateString } from '../../../utils/plannerUtils';
+
+interface QuickAddFormProps {
+  activeCalendarDate: string;
+  setActiveCalendarDate: (date: string) => void;
+  handleSaveStandardInput: any;
+}
+
+const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveStandardInput }: QuickAddFormProps) => {
+  const [inputText, setInputText] = useState('');
+  const [inputType, setInputType] = useState<'task' | 'event' | 'note'>('task');
+  const [inputIcon, setInputIcon] = useState('');
+  const [showIconDropdown, setShowIconDropdown] = useState(false);
+  const [iconSearch, setIconSearch] = useState('');
+  const [inputTime, setInputTime] = useState('');
+  const [energy, setEnergy] = useState(1);
+  const [complexity, setComplexity] = useState(1);
+  const [executionTime, setExecutionTime] = useState('');
+
+  const handleLocalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+
+    handleSaveStandardInput(
+      inputText,
+      setInputText,
+      inputType,
+      activeCalendarDate,
+      activeCalendarDate,
+      inputTime,
+      () => {}, // setStandardTime dummy
+      inputIcon,
+      inputType === 'task' ? energy : undefined,
+      inputType === 'task' ? complexity : undefined,
+      inputType === 'task' && executionTime ? Number(executionTime) : undefined
+    );
+
+    // Reset local states
+    setInputText('');
+    setInputTime('');
+    setInputIcon('');
+    setEnergy(1);
+    setComplexity(1);
+    setExecutionTime('');
+    setShowIconDropdown(false);
+  };
+
+  const handleClearInputs = () => {
+    setInputText('');
+    setInputTime('');
+    setInputIcon('');
+    setEnergy(1);
+    setComplexity(1);
+    setExecutionTime('');
+    setShowIconDropdown(false);
+  };
+
+  return (
+    <form onSubmit={handleLocalSubmit} className="flex flex-col gap-2">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {/* Type selector */}
+        <div className="flex bg-zinc-300/40 dark:bg-zinc-950 p-0.5 rounded border border-zinc-200/40 dark:border-white/5 shrink-0 select-none">
+          {(['task', 'event', 'note'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setInputType(t)}
+              className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold transition-all cursor-pointer ${
+                inputType === t
+                  ? 'bg-bujo-highlight text-white'
+                  : 'text-zinc-500 hover:text-bujo-text'
+              }`}
+            >
+              {t === 'task' ? '• Tar' : t === 'event' ? '○ Ev' : '- Not'}
+            </button>
+          ))}
+        </div>
+
+        {/* Icon Picker */}
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowIconDropdown(!showIconDropdown)}
+            className="w-6 h-6 rounded bg-zinc-200/30 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 flex items-center justify-center text-xs hover:border-bujo-highlight hover:bg-zinc-200/50 dark:hover:bg-white/10 transition-all cursor-pointer"
+            title="Escolher Ícone"
+          >
+            {inputIcon || '🎨'}
+          </button>
+
+          {showIconDropdown && (
+            <div className="absolute left-0 top-full mt-1.5 p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-52 animate-scale-in">
+              <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-zinc-200/40 dark:border-white/5">
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Ícones</span>
+                <div className="flex items-center gap-1">
+                  {inputIcon && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInputIcon('');
+                        setShowIconDropdown(false);
+                      }}
+                      className="text-[9px] text-red-500 hover:underline font-bold cursor-pointer"
+                    >
+                      Limpar
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowIconDropdown(false)}
+                    className="p-0.5 rounded hover:bg-zinc-150 dark:hover:bg-white/10 text-zinc-405 hover:text-bujo-text cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+              <input
+                type="text"
+                placeholder="Pesquisar..."
+                value={iconSearch}
+                onChange={(e) => setIconSearch(e.target.value)}
+                className="w-full px-2 py-0.5 mb-1.5 text-[9.5px] rounded bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-250 dark:border-white/10 text-bujo-text placeholder-zinc-500 outline-none"
+              />
+              <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+                {BUJO_ICONS.filter(icon => 
+                  icon.name.toLowerCase().includes(iconSearch.toLowerCase()) || 
+                  icon.tooltip.toLowerCase().includes(iconSearch.toLowerCase())
+                ).map(icon => (
+                  <button
+                    key={icon.emoji}
+                    type="button"
+                    onClick={() => {
+                      setInputIcon(icon.emoji);
+                      setShowIconDropdown(false);
+                      setIconSearch('');
+                    }}
+                    className={`w-7 h-7 flex items-center justify-center rounded text-sm hover:bg-zinc-200/40 dark:hover:bg-white/5 transition-all ${
+                      inputIcon === icon.emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
+                    }`}
+                    title={icon.tooltip}
+                  >
+                    {icon.emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Time picker */}
+        <div className="flex items-center gap-1 bg-zinc-300/40 dark:bg-zinc-955 px-1.5 py-0.5 rounded border border-zinc-200/40 dark:border-white/5">
+          <span className="text-zinc-500 text-[8.5px] uppercase font-mono">Hora:</span>
+          <input
+            type="time"
+            value={inputTime}
+            onChange={(e) => setInputTime(e.target.value)}
+            className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-[9.5px] font-mono py-0 w-14"
+          />
+        </div>
+
+        {/* Date picker */}
+        <div className="flex items-center gap-1 bg-zinc-300/40 dark:bg-zinc-955 px-1.5 py-0.5 rounded border border-zinc-200/40 dark:border-white/5">
+          <span className="text-zinc-500 text-[8.5px] uppercase font-mono">Data:</span>
+          <input
+            type="date"
+            value={activeCalendarDate}
+            onChange={(e) => setActiveCalendarDate(e.target.value)}
+            className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-[9.5px] font-mono py-0 w-24"
+          />
+        </div>
+      </div>
+
+      <input
+        type="text"
+        required
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
+        placeholder={inputType === 'task' ? "Adicionar tarefa... Use [ para coleções e @ para contextos" : inputType === 'event' ? "Adicionar evento..." : "Adicionar nota..."}
+        className="w-full bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-lg px-2 py-1 text-xs text-bujo-text placeholder-zinc-505 outline-none focus:border-bujo-highlight/50 transition-colors"
+      />
+
+      <div className="flex items-center justify-between gap-1.5 flex-wrap">
+        {inputType === 'task' && (
+          <div className="flex items-center gap-1 bg-zinc-300/40 dark:bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-200/40 dark:border-white/5 text-[9px]">
+            <div className="flex items-center gap-0.5">
+              <span className="text-zinc-500">Energ:</span>
+              <select
+                value={energy}
+                onChange={(e) => setEnergy(Number(e.target.value))}
+                className="bg-transparent border-none text-bujo-text outline-none cursor-pointer font-semibold py-0 text-[9px]"
+              >
+                {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-zinc-950 text-white">⚡ {v}</option>)}
+              </select>
+            </div>
+            <div className="w-px h-2.5 bg-zinc-300 dark:bg-white/10" />
+            <div className="flex items-center gap-0.5">
+              <span className="text-zinc-500">Compl:</span>
+              <select
+                value={complexity}
+                onChange={(e) => setComplexity(Number(e.target.value))}
+                className="bg-transparent border-none text-bujo-text outline-none cursor-pointer font-semibold py-0 text-[9px]"
+              >
+                {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-zinc-950 text-white">🧠 {v}</option>)}
+              </select>
+            </div>
+            <div className="w-px h-2.5 bg-zinc-300 dark:bg-white/10" />
+            <div className="flex items-center gap-0.5">
+              <span className="text-zinc-500">Tempo:</span>
+              <input
+                type="number"
+                min="0"
+                placeholder="min"
+                value={executionTime}
+                onChange={(e) => setExecutionTime(e.target.value)}
+                className="bg-transparent border-none text-bujo-text outline-none w-7 font-mono text-[9px] text-center placeholder-zinc-500 font-semibold"
+              />
+              <span className="text-zinc-500">m</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-1.5 ml-auto">
+          {(inputText || inputTime || inputIcon) && (
+            <button
+              type="button"
+              onClick={handleClearInputs}
+              className="px-2 py-0.5 bg-zinc-300/40 dark:bg-zinc-900 text-zinc-505 hover:text-bujo-text rounded text-[9.5px] font-bold border border-zinc-200/20 dark:border-white/5 transition-colors cursor-pointer"
+            >
+              Limpar
+            </button>
+          )}
+          <button
+            type="submit"
+            className="px-2.5 py-0.5 bg-bujo-highlight text-white rounded text-[9.5px] font-bold hover:opacity-95 transition-opacity cursor-pointer shadow-md shadow-bujo-highlight/10"
+          >
+            Cadastrar
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+};
 
 export const MonthlyLogTab = () => {
   const {
     items,
     selectedDate,
     setSelectedDate,
-    setActiveTab
+    setActiveTab,
+    handleSaveStandardInput,
+    cycleStatus,
+    editingItemId,
+    editingItemContent,
+    setEditingItemContent,
+    handleSaveEditItemForm,
+    setEditingItemId,
+    handleStartEditItem,
+    handleDeleteItem,
+    handleAISplitTask,
+    breakingTaskIds,
+    expandedTaskId,
+    setExpandedTaskId,
+    toggleSubtask,
+    deleteSubtask,
+    newSubtaskText,
+    setNewSubtaskText,
+    addSubtask,
+    getSubtaskCompletionString
   } = useBujo();
 
+  const [activeModalDay, setActiveModalDay] = useState<string | null>(null);
   const [currentYearMonth, setCurrentYearMonth] = useState(() => {
     const [y, m] = selectedDate.split('-');
     return { year: parseInt(y), month: parseInt(m) - 1 }; // 0-indexed month
@@ -106,6 +370,22 @@ export const MonthlyLogTab = () => {
           >
             <ChevronRight className="w-4 h-4" />
           </button>
+          {(() => {
+            const today = new Date();
+            const isCurrentMonth = currentYearMonth.year === today.getFullYear() && currentYearMonth.month === today.getMonth();
+            return !isCurrentMonth && (
+              <button
+                onClick={() => {
+                  const todayDate = new Date();
+                  setCurrentYearMonth({ year: todayDate.getFullYear(), month: todayDate.getMonth() });
+                  setActiveCalendarDate(getLocalDateString(todayDate));
+                }}
+                className="p-1 px-2.5 rounded-lg bg-bujo-highlight text-white text-[10px] font-bold transition-all ml-1"
+              >
+                Mês Atual
+              </button>
+            );
+          })()}
         </div>
       </div>
 
@@ -141,6 +421,9 @@ export const MonthlyLogTab = () => {
                   onClick={() => {
                     setActiveCalendarDate(dayStr);
                     setHoveredDate(dayStr);
+                  }}
+                  onDoubleClick={() => {
+                    setActiveModalDay(dayStr);
                   }}
                   onMouseEnter={() => setHoveredDate(dayStr)}
                   className={`aspect-square p-2 rounded-2xl border flex flex-col justify-between cursor-pointer transition-all relative group hover:border-bujo-highlight/40 ${
@@ -182,42 +465,40 @@ export const MonthlyLogTab = () => {
                 </span>
               </div>
 
-              <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-                {activeDateTasks.length > 0 && (
-                  <div className="space-y-1.5">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Tarefas ({activeDateTasks.length})</span>
-                    {activeDateTasks.map(t => (
-                      <div key={t.id} className="flex items-center gap-2 text-xs text-zinc-400">
-                        <span className={`w-1.5 h-1.5 rounded-full ${t.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                        <span className={t.status === 'completed' ? 'line-through text-zinc-600' : ''}>{t.content}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {/* Quick Add Form in Side Panel */}
+              <div className="bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-250/20 dark:border-white/5 p-3 rounded-2xl mb-3.5 no-print">
+                <QuickAddForm
+                  activeCalendarDate={activeCalendarDate}
+                  setActiveCalendarDate={setActiveCalendarDate}
+                  handleSaveStandardInput={handleSaveStandardInput}
+                />
+              </div>
 
-                {activeDateEvents.length > 0 && (
-                  <div className="space-y-1.5">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Eventos ({activeDateEvents.length})</span>
-                    {activeDateEvents.map(e => (
-                      <div key={e.id} className="flex items-center gap-2 text-xs text-zinc-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-bujo-accent"></span>
-                        <span>{e.time ? `[${e.time}] ` : ''}{e.content}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeDateNotes.length > 0 && (
-                  <div className="space-y-1.5">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Notas ({activeDateNotes.length})</span>
-                    {activeDateNotes.map(n => (
-                      <div key={n.id} className="flex items-center gap-2 text-xs text-zinc-500 italic">
-                        <span>-</span>
-                        <span>{n.content}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {activeDateItems.map(item => (
+                  <BulletItem
+                    key={item.id}
+                    item={item}
+                    cycleStatus={cycleStatus}
+                    editingItemId={editingItemId}
+                    editingItemContent={editingItemContent}
+                    setEditingItemContent={setEditingItemContent}
+                    handleSaveEditItem={handleSaveEditItemForm}
+                    setEditingItemId={setEditingItemId}
+                    handleStartEditItem={handleStartEditItem}
+                    handleDeleteItem={handleDeleteItem}
+                    handleAISplitTask={handleAISplitTask}
+                    breakingTaskIds={breakingTaskIds}
+                    expandedTaskId={expandedTaskId}
+                    setExpandedTaskId={setExpandedTaskId}
+                    toggleSubtask={toggleSubtask}
+                    deleteSubtask={deleteSubtask}
+                    newSubtaskText={newSubtaskText}
+                    setNewSubtaskText={setNewSubtaskText}
+                    addSubtask={(taskId, icon, mins) => addSubtask(taskId, newSubtaskText, setNewSubtaskText, icon, mins)}
+                    getSubtaskCompletionString={getSubtaskCompletionString}
+                  />
+                ))}
 
                 {activeDateItems.length === 0 && (
                   <span className="text-xs text-zinc-550 italic block text-center py-6">Nenhum registro para esta data.</span>
@@ -225,18 +506,28 @@ export const MonthlyLogTab = () => {
               </div>
             </div>
 
-            {activeDateItems.length > 0 && (
+            <div className="flex gap-2 mt-4 no-print">
               <button
                 onClick={() => {
                   setSelectedDate(activeCalendarDate);
                   setActiveTab('daily_log');
                 }}
-                className="w-full mt-4 py-2 bg-zinc-200/50 hover:bg-zinc-200/70 dark:bg-white/10 dark:hover:bg-white/15 text-bujo-text font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer no-print"
+                className="flex-1 py-2 bg-zinc-200/50 hover:bg-zinc-200/70 dark:bg-white/10 dark:hover:bg-white/15 text-bujo-text font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <CalendarIcon className="w-4 h-4" />
-                Ir para Diário do Dia
+                Ir para Diário
               </button>
-            )}
+              <button
+                onClick={() => {
+                  setSelectedDate(activeCalendarDate);
+                  setActiveModalDay(activeCalendarDate);
+                }}
+                className="flex-1 py-2 bg-bujo-highlight text-white hover:opacity-95 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-bujo-highlight/10"
+              >
+                <Sparkles className="w-4 h-4" />
+                Abrir Agenda
+              </button>
+            </div>
           </div>
 
           {/* Month retrospective */}
@@ -260,6 +551,12 @@ export const MonthlyLogTab = () => {
         </div>
 
       </div>
+
+      <DayTasksModal
+        isOpen={activeModalDay !== null}
+        onClose={() => setActiveModalDay(null)}
+        dateStr={activeModalDay}
+      />
     </div>
   );
 };

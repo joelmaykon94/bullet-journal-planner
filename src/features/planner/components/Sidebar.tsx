@@ -1,8 +1,9 @@
 import { Sliders, CheckSquare, Calendar, BookOpen, Brain, FolderOpen, Settings, LayoutGrid, CalendarDays, Trash2, Cloud, Sparkles } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
+import { getLocalDateString } from '../../../utils/plannerUtils';
 
 export const Sidebar = () => {
-  const { userXp, activeTab, setActiveTab } = useBujo();
+  const { userXp, activeTab, setActiveTab, setSelectedDate, setStandardDate } = useBujo();
 
   return (
     <aside className="hidden md:flex md:flex-col w-56 flex-shrink-0 gap-2.5 no-print">
@@ -31,7 +32,12 @@ export const Sidebar = () => {
       </button>
       <button
         id="sidebar-tab-daily_log"
-        onClick={() => setActiveTab('daily_log')}
+        onClick={() => {
+          const today = getLocalDateString();
+          setSelectedDate(today);
+          setStandardDate(today);
+          setActiveTab('daily_log');
+        }}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'daily_log' 
             ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
@@ -67,7 +73,12 @@ export const Sidebar = () => {
       </button>
       <button
         id="sidebar-tab-daily_spread"
-        onClick={() => setActiveTab('daily_spread')}
+        onClick={() => {
+          const today = getLocalDateString();
+          setSelectedDate(today);
+          setStandardDate(today);
+          setActiveTab('daily_spread');
+        }}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'daily_spread' 
             ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
@@ -160,6 +171,18 @@ export const Sidebar = () => {
       >
         <Settings className="w-4 h-4" />
         <span>Ajustes</span>
+      </button>
+      <button
+        id="sidebar-tab-landing_page"
+        onClick={() => setActiveTab('landing_page')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'landing_page' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <Sparkles className="w-4 h-4 text-pink-500" />
+        <span>Apresentação 🚀</span>
       </button>
     </aside>
   );

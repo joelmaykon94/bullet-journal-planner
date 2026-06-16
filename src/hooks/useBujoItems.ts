@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { BujoItem, DreamItem } from '../types';
+import { getLocalDateString } from '../utils/plannerUtils';
 
 export function useBujoItems(
   setUserXp: React.Dispatch<React.SetStateAction<number>>,
@@ -9,7 +10,7 @@ export function useBujoItems(
   const [items, setItems] = useState<BujoItem[]>(() => {
     const saved = localStorage.getItem('bujo_focus_items');
     if (saved) return JSON.parse(saved);
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     return [
       { 
         id: '1', 
@@ -149,7 +150,7 @@ export function useBujoItems(
       type: 'task',
       status: 'open',
       content: timelineInput.trim(),
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       subtasks: []
     };
 
@@ -174,7 +175,7 @@ export function useBujoItems(
       type: newHourTaskType,
       status: 'scheduled',
       content: newHourTaskContent.trim(),
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       time: timeStr,
       subtasks: newHourTaskType === 'task' ? [] : undefined
     };
@@ -530,7 +531,7 @@ export function useBujoItems(
           return {
             ...dream,
             conquered: nextConquered,
-            conqueredAt: new Date().toISOString().split('T')[0]
+            conqueredAt: getLocalDateString()
           };
         } else {
           showToast('Status do sonho redefinido');
@@ -550,6 +551,50 @@ export function useBujoItems(
     showToast('Sonho removido');
   };
 
+  const migrateUncompletedTasksToNextDay = (dateStr: string) => {
+    const targetItems = items.filter(
+      item =>
+        item.date === dateStr &&
+        item.type === 'task' &&
+        item.status !== 'completed' &&
+        item.status !== 'cancelled' &&
+        item.status !== 'migrated'
+    );
+    if (targetItems.length === 0) {
+      showToast('Nenhuma tarefa pendente para migrar nesta data!');
+      return;
+    }
+
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    const nextDayStr = getLocalDateString(d);
+
+    // Mark current tasks as migrated
+    const updatedItems = items.map(item => {
+      if (
+        item.date === dateStr &&
+        item.type === 'task' &&
+        item.status !== 'completed' &&
+        item.status !== 'cancelled' &&
+        item.status !== 'migrated'
+      ) {
+        return { ...item, status: 'migrated' as const };
+      }
+      return item;
+    });
+
+    // Duplicate tasks to next day
+    const duplicated = targetItems.map(item => ({
+      ...item,
+      id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      date: nextDayStr,
+      status: 'open' as const
+    }));
+
+    setItems([...duplicated, ...updatedItems]);
+    showToast(`${targetItems.length} tarefas migradas para amanhã (${nextDayStr.split('-').reverse().slice(0, 2).join('/')})!`);
+  };
+
   return {
     items,
     setItems,
@@ -565,6 +610,7 @@ export function useBujoItems(
     addSubtask,
     toggleSubtask,
     deleteSubtask,
+    migrateUncompletedTasksToNextDay,
     // Lixeira & Someday
     trashItems,
     handleRestoreItem,

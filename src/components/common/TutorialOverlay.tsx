@@ -259,7 +259,16 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
 
   if (!showTutorial) return null;
 
+  const resetViewportScroll = () => {
+    window.scrollTo(0, 0);
+    if (document.body) document.body.scrollTop = 0;
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    const root = document.getElementById('root');
+    if (root) root.scrollTop = 0;
+  };
+
   const handleNext = () => {
+    resetViewportScroll();
     if (currentStep < tutorialSteps.length - 1) {
       const nextIdx = currentStep + 1;
       setCurrentStep(nextIdx);
@@ -270,6 +279,7 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
   };
 
   const handlePrev = () => {
+    resetViewportScroll();
     if (currentStep > 0) {
       const prevIdx = currentStep - 1;
       setCurrentStep(prevIdx);
@@ -396,7 +406,7 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
             Tour do Sistema • Passo {currentStep + 1} de {tutorialSteps.length}
           </span>
           <button
-            onClick={onClose}
+            onClick={() => { resetViewportScroll(); onClose(); }}
             className="text-[9px] font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider cursor-pointer"
           >
             Pular Tour

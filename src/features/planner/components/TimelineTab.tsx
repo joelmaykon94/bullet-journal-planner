@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
+import { getLocalDateString } from '../../../utils/plannerUtils';
 
 export const TimelineTab = () => {
   const {
@@ -20,7 +21,7 @@ export const TimelineTab = () => {
     cycleStatus
   } = useBujo();
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -41,7 +42,7 @@ export const TimelineTab = () => {
             onClick={() => {
               const prev = new Date(selectedDate + 'T00:00:00');
               prev.setDate(prev.getDate() - 1);
-              setSelectedDate(prev.toISOString().split('T')[0]);
+              setSelectedDate(getLocalDateString(prev));
             }}
             className="p-1.5 rounded-lg hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors"
             title="Dia Anterior"
@@ -56,7 +57,7 @@ export const TimelineTab = () => {
             onClick={() => {
               const next = new Date(selectedDate + 'T00:00:00');
               next.setDate(next.getDate() + 1);
-              setSelectedDate(next.toISOString().split('T')[0]);
+              setSelectedDate(getLocalDateString(next));
             }}
             className="p-1.5 rounded-lg hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors"
             title="Próximo Dia"

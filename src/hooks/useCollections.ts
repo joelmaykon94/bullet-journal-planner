@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { BujoItem } from '../types';
 
 export function useCollections(
+  collections: any[],
+  setCollections: React.Dispatch<React.SetStateAction<any[]>>,
   setItems: React.Dispatch<React.SetStateAction<BujoItem[]>>,
   showToast: (msg: string) => void,
   aiEngine: 'local_llm' | 'local',
@@ -11,60 +13,6 @@ export function useCollections(
   setActiveTab: React.Dispatch<React.SetStateAction<any>>,
   setActiveLLMCollectionItemId: React.Dispatch<React.SetStateAction<string | null>>
 ) {
-  const [collections, setCollections] = useState<any[]>(() => {
-    const saved = localStorage.getItem('bujo_collections');
-    if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: 'col-1',
-        name: 'Leituras & Estudos',
-        description: 'Livros, artigos científicos e documentações para ler e estudar.',
-        icon: '📚',
-        items: [
-          {
-            id: 'item-1-1',
-            title: 'Construir APIs REST com Quarkus e Panache',
-            status: 'todo',
-            notes: 'Aprender a usar o ecossistema Quarkus para aplicações Java super rápidas e leves. Focar na extensão RestEasy Reactive e Hibernate ORM com Panache.',
-            media: [
-              { id: 'media-1-1-1', type: 'link', name: 'Documentação Oficial Quarkus', url: 'https://quarkus.io/guides/' }
-            ],
-            subtasks: [
-              { id: 'sub-1-1-1', content: 'Criar esqueleto do projeto usando o code.quarkus.io', completed: true },
-              { id: 'sub-1-1-2', content: 'Configurar banco de dados local com Docker e PostgreSQL', completed: false },
-              { id: 'sub-1-1-3', content: 'Criar Entity com PanacheEntityBase', completed: false },
-              { id: 'sub-1-1-4', content: 'Implementar endpoints HTTP e testar com RestAssured', completed: false }
-            ]
-          },
-          {
-            id: 'item-1-2',
-            title: 'Manual Prático de TDAH e Hiperfoco',
-            status: 'doing',
-            notes: 'Estratégias científicas para gerenciar cegueira temporal, procrastinação e cansaço cognitivo.',
-            media: [],
-            subtasks: []
-          }
-        ]
-      },
-      {
-        id: 'col-2',
-        name: 'Projetos Criativos',
-        description: 'Ideias de design, desenvolvimento e arte.',
-        icon: '🎨',
-        items: [
-          {
-            id: 'item-2-1',
-            title: 'Mockup do App Bullet Journal Planner',
-            status: 'done',
-            notes: 'Estilo dark mode premium, com ilustrações animadas no fundo.',
-            media: [],
-            subtasks: []
-          }
-        ]
-      }
-    ];
-  });
-
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
@@ -78,10 +26,6 @@ export function useCollections(
   const [newColItemTitle, setNewColItemTitle] = useState('');
   const [newColItemNotes, setNewColItemNotes] = useState('');
   const [decomposingCollectionItemIds, setDecomposingCollectionItemIds] = useState<{ [key: string]: boolean }>({});
-
-  useEffect(() => {
-    localStorage.setItem('bujo_collections', JSON.stringify(collections));
-  }, [collections]);
 
   const handleCreateCollection = (e: React.FormEvent) => {
     e.preventDefault();

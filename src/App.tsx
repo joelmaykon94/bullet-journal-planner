@@ -23,6 +23,7 @@ import { TrashTab } from './features/planner/components/TrashTab';
 import { SomedayMaybeTab } from './features/planner/components/SomedayMaybeTab';
 import { DreamBoardTab } from './features/planner/components/DreamBoardTab';
 import { ConfirmationModal } from './components/common/ConfirmationModal';
+import { LandingPageTab } from './features/planner/components/LandingPageTab';
 
 function AppContent() {
   const {
@@ -122,6 +123,7 @@ function AppContent() {
               {activeTab === 'trash' && <TrashTab />}
               {activeTab === 'someday_maybe' && <SomedayMaybeTab />}
               {activeTab === 'dream_board' && <DreamBoardTab />}
+              {activeTab === 'landing_page' && <LandingPageTab />}
             </main>
           </div>
         )}

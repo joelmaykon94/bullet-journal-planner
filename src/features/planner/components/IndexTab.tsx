@@ -5,6 +5,7 @@ import { UserPersonaCard } from './UserPersonaCard';
 import { KnowledgeEvolutionChart } from '../../education/components/KnowledgeEvolutionChart';
 import { useBujo } from '../../../context/BujoContext';
 import { BUJO_ICONS } from './DailyLogTab';
+import { getLocalDateString } from '../../../utils/plannerUtils';
 
 export const IndexTab = () => {
   const {
@@ -20,6 +21,8 @@ export const IndexTab = () => {
     showEnergyGuide,
     setShowEnergyGuide,
     selectedDate,
+    setSelectedDate,
+    setStandardDate,
     setShowOverloadReliefModal,
     aiEngine,
     aiWorkerRef,
@@ -40,32 +43,46 @@ export const IndexTab = () => {
   const cognitiveLoad = getCognitiveLoad();
 
   // Metrics calculation
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const todayTasks = items.filter(i => i.date === today && i.type === 'task');
   const completedToday = todayTasks.filter(i => i.status === 'completed').length;
   const completionRate = todayTasks.length === 0 ? 0 : Math.round((completedToday / todayTasks.length) * 100);
 
   // General task statistics
   const totalTasks = items.filter(i => i.type === 'task').length;
-  const pendingTasks = items.filter(i => i.type === 'task' && i.status !== 'completed' && i.status !== 'cancelled').length;
+  const pendingTasks = items.filter(i => i.type === 'task' && i.status === 'open').length;
   const completedTasks = items.filter(i => i.type === 'task' && i.status === 'completed').length;
+  const otherTasksCount = items.filter(i => i.type === 'task' && i.status !== 'open' && i.status !== 'completed').length;
 
   // Context counts
-  const contexts = ['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'];
-  const contextCounts = contexts.reduce((acc, ctx) => {
-    const count = items.filter(item => item.content.toLowerCase().includes(ctx)).length;
-    if (count > 0) acc[ctx] = count;
+  const contextCounts = items.reduce((acc, item) => {
+    if (item.type === 'task') {
+      const matches = item.content.match(/@([a-zA-ZÀ-ÿ0-9_-]+)/g);
+      if (matches) {
+        matches.forEach(ctx => {
+          const c = ctx.toLowerCase();
+          acc[c] = (acc[c] || 0) + 1;
+        });
+      }
+    }
     return acc;
   }, {} as { [key: string]: number });
 
   // Delegated counts
-  const delegatedCount = items.filter(item => item.delegatedTo).length;
+  const delegateCounts = items.reduce((acc, item) => {
+    if (item.delegatedTo && item.type === 'task') {
+      const name = item.delegatedTo;
+      acc[name] = (acc[name] || 0) + 1;
+    }
+    return acc;
+  }, {} as { [key: string]: number });
+  const delegatedTotalCount = items.filter(item => item.type === 'task' && item.delegatedTo).length;
 
-  // Icon / Theme counts
-  const themeCounts = ['dinheiro', 'familia', 'saude', 'arte', 'ideia'].reduce((acc, cat) => {
-    const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat || i.tooltip.toLowerCase().includes(cat)).map(i => i.emoji);
-    const count = items.filter(item => item.icon && matchingEmojis.includes(item.icon)).length;
-    if (count > 0) acc[cat] = count;
+  // Icon / Category counts
+  const categoryCounts = items.reduce((acc, item) => {
+    if (item.icon && item.type === 'task') {
+      acc[item.icon] = (acc[item.icon] || 0) + 1;
+    }
     return acc;
   }, {} as { [key: string]: number });
 
@@ -113,7 +130,11 @@ export const IndexTab = () => {
             {/* Bujo Action buttons */}
             <div className="flex gap-1.5 pl-1 shrink-0">
               <button 
-                onClick={() => setActiveTab('daily_log')}
+                onClick={() => {
+                  setSelectedDate(today);
+                  setStandardDate(today);
+                  setActiveTab('daily_log');
+                }}
                 className="px-3 py-1.5 bg-bujo-highlight text-white text-[9px] font-bold rounded-lg hover:opacity-95 transition-opacity cursor-pointer shadow-sm shadow-bujo-highlight/10"
               >
                 Diário Bujo
@@ -129,25 +150,46 @@ export const IndexTab = () => {
         </div>
 
         {/* High-density Task & Status distribution */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           {/* Col 1: Overview */}
-          <div className="bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 p-2.5 rounded-xl flex flex-col justify-between">
-            <span className="text-[9px] text-zinc-400 uppercase font-mono tracking-wider font-bold">Tarefas Gerais</span>
-            <div className="flex items-center justify-between mt-1.5 text-[10.5px]">
-              <span className="text-zinc-500">A fazer: <strong className="text-zinc-200">{pendingTasks}</strong></span>
-              <span className="text-zinc-500">Feitas: <strong className="text-emerald-500">{completedTasks}</strong></span>
-              <span className="text-zinc-555">Total: <strong className="text-zinc-400">{totalTasks}</strong></span>
-            </div>
+          <div className="bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 p-3 rounded-xl flex flex-col justify-between">
+            <span className="text-[9px] text-zinc-450 uppercase font-mono tracking-wider font-bold mb-2">Tarefas Gerais</span>
+            {totalTasks === 0 ? (
+              <span className="text-[10px] text-zinc-500 italic block py-4 text-center">Sem dados de tarefas</span>
+            ) : (
+              <div className="flex items-end justify-around h-16 pt-2">
+                {[
+                  { label: 'A Fazer', val: pendingTasks, color: 'bg-amber-500', labelShort: 'Fazer' },
+                  { label: 'Feitas', val: completedTasks, color: 'bg-emerald-500', labelShort: 'Feito' },
+                  { label: 'Outras', val: otherTasksCount, color: 'bg-indigo-500', labelShort: 'Outro' },
+                  { label: 'Total', val: totalTasks, color: 'bg-zinc-500', labelShort: 'Total' }
+                ].map(bar => (
+                  <div key={bar.label} className="flex flex-col items-center gap-1 group relative">
+                    <div className="absolute bottom-full mb-1 px-1.5 py-0.5 rounded bg-zinc-950 text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-bold shadow-md">
+                      {bar.label}: {bar.val}
+                    </div>
+                    <div className="w-4 bg-zinc-200/20 dark:bg-white/5 rounded-t-md h-12 flex items-end overflow-hidden">
+                      <div 
+                        className={`w-full rounded-t-sm ${bar.color}`} 
+                        style={{ height: `${(bar.val / totalTasks) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[8px] font-bold text-zinc-400 select-none">{bar.labelShort}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Col 2: Active Contexts */}
-          <div className="bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 p-2.5 rounded-xl flex flex-col justify-between">
-            <span className="text-[9px] text-zinc-400 uppercase font-mono tracking-wider font-bold">Contextos Ativos</span>
-            <div className="flex flex-wrap gap-1 mt-1.5">
-              {Object.keys(contextCounts).length === 0 ? (
-                <span className="text-[10px] text-zinc-500 italic">Nenhum contexto ativo</span>
-              ) : (
-                Object.entries(contextCounts).map(([ctx, count]) => {
+          <div className="bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 p-3 rounded-xl flex flex-col justify-between">
+            <span className="text-[9px] text-zinc-450 uppercase font-mono tracking-wider font-bold mb-2">Contextos Ativos</span>
+            {Object.keys(contextCounts).length === 0 ? (
+              <span className="text-[10px] text-zinc-500 italic block py-4 text-center">Nenhum contexto</span>
+            ) : (
+              <div className="flex items-end justify-around h-16 pt-2">
+                {(() => {
+                  const maxCtx = Math.max(...Object.values(contextCounts), 1);
                   const icons: { [key: string]: string } = {
                     '@computador': '💻',
                     '@online': '🌐',
@@ -158,47 +200,85 @@ export const IndexTab = () => {
                     '@programando': '⚡',
                     '@aguardando': '⏳'
                   };
-                  return (
-                    <span key={ctx} className="bg-zinc-250/50 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 px-1.5 py-0.5 rounded text-[9.5px] font-bold text-zinc-300">
-                      {icons[ctx] || ''}{ctx.replace('@', '')} ({count})
-                    </span>
-                  );
-                })
-              )}
-            </div>
+                  return Object.entries(contextCounts).slice(0, 5).map(([ctx, count]) => (
+                    <div key={ctx} className="flex flex-col items-center gap-1 group relative">
+                      <div className="absolute bottom-full mb-1 px-1.5 py-0.5 rounded bg-zinc-950 text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-bold shadow-md">
+                        {ctx}: {count}
+                      </div>
+                      <div className="w-4 bg-zinc-200/20 dark:bg-white/5 rounded-t-md h-12 flex items-end overflow-hidden">
+                        <div 
+                          className="w-full rounded-t-sm bg-bujo-accent" 
+                          style={{ height: `${(count / maxCtx) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] select-none" title={ctx}>{icons[ctx] || '🏷️'}</span>
+                    </div>
+                  ));
+                })()}
+              </div>
+            )}
           </div>
 
           {/* Col 3: Icon Categories (Themes) */}
-          <div className="bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 p-2.5 rounded-xl flex flex-col justify-between">
-            <span className="text-[9px] text-zinc-400 uppercase font-mono tracking-wider font-bold">Categorias Bujo</span>
-            <div className="flex flex-wrap gap-1 mt-1.5">
-              {Object.keys(themeCounts).length === 0 ? (
-                <span className="text-[10px] text-zinc-500 italic">Nenhuma categoria ativa</span>
-              ) : (
-                Object.entries(themeCounts).map(([cat, count]) => {
-                  const label = cat === 'dinheiro' ? '💰 Finan' :
-                                cat === 'familia' ? '👨‍👩‍👧‍👦 Fam' :
-                                cat === 'saude' ? '🩺 Saúde' :
-                                cat === 'arte' ? '🎨 Arte' : '💡 Ideia';
-                  return (
-                    <span key={cat} className="bg-zinc-250/50 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 px-1.5 py-0.5 rounded text-[9.5px] font-bold text-zinc-300">
-                      {label} ({count})
-                    </span>
-                  );
-                })
-              )}
-            </div>
+          <div className="bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 p-3 rounded-xl flex flex-col justify-between">
+            <span className="text-[9px] text-zinc-450 uppercase font-mono tracking-wider font-bold mb-2">Categorias Ativas</span>
+            {Object.keys(categoryCounts).length === 0 ? (
+              <span className="text-[10px] text-zinc-500 italic block py-4 text-center">Nenhuma categoria</span>
+            ) : (
+              <div className="flex items-end justify-around h-16 pt-2">
+                {(() => {
+                  const maxCat = Math.max(...Object.values(categoryCounts), 1);
+                  return Object.entries(categoryCounts).slice(0, 5).map(([icon, count]) => {
+                    const bujoIcon = BUJO_ICONS.find(i => i.emoji === icon);
+                    const name = bujoIcon ? bujoIcon.name : '';
+                    return (
+                      <div key={icon} className="flex flex-col items-center gap-1 group relative">
+                        <div className="absolute bottom-full mb-1 px-1.5 py-0.5 rounded bg-zinc-950 text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-bold shadow-md">
+                          {name || 'Item'}: {count}
+                        </div>
+                        <div className="w-4 bg-zinc-200/20 dark:bg-white/5 rounded-t-md h-12 flex items-end overflow-hidden">
+                          <div 
+                            className="w-full rounded-t-sm bg-bujo-highlight" 
+                            style={{ height: `${(count / maxCat) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] select-none">{icon}</span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            )}
           </div>
 
           {/* Col 4: Delegation Summary */}
-          <div className="bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 p-2.5 rounded-xl flex flex-col justify-between">
-            <span className="text-[9px] text-zinc-400 uppercase font-mono tracking-wider font-bold">Delegado</span>
-            <div className="mt-1.5 flex items-center justify-between">
-              <span className="text-[10.5px] text-zinc-500">Tarefas Delegadas:</span>
-              <span className="bg-bujo-highlight/15 text-bujo-highlight border border-bujo-highlight/30 px-2 py-0.5 rounded-full text-[9.5px] font-black">
-                👥 {delegatedCount}
-              </span>
-            </div>
+          <div className="bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 p-3 rounded-xl flex flex-col justify-between">
+            <span className="text-[9px] text-zinc-450 uppercase font-mono tracking-wider font-bold mb-2">Delegados</span>
+            {Object.keys(delegateCounts).length === 0 ? (
+              <span className="text-[10px] text-zinc-500 italic block py-4 text-center">Sem delegações</span>
+            ) : (
+              <div className="flex items-end justify-around h-16 pt-2">
+                {(() => {
+                  const maxDel = Math.max(...Object.values(delegateCounts), 1);
+                  return Object.entries(delegateCounts).slice(0, 5).map(([name, count]) => (
+                    <div key={name} className="flex flex-col items-center gap-1 group relative">
+                      <div className="absolute bottom-full mb-1 px-1.5 py-0.5 rounded bg-zinc-950 text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-bold shadow-md">
+                        {name}: {count}
+                      </div>
+                      <div className="w-4 bg-zinc-200/20 dark:bg-white/5 rounded-t-md h-12 flex items-end overflow-hidden">
+                        <div 
+                          className="w-full rounded-t-sm bg-red-500/80" 
+                          style={{ height: `${(count / maxDel) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-[8px] font-bold text-zinc-400 select-none max-w-7 truncate" title={name}>
+                        {name.substring(0, 3)}
+                      </span>
+                    </div>
+                  ));
+                })()}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -209,10 +289,10 @@ export const IndexTab = () => {
         {/* Left Area (Lg:col-span-8 flex flex-col gap-4) */}
         <div className="lg:col-span-8 flex flex-col gap-4">
           
-          {/* Row A: Energy Chart & Quick Access tools side by side */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          {/* Row A: Energy Chart & Habit Tracker side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             
-            <div id="tutorial-energy-chart" className="md:col-span-8">
+            <div id="tutorial-energy-chart" className="lg:col-span-7">
               <EnergyChart 
                 items={items}
                 getHarmonyScore={getHarmonyScore}
@@ -223,130 +303,51 @@ export const IndexTab = () => {
               />
             </div>
 
-            {/* Quick Access Tools Grid */}
-            <div className="md:col-span-4 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 flex flex-col gap-3 h-full justify-between">
-              <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-zinc-200/20 dark:border-white/5 pb-2">
-                <Target className="w-3.5 h-3.5 text-bujo-highlight" />
-                Menu de Acesso Rápido
-              </h4>
-              <div className="flex flex-col gap-2 flex-1 justify-between mt-1.5">
-                <div 
-                  onClick={() => setActiveTab('daily_spread')}
-                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
-                >
-                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                    <Sliders className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <span className="text-[10px] font-bold text-zinc-200 block">Timeline</span>
-                    <span className="text-[8px] text-zinc-550 block">Foco e Organização no Tempo</span>
-                  </div>
-                </div>
-                
-                <div 
-                  onClick={() => setActiveTab('weekly_log')}
-                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
-                >
-                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                    <LayoutGrid className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <span className="text-[10px] font-bold text-zinc-200 block">Weekly Log</span>
-                    <span className="text-[8px] text-zinc-550 block">Revisão Semanal de Foco</span>
-                  </div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveTab('monthly_log')}
-                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
-                >
-                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                    <CalendarDays className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <span className="text-[10px] font-bold text-zinc-200 block">Monthly Log</span>
-                    <span className="text-[8px] text-zinc-550 block">Revisão Mensal e Metas</span>
-                  </div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveTab('collections')}
-                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
-                >
-                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                    <ListChecks className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <span className="text-[10px] font-bold text-zinc-200 block">Listas</span>
-                    <span className="text-[8px] text-zinc-550 block">Coleções e Contextos</span>
-                  </div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveTab('brain_dump')}
-                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
-                >
-                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                    <Brain className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <span className="text-[10px] font-bold text-zinc-200 block">Despejo de Mente</span>
-                    <span className="text-[8px] text-zinc-550 block">Descarregar Ansiedade</span>
-                  </div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveTab('dream_board')}
-                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
-                >
-                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <span className="text-[10px] font-bold text-zinc-200 block">Quadro dos Sonhos</span>
-                    <span className="text-[8px] text-zinc-550 block">Mentalizar e Conquistar</span>
-                  </div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveTab('someday_maybe')}
-                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
-                >
-                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                    <Cloud className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <span className="text-[10px] font-bold text-zinc-200 block">Algum Dia</span>
-                    <span className="text-[8px] text-zinc-550 block">Ideias e Planos GTD</span>
-                  </div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveTab('trash')}
-                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
-                >
-                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                    <Trash2 className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-tight">
-                    <span className="text-[10px] font-bold text-zinc-200 block">Lixeira</span>
-                    <span className="text-[8px] text-zinc-550 block">Itens Excluídos</span>
-                  </div>
-                </div>
-              </div>
+            {/* Habit Tracker at top for easy accessibility */}
+            <div id="tutorial-habit-tracker" className="lg:col-span-5">
+              <HabitTracker />
             </div>
           </div>
 
-           {/* Row B: Knowledge Evolution Chart */}
-           <div id="tutorial-knowledge-chart">
-             <KnowledgeEvolutionChart />
-           </div>
+          {/* Row B: Knowledge Evolution Chart */}
+          <div id="tutorial-knowledge-chart">
+            <KnowledgeEvolutionChart />
+          </div>
 
-           {/* Row C: Habit Tracker */}
-           <div id="tutorial-habit-tracker">
-             <HabitTracker />
-           </div>
-         </div>
+          {/* Row C: Menu de Acesso Rápido (Horizontal Grid) */}
+          <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4">
+            <h4 className="text-[10px] font-bold text-zinc-550 uppercase tracking-widest flex items-center gap-1.5 border-b border-zinc-200/20 dark:border-white/5 pb-2 mb-3">
+              <Target className="w-3.5 h-3.5 text-bujo-highlight" />
+              Menu de Acesso Rápido
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+              {[
+                { tab: 'daily_spread', label: 'Timeline', icon: Sliders },
+                { tab: 'weekly_log', label: 'Weekly Log', icon: LayoutGrid },
+                { tab: 'monthly_log', label: 'Monthly Log', icon: CalendarDays },
+                { tab: 'collections', label: 'Coleções', icon: ListChecks },
+                { tab: 'brain_dump', label: 'Brain Dump', icon: Brain },
+                { tab: 'dream_board', label: 'Sonhos', icon: Sparkles },
+                { tab: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
+                { tab: 'trash', label: 'Lixeira', icon: Trash2 }
+              ].map(item => {
+                const Icon = item.icon;
+                return (
+                  <div 
+                    key={item.tab}
+                    onClick={() => setActiveTab(item.tab as any)}
+                    className="p-2.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-1"
+                  >
+                    <div className="p-1.5 rounded-lg bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className="text-[9px] font-bold text-zinc-200 block truncate w-full">{item.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
 
         {/* Right Area (Lg:col-span-4) -> Unified Persona & Focus Companion */}
         <div className="lg:col-span-4 h-full flex flex-col justify-between">
