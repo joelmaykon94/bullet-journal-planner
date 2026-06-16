@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Sparkles, Calendar as CalendarIcon, CheckSquare, Plus, Search, X } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { DayTasksModal } from './DayTasksModal';
@@ -281,6 +281,25 @@ export const MonthlyLogTab = () => {
 
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
   const [activeCalendarDate, setActiveCalendarDate] = useState(selectedDate);
+  const [reviewText, setReviewText] = useState('');
+
+  // Sync state with localStorage when the month changes
+  useEffect(() => {
+    const key = `bujo_monthly_review_${currentYearMonth.year}_${currentYearMonth.month}`;
+    setReviewText(localStorage.getItem(key) || '');
+  }, [currentYearMonth.year, currentYearMonth.month]);
+
+  // Debounce saving the text to localStorage
+  useEffect(() => {
+    const key = `bujo_monthly_review_${currentYearMonth.year}_${currentYearMonth.month}`;
+    const stored = localStorage.getItem(key) || '';
+    if (reviewText !== stored) {
+      const timeoutId = setTimeout(() => {
+        localStorage.setItem(key, reviewText);
+      }, 500); // 500ms debounce
+      return () => clearTimeout(timeoutId);
+    }
+  }, [reviewText, currentYearMonth.year, currentYearMonth.month]);
 
   const monthsList = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -327,15 +346,7 @@ export const MonthlyLogTab = () => {
     });
   };
 
-  const getMonthReviewText = () => {
-    const key = `bujo_monthly_review_${currentYearMonth.year}_${currentYearMonth.month}`;
-    return localStorage.getItem(key) || '';
-  };
 
-  const saveMonthReviewText = (text: string) => {
-    const key = `bujo_monthly_review_${currentYearMonth.year}_${currentYearMonth.month}`;
-    localStorage.setItem(key, text);
-  };
 
   const activeDateItems = items.filter(item => item.date === activeCalendarDate);
   const activeDateTasks = activeDateItems.filter(item => item.type === 'task');
@@ -541,8 +552,8 @@ export const MonthlyLogTab = () => {
             </p>
 
             <textarea
-              value={getMonthReviewText()}
-              onChange={(e) => saveMonthReviewText(e.target.value)}
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
               placeholder="O que aprendi de mais valioso sobre minha energia neste mês? Quais objetivos principais eu consegui atacar? (Salva automaticamente)..."
               rows={4}
               className="w-full bg-zinc-200/30 dark:bg-white/5 border border-zinc-350/50 dark:border-white/10 rounded-2xl p-4 text-xs text-bujo-text placeholder:text-zinc-650 outline-none focus:border-bujo-highlight/30 resize-none transition-colors"
