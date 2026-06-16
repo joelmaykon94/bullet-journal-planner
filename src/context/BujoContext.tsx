@@ -13,6 +13,11 @@ import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, ge
 import { useAuth } from './AuthContext';
 
 export interface BujoContextType {
+  showFeatureHelpModal: boolean;
+  setShowFeatureHelpModal: React.Dispatch<React.SetStateAction<boolean>>;
+  viewedFeatureHelp: Record<string, boolean>;
+  setViewedFeatureHelp: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+
   // Sync status
   syncStatus: 'synced' | 'syncing' | 'offline' | 'error';
   handleRetrySync: () => Promise<void>;
@@ -343,6 +348,18 @@ export interface BujoContextType {
 const BujoContext = createContext<BujoContextType | undefined>(undefined);
 
 export function BujoProvider({ children }: { children: ReactNode }) {
+
+  const [showFeatureHelpModal, setShowFeatureHelpModal] = useState(false);
+  const [viewedFeatureHelp, setViewedFeatureHelp] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('bujo_feature_help_viewed');
+    if (saved) return JSON.parse(saved);
+    return {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bujo_feature_help_viewed', JSON.stringify(viewedFeatureHelp));
+  }, [viewedFeatureHelp]);
+
   // Toast notifications
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (msg: string) => {
@@ -2109,6 +2126,11 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   return (
     <BujoContext.Provider value={{
+      showFeatureHelpModal,
+      setShowFeatureHelpModal,
+      viewedFeatureHelp,
+      setViewedFeatureHelp,
+
       // Sync status
       syncStatus,
       handleRetrySync,

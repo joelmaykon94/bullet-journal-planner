@@ -5,6 +5,7 @@ import { AuthScreen } from './features/auth/components/AuthScreen';
 import { Toast } from './components/common/Toast';
 import { CozyCabinBackground } from './components/common/CozyCabinBackground';
 import { TutorialOverlay } from './components/common/TutorialOverlay';
+import { FeatureHelpModal, FloatingHelpButton } from './components/common/FeatureHelpModal';
 import { RapidLogModal, FloatingActionButton } from './components/common/RapidLog';
 import { Header } from './features/planner/components/Header';
 import { Sidebar } from './features/planner/components/Sidebar';
