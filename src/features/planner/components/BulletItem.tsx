@@ -411,7 +411,7 @@ export const BulletItem = ({
                       type="time"
                       value={localTime}
                       onChange={(e) => setLocalTime(e.target.value)}
-                      className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-355 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none"
+                      className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-355 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none w-full min-w-[120px]"
                     />
                   </div>
                   <div className="flex-1 flex flex-col gap-1">

@@ -160,7 +160,7 @@ const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveSta
             type="time"
             value={inputTime}
             onChange={(e) => setInputTime(e.target.value)}
-            className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-[9.5px] font-mono py-0 w-14"
+            className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-[9.5px] font-mono py-0 w-24"
           />
         </div>
 

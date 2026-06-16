@@ -668,7 +668,7 @@ export const DailyLogTab = () => {
                     type="time"
                     value={standardTime}
                     onChange={(e) => setStandardTime(e.target.value)}
-                    className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-mono py-0 w-16"
+                    className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-mono py-0 w-28"
                   />
                 </div>
               </div>
@@ -736,21 +736,21 @@ export const DailyLogTab = () => {
           {/* Col 1: Search & Sort & Reset (col-span-5) */}
           <div className="md:col-span-5 flex items-center gap-1.5 w-full flex-wrap">
             {/* Search Input */}
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-450 dark:text-zinc-500" />
+            <div className="relative flex-1 min-w-[160px] md:min-w-[200px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-450 dark:text-zinc-500" />
               <input
                 type="text"
                 placeholder="Pesquisar..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                className="w-full pl-7 pr-6 py-0.5 text-[11px] rounded-md bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
+                className="w-full pl-8 pr-7 py-1 text-xs rounded-md bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
               />
               {searchText && (
                 <button
                   onClick={() => setSearchText('')}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-bujo-text cursor-pointer p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-bujo-text cursor-pointer p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10"
                 >
-                  <X className="w-2.5 h-2.5" />
+                  <X className="w-3 h-3" />
                 </button>
               )}
             </div>

@@ -273,7 +273,7 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
                     type="time"
                     value={inputTime}
                     onChange={(e) => setInputTime(e.target.value)}
-                    className="bg-transparent border-none text-white outline-none cursor-pointer text-[10.5px] font-mono py-0 w-16"
+                    className="bg-transparent border-none text-white outline-none cursor-pointer text-[10.5px] font-mono py-0 w-28"
                   />
                 </div>
               </div>
