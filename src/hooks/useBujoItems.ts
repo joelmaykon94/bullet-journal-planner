@@ -58,6 +58,73 @@ export function useBujoItems(
     localStorage.setItem('bujo_focus_items', JSON.stringify(items));
   }, [items]);
 
+  // Auto-migration of pending tasks on day rollover (midnight)
+  useEffect(() => {
+    const checkAutoMigration = () => {
+      const currentItems = itemsRef.current;
+      const todayStr = getLocalDateString();
+      
+      const pastPendingTasks = currentItems.filter(
+        item =>
+          item.type === 'task' &&
+          item.date < todayStr &&
+          item.status !== 'completed' &&
+          item.status !== 'cancelled' &&
+          item.status !== 'migrated'
+      );
+
+      if (pastPendingTasks.length === 0) return;
+
+      const newItems: BujoItem[] = [];
+      const copiesToCreate: BujoItem[] = [];
+
+      currentItems.forEach(item => {
+        const isPastPending =
+          item.type === 'task' &&
+          item.date < todayStr &&
+          item.status !== 'completed' &&
+          item.status !== 'cancelled' &&
+          item.status !== 'migrated';
+
+        if (isPastPending) {
+          if (!item.time) {
+            // If it has no time (only date), move it to today (so it is deleted from the previous day)
+            newItems.push({
+              ...item,
+              date: todayStr,
+              status: 'open' as const
+            });
+          } else {
+            // If it has date and time, mark the original on the previous day as migrated
+            newItems.push({
+              ...item,
+              status: 'migrated' as const
+            });
+            // Create a copy for today
+            copiesToCreate.push({
+              ...item,
+              id: `task-auto-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+              date: todayStr,
+              status: 'open' as const
+            });
+          }
+        } else {
+          newItems.push(item);
+        }
+      });
+
+      setItems([...newItems, ...copiesToCreate]);
+      showToast(`🔄 Auto-migração: ${pastPendingTasks.length} tarefas pendentes trazidas para hoje!`);
+    };
+
+    // Run check immediately on mount
+    checkAutoMigration();
+
+    // Set up check interval (every 10 seconds)
+    const intervalId = setInterval(checkAutoMigration, 10000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   // Handle standard log item quick save
   const handleSaveStandardInput = (
     standardInput: string,
