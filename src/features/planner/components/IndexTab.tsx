@@ -335,11 +335,11 @@ export const IndexTab = () => {
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
           {[
-            { tab: 'daily_spread', label: 'Timeline', icon: Sliders },
-            { tab: 'weekly_log', label: 'Weekly Log', icon: LayoutGrid },
-            { tab: 'monthly_log', label: 'Monthly Log', icon: CalendarDays },
+            { tab: 'daily_spread', label: 'Agenda Diária', icon: Sliders },
+            { tab: 'weekly_log', label: 'Log Semanal', icon: LayoutGrid },
+            { tab: 'monthly_log', label: 'Log Mensal', icon: CalendarDays },
             { tab: 'collections', label: 'Coleções', icon: ListChecks },
-            { tab: 'brain_dump', label: 'Brain Dump', icon: Brain },
+            { tab: 'brain_dump', label: 'Despejo de Mente', icon: Brain },
             { tab: 'dream_board', label: 'Sonhos', icon: Sparkles },
             { tab: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
             { tab: 'trash', label: 'Lixeira', icon: Trash2 }

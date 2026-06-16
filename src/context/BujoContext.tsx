@@ -344,7 +344,22 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     return (saved as any) || 'high';
   });
 
-  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board' | 'landing_page'>('indice');
+  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board' | 'landing_page'>(() => {
+    const saved = localStorage.getItem('bujo_focus_settings');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.firstTime === true) {
+          return 'landing_page';
+        }
+      } catch (e) {
+        console.error('Error parsing settings for initial tab:', e);
+      }
+    } else {
+      return 'landing_page';
+    }
+    return 'indice';
+  });
   const [selectedDate, setSelectedDate] = useState<string>(() => getLocalDateString());
   const [showOverloadReliefModal, setShowOverloadReliefModal] = useState<boolean>(false);
   const [focoActive, setFocoActive] = useState<boolean>(false);

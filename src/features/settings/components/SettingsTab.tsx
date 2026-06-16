@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, Sparkles, LogOut, Database, User, ShieldAlert } from 'lucide-react';
+import { ChevronRight, Sparkles, LogOut, Database, User, ShieldAlert, Zap } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -251,6 +251,100 @@ export const SettingsTab = () => {
             >
               Ver Tutorial de Onboarding
             </button>
+          </div>
+        </div>
+
+        {/* ADHD Energy Rhythm Configuration */}
+        <div className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-6">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-bujo-highlight uppercase tracking-wider flex items-center gap-1.5 font-mono">
+              <Zap className="w-4 h-4 animate-pulse" />
+              Configuração do Ritmo Energético TDAH
+            </span>
+            <p className="text-[10px] text-zinc-400 leading-relaxed">
+              Personalize suas flutuações circadianas e de dopamina para melhorar seu foco e evitar fadiga mental.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="space-y-1.5 text-left">
+              <span className="text-[9.5px] font-bold text-zinc-450 uppercase block font-mono">🌅 Início do Dia</span>
+              <input
+                type="time"
+                value={settings.dayStart || '06:00'}
+                onChange={e => setSettings(prev => ({ ...prev, dayStart: e.target.value }))}
+                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight"
+              />
+            </div>
+            <div className="space-y-1.5 text-left">
+              <span className="text-[9.5px] font-bold text-zinc-450 uppercase block font-mono">🛌 Fim do Dia (Dormir)</span>
+              <input
+                type="time"
+                value={settings.dayEnd || '23:00'}
+                onChange={e => setSettings(prev => ({ ...prev, dayEnd: e.target.value }))}
+                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight"
+              />
+            </div>
+            
+            <div className="space-y-1.5 text-left col-span-2">
+              <span className="text-[9.5px] font-bold text-zinc-450 uppercase block font-mono">⚡ Pico de Foco (Alta Energia)</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="time"
+                  value={settings.energyPeakStart || '09:30'}
+                  onChange={e => setSettings(prev => ({ ...prev, energyPeakStart: e.target.value }))}
+                  className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight"
+                />
+                <span className="text-zinc-500 font-mono font-bold">até</span>
+                <input
+                  type="time"
+                  value={settings.energyPeakEnd || '12:30'}
+                  onChange={e => setSettings(prev => ({ ...prev, energyPeakEnd: e.target.value }))}
+                  className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-left col-span-2">
+              <span className="text-[9.5px] font-bold text-zinc-450 uppercase block font-mono">💤 Vale de Descanso & Crash</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="time"
+                  value={settings.restStart || '13:30'}
+                  onChange={e => setSettings(prev => ({ ...prev, restStart: e.target.value }))}
+                  className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight"
+                />
+                <span className="text-zinc-500 font-mono font-bold">até</span>
+                <input
+                  type="time"
+                  value={settings.restEnd || '16:00'}
+                  onChange={e => setSettings(prev => ({ ...prev, restEnd: e.target.value }))}
+                  className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-left col-span-2">
+              <span className="text-[9.5px] font-bold text-zinc-450 uppercase block font-mono">🌅 Segundo Fôlego</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="time"
+                  value={settings.secondWindStart || '16:30'}
+                  onChange={e => setSettings(prev => ({ ...prev, secondWindStart: e.target.value }))}
+                  className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight"
+                />
+                <span className="text-zinc-500 font-mono font-bold">até</span>
+                <input
+                  type="time"
+                  value={settings.secondWindEnd || '20:00'}
+                  onChange={e => setSettings(prev => ({ ...prev, secondWindEnd: e.target.value }))}
+                  className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="text-[9px] text-zinc-550 dark:text-zinc-500 leading-relaxed italic border-t border-zinc-200/10 dark:border-white/5 pt-2 font-mono">
+            * Suas alterações serão refletidas em tempo real no gráfico de ritmo biológico no Índice.
           </div>
         </div>
 

@@ -2,7 +2,7 @@ import { useBujo } from '../../../context/BujoContext';
 import { Sparkles, Brain, Volume2, Award, Zap, CheckCircle2, Heart, ListTodo, ShieldCheck, Clock, ArrowRight } from 'lucide-react';
 
 export const LandingPageTab = () => {
-  const { setActiveTab } = useBujo();
+  const { setActiveTab, settings, setSettings, setShowTutorial } = useBujo();
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-16 py-6 pb-20 font-mono text-zinc-300 animate-fade-in no-print">
@@ -24,14 +24,98 @@ export const LandingPageTab = () => {
           Organize tarefas, reduza a sobrecarga cognitiva e ganhe foco absoluto sem se perder em interfaces barulhentas.
         </p>
 
+        {settings.firstTime && (
+          <div className="max-w-xl mx-auto p-5 rounded-2xl bg-zinc-950/60 border border-bujo-highlight/30 space-y-4 text-left">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-bujo-highlight animate-pulse" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider">Configure seu Ritmo de Energia Inicial</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 leading-relaxed">
+              O BuJo Focus adapta gráficos e recomendações com base no seu dia. Ajuste os horários estimados que você acorda, tem pico de foco, faz descanso/crash, e quando dorme:
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+              <div className="space-y-1">
+                <span className="text-[9px] text-zinc-500 font-mono block">🌅 Acordar</span>
+                <input 
+                  type="time" 
+                  value={settings.dayStart || '06:00'} 
+                  onChange={(e) => setSettings(prev => ({ ...prev, dayStart: e.target.value }))}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-2.5 py-1.5 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight text-center"
+                />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[9px] text-zinc-500 font-mono block">🛌 Dormir</span>
+                <input 
+                  type="time" 
+                  value={settings.dayEnd || '23:00'} 
+                  onChange={(e) => setSettings(prev => ({ ...prev, dayEnd: e.target.value }))}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-2.5 py-1.5 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight text-center"
+                />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[9px] text-zinc-550 dark:text-zinc-500 font-mono block">⚡ Pico Foco (Início)</span>
+                <input 
+                  type="time" 
+                  value={settings.energyPeakStart || '09:30'} 
+                  onChange={(e) => setSettings(prev => ({ ...prev, energyPeakStart: e.target.value }))}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-2.5 py-1.5 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight text-center"
+                />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[9px] text-zinc-550 dark:text-zinc-500 font-mono block">⚡ Pico Foco (Fim)</span>
+                <input 
+                  type="time" 
+                  value={settings.energyPeakEnd || '12:30'} 
+                  onChange={(e) => setSettings(prev => ({ ...prev, energyPeakEnd: e.target.value }))}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-2.5 py-1.5 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight text-center"
+                />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[9px] text-zinc-550 dark:text-zinc-500 font-mono block">💤 Descanso (Início)</span>
+                <input 
+                  type="time" 
+                  value={settings.restStart || '13:30'} 
+                  onChange={(e) => setSettings(prev => ({ ...prev, restStart: e.target.value }))}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-2.5 py-1.5 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight text-center"
+                />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[9px] text-zinc-550 dark:text-zinc-500 font-mono block">💤 Descanso (Fim)</span>
+                <input 
+                  type="time" 
+                  value={settings.restEnd || '16:00'} 
+                  onChange={(e) => setSettings(prev => ({ ...prev, restEnd: e.target.value }))}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-2.5 py-1.5 font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight text-center"
+                />
+              </div>
+            </div>
+            <p className="text-[9px] text-zinc-500 leading-relaxed italic">
+              * Você poderá ajustar esses horários a qualquer momento no Índice ou nos Ajustes.
+            </p>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <button
-            onClick={() => setActiveTab('indice')}
-            className="w-full sm:w-auto px-6 py-3 bg-bujo-highlight hover:bg-bujo-highlight/95 text-white font-bold rounded-2xl text-xs transition-all shadow-lg shadow-bujo-highlight/25 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
-          >
-            <span>Acessar o Painel</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          {settings.firstTime ? (
+            <button
+              onClick={() => {
+                setShowTutorial(true);
+                setActiveTab('indice');
+              }}
+              className="w-full sm:w-auto px-6 py-3 bg-bujo-highlight hover:bg-bujo-highlight/95 text-white font-bold rounded-2xl text-xs transition-all shadow-lg shadow-bujo-highlight/25 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
+            >
+              <span>Tutorial de Uso da Plataforma</span>
+              <Sparkles className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setActiveTab('indice')}
+              className="w-full sm:w-auto px-6 py-3 bg-bujo-highlight hover:bg-bujo-highlight/95 text-white font-bold rounded-2xl text-xs transition-all shadow-lg shadow-bujo-highlight/25 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
+            >
+              <span>Acessar Índice</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
           
           <a
             href="https://github.com/joelmaykon/bullet-journal-planner"

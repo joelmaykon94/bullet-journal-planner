@@ -17,6 +17,17 @@ export function useBujoSettings() {
       if (parsed.accentColor === '#4A7C6C') {
         parsed.accentColor = '#3B82F6'; // Water Blue
       }
+      
+      // Initialize default rhythm settings if they don't exist
+      if (!parsed.dayStart) parsed.dayStart = '06:00';
+      if (!parsed.energyPeakStart) parsed.energyPeakStart = '09:30';
+      if (!parsed.energyPeakEnd) parsed.energyPeakEnd = '12:30';
+      if (!parsed.restStart) parsed.restStart = '13:30';
+      if (!parsed.restEnd) parsed.restEnd = '16:00';
+      if (!parsed.secondWindStart) parsed.secondWindStart = '16:30';
+      if (!parsed.secondWindEnd) parsed.secondWindEnd = '20:00';
+      if (!parsed.dayEnd) parsed.dayEnd = '23:00';
+
       return parsed;
     }
     return {
@@ -24,7 +35,15 @@ export function useBujoSettings() {
       font: 'mono',
       highlightColor: '#EF4444', // Flame Red (Rengoku)
       accentColor: '#3B82F6', // Water Blue (Giyu)
-      firstTime: true
+      firstTime: true,
+      dayStart: '06:00',
+      energyPeakStart: '09:30',
+      energyPeakEnd: '12:30',
+      restStart: '13:30',
+      restEnd: '16:00',
+      secondWindStart: '16:30',
+      secondWindEnd: '20:00',
+      dayEnd: '23:00'
     };
   });
 

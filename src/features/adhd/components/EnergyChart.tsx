@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Info, Sparkles, CheckCircle2, AlertTriangle, Lightbulb, Clock } from 'lucide-react';
+import { Info, Sparkles, CheckCircle2, AlertTriangle, Lightbulb, Clock, Sliders } from 'lucide-react';
 import { BujoItem } from '../../../types';
 import { getEnergyX, getEnergyY } from '../../../utils/plannerUtils';
+import { useBujo } from '../../../context/BujoContext';
+import { EnergyRhythmModal } from './EnergyRhythmModal';
 
 interface EnergyChartProps {
   items: BujoItem[];
@@ -20,29 +22,47 @@ export const EnergyChart = ({
   setShowEnergyGuide,
   selectedDate
 }: EnergyChartProps) => {
+  const { settings } = useBujo();
   const [hoveredItem, setHoveredItem] = useState<BujoItem | null>(null);
+  const [isRhythmModalOpen, setIsRhythmModalOpen] = useState(false);
+  
   const score = getHarmonyScore();
   const currentHour = new Date().getHours();
   const currentMinute = new Date().getMinutes();
   const exactHour = currentHour + currentMinute / 60;
 
+  // Helper to parse time strings to hour decimals
+  const parseTimeToHour = (timeStr?: string, defaultHour: number = 0): number => {
+    if (!timeStr) return defaultHour;
+    const [h, m] = timeStr.split(':').map(Number);
+    if (isNaN(h) || isNaN(m)) return defaultHour;
+    return h + m / 60;
+  };
+
   const todayTasks = items.filter(i => i.date === selectedDate && i.type === 'task');
 
   const getPersonalizedTips = () => {
+    const peakStartHour = parseTimeToHour(settings?.energyPeakStart, 9.5);
+    const peakEndHour = parseTimeToHour(settings?.energyPeakEnd, 12.5);
+    const restStartHour = parseTimeToHour(settings?.restStart, 13.5);
+    const restEndHour = parseTimeToHour(settings?.restEnd, 16.0);
+    const windStartHour = parseTimeToHour(settings?.secondWindStart, 16.5);
+    const windEndHour = parseTimeToHour(settings?.secondWindEnd, 20.0);
+
     const tips: { type: 'info' | 'warning' | 'success' | 'tip'; text: string }[] = [];
     
     // 1. Current state advice
-    if (exactHour >= 9.5 && exactHour <= 12.5) {
+    if (exactHour >= peakStartHour && exactHour <= peakEndHour) {
       tips.push({
         type: 'success',
         text: 'Você está no seu Pico de Foco agora! Aproveite para atacar as tarefas mais difíceis e complexas.'
       });
-    } else if (exactHour >= 13.5 && exactHour <= 16) {
+    } else if (exactHour >= restStartHour && exactHour <= restEndHour) {
       tips.push({
         type: 'warning',
-        text: 'Vale Pós-Almoço (Crash) ativo. Proteja seu cérebro: faça tarefas administrativas leves ou tire uma pequena pausa.'
+        text: 'Vale de Descanso (Crash) ativo. Proteja seu cérebro: faça tarefas administrativas leves ou tire uma pequena pausa.'
       });
-    } else if (exactHour >= 16.5 && exactHour <= 20) {
+    } else if (exactHour >= windStartHour && exactHour <= windEndHour) {
       tips.push({
         type: 'info',
         text: 'Segundo Fôlego ativo. Um bom momento para planejamento, revisões de progresso ou estudos rápidos.'
@@ -60,21 +80,23 @@ export const EnergyChart = ({
         const [h, m] = task.time.split(':').map(Number);
         const taskHour = h + m / 60;
         
-        if (taskHour >= 13.5 && taskHour <= 16 && task.status !== 'completed') {
+        if (taskHour >= restStartHour && taskHour <= restEndHour && task.status !== 'completed') {
           tips.push({
             type: 'warning',
-            text: `A tarefa "${task.content}" está marcada para as ${task.time} (período de crash). Tente movê-la para o período da manhã (pico de foco) para reduzir o atrito.`
+            text: `A tarefa "${task.content}" está marcada para as ${task.time} (período de crash). Tente movê-la para o seu pico de foco para reduzir o atrito.`
           });
-        } else if (taskHour >= 9.5 && taskHour <= 12.5 && task.status !== 'completed') {
+        } else if (taskHour >= peakStartHour && taskHour <= peakEndHour && task.status !== 'completed') {
           tips.push({
             type: 'success',
             text: `Excelente! A tarefa "${task.content}" está agendada para as ${task.time}, no seu melhor momento de energia.`
           });
         }
       } else if (task.status !== 'completed' && task.priority) {
+        const peakStartStr = settings?.energyPeakStart || "09:30";
+        const peakEndStr = settings?.energyPeakEnd || "12:30";
         tips.push({
           type: 'tip',
-          text: `A tarefa urgente "${task.content}" está sem horário. Sugerimos agendá-la para o Pico de Foco (entre 09h30 e 12h30).`
+          text: `A tarefa urgente "${task.content}" está sem horário. Sugerimos agendá-la para o Pico de Foco (entre ${peakStartStr.replace(':', 'h')} e ${peakEndStr.replace(':', 'h')}).`
         });
       }
     });
@@ -82,7 +104,7 @@ export const EnergyChart = ({
     if (tips.length <= 1) {
       tips.push({
         type: 'info',
-        text: 'Adicione horários às suas tarefas no Daily Log ou arraste-as na Timeline para receber análises de sincronia energética!'
+        text: 'Adicione horários às suas tarefas no Log Diário ou arraste-as na Agenda Diária para receber análises de sincronia energética!'
       });
     }
 
@@ -124,14 +146,24 @@ export const EnergyChart = ({
           <p className="text-[10px] md:text-xs text-zinc-500">
             Representação da flutuação de energia biológica (ADHD). Agende tarefas nos horários de pico para aumentar a produtividade e evitar esgotamento.
           </p>
-          <button
-            type="button"
-            onClick={() => setShowEnergyGuide(!showEnergyGuide)}
-            className="flex items-center gap-1 text-[10px] font-bold text-bujo-accent hover:text-bujo-highlight transition-colors shrink-0"
-          >
-            <Info className="w-3.5 h-3.5" />
-            {showEnergyGuide ? 'Ocultar Guia' : 'Como Usar?'}
-          </button>
+          <div className="flex gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsRhythmModalOpen(true)}
+              className="flex items-center gap-1 text-[10px] font-bold text-bujo-highlight hover:opacity-85 transition-opacity"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              Ajustar Ritmo
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowEnergyGuide(!showEnergyGuide)}
+              className="flex items-center gap-1 text-[10px] font-bold text-bujo-accent hover:text-bujo-highlight transition-colors"
+            >
+              <Info className="w-3.5 h-3.5" />
+              {showEnergyGuide ? 'Ocultar Guia' : 'Como Usar?'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -143,20 +175,20 @@ export const EnergyChart = ({
           </span>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="space-y-1 p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
-              <span className="font-bold text-emerald-400 block text-[10.5px]">⚡ Pico de Foco (09h30 - 12h30)</span>
+              <span className="font-bold text-emerald-400 block text-[10.5px]">⚡ Pico de Foco ({settings?.energyPeakStart || "09h30"} - {settings?.energyPeakEnd || "12h30"})</span>
               <p className="text-[10px] leading-relaxed text-zinc-650 dark:text-zinc-405">Momento com maior dopamina. Use para tarefas difíceis, escrita complexa, decisões importantes e que exigem hiperfoco.</p>
             </div>
             <div className="space-y-1 p-2.5 rounded-xl bg-red-500/5 border border-red-500/10">
-              <span className="font-bold text-red-400 block text-[10.5px]">💤 Vale de Energia (13h30 - 16h00)</span>
+              <span className="font-bold text-red-400 block text-[10.5px]">💤 Vale de Energia ({settings?.restStart || "13h30"} - {settings?.restEnd || "16h00"})</span>
               <p className="text-[10px] leading-relaxed text-zinc-650 dark:text-zinc-405">Sua capacidade de foco despenca. Faça tarefas automáticas e repetitivas (e-mails, arrumação) ou tire uma soneca rápida.</p>
             </div>
             <div className="space-y-1 p-2.5 rounded-xl bg-indigo-500/5 border border-indigo-500/10">
-              <span className="font-bold text-indigo-400 block text-[10.5px]">🌅 Segundo Fôlego (16h30 - 20h00)</span>
+              <span className="font-bold text-indigo-400 block text-[10.5px]">🌅 Segundo Fôlego ({settings?.secondWindStart || "16h30"} - {settings?.secondWindEnd || "20h00"})</span>
               <p className="text-[10px] leading-relaxed text-zinc-650 dark:text-zinc-405">Leve retorno da energia. Perfeito para hobbies, estudos complementares ou planejar as demandas do dia seguinte.</p>
             </div>
           </div>
           <div className="border-t border-zinc-200/15 dark:border-white/5 pt-2.5 mt-1 text-[11px] flex gap-2 items-start">
-            <span className="font-bold text-bujo-highlight uppercase tracking-wider shrink-0 mt-0.5">Diagnóstico do Dia:</span>
+            <span className="font-bold text-bujo-highlight uppercase tracking-wider shrink-0 mt-0.5 font-mono">Diagnóstico do Dia:</span>
             <span className="italic leading-relaxed">
               {getHarmonyRecommendation(score)}
             </span>
@@ -179,20 +211,32 @@ export const EnergyChart = ({
 
         {/* Mathematical Hour vertical grid lines (X-axis scale) */}
         <div className="absolute inset-0 pointer-events-none z-0">
-          {[6, 10, 14, 18, 22].map(h => {
-            const pct = ((h - 6) / 17) * 100;
-            return (
-              <div 
-                key={h} 
-                className="absolute top-0 bottom-7 border-r border-dashed border-zinc-300/10 dark:border-white/[0.04]"
-                style={{ left: `${pct}%` }}
-              >
-                <span className="absolute bottom-1 translate-x-[-50%] text-[8px] font-mono text-zinc-500 dark:text-zinc-600 font-medium">
-                  {h}h
-                </span>
-              </div>
-            );
-          })}
+          {(() => {
+            const startHour = parseTimeToHour(settings?.dayStart, 6.0);
+            const endHour = parseTimeToHour(settings?.dayEnd, 23.0);
+            const gridHours = [];
+            const step = (endHour - startHour) / 4;
+            for (let i = 0; i < 5; i++) {
+              gridHours.push(startHour + step * i);
+            }
+            return gridHours.map((h, idx) => {
+              const pct = ((h - startHour) / (endHour - startHour)) * 100;
+              const displayHour = Math.floor(h);
+              const displayMin = Math.round((h - displayHour) * 60);
+              const labelStr = displayMin === 0 ? `${displayHour}h` : `${displayHour}:${String(displayMin).padStart(2, '0')}`;
+              return (
+                <div 
+                  key={idx} 
+                  className="absolute top-0 bottom-7 border-r border-dashed border-zinc-300/10 dark:border-white/[0.04]"
+                  style={{ left: `${pct}%` }}
+                >
+                  <span className="absolute bottom-1 translate-x-[-50%] text-[8px] font-mono text-zinc-500 dark:text-zinc-600 font-medium">
+                    {labelStr}
+                  </span>
+                </div>
+              );
+            });
+          })()}
         </div>
 
         {/* Energy Line Chart Curve */}
@@ -216,21 +260,43 @@ export const EnergyChart = ({
             </linearGradient>
           </defs>
 
-          {/* Focus Peak Zone (9.5h to 12.5h) */}
-          <rect x={getEnergyX(9.5)} y="0" width={getEnergyX(12.5) - getEnergyX(9.5)} height="100" fill="url(#focusZoneGrad)" />
+          {/* Focus Peak Zone */}
+          <rect 
+            x={getEnergyX(parseTimeToHour(settings?.energyPeakStart, 9.5), settings)} 
+            y="0" 
+            width={Math.max(0, getEnergyX(parseTimeToHour(settings?.energyPeakEnd, 12.5), settings) - getEnergyX(parseTimeToHour(settings?.energyPeakStart, 9.5), settings))} 
+            height="100" 
+            fill="url(#focusZoneGrad)" 
+          />
           
-          {/* Afternoon Crash Zone (13.5h to 16h) */}
-          <rect x={getEnergyX(13.5)} y="0" width={getEnergyX(16) - getEnergyX(13.5)} height="100" fill="url(#crashZoneGrad)" />
+          {/* Afternoon Crash Zone */}
+          <rect 
+            x={getEnergyX(parseTimeToHour(settings?.restStart, 13.5), settings)} 
+            y="0" 
+            width={Math.max(0, getEnergyX(parseTimeToHour(settings?.restEnd, 16.0), settings) - getEnergyX(parseTimeToHour(settings?.restStart, 13.5), settings))} 
+            height="100" 
+            fill="url(#crashZoneGrad)" 
+          />
 
-          {/* Evening Second Wind Zone (16.5h to 20h) */}
-          <rect x={getEnergyX(16.5)} y="0" width={getEnergyX(20) - getEnergyX(16.5)} height="100" fill="url(#secondWindGrad)" />
+          {/* Evening Second Wind Zone */}
+          <rect 
+            x={getEnergyX(parseTimeToHour(settings?.secondWindStart, 16.5), settings)} 
+            y="0" 
+            width={Math.max(0, getEnergyX(parseTimeToHour(settings?.secondWindEnd, 20.0), settings) - getEnergyX(parseTimeToHour(settings?.secondWindStart, 16.5), settings))} 
+            height="100" 
+            fill="url(#secondWindGrad)" 
+          />
 
           {/* Shadow path fill */}
           <path 
             d={(() => {
-              let pathD = `M 0 100 L 0 ${getEnergyY(6)}`;
-              for (let h = 6.1; h <= 23; h += 0.1) {
-                pathD += ` L ${getEnergyX(h)} ${getEnergyY(h)}`;
+              const startH = parseTimeToHour(settings?.dayStart, 6.0);
+              const endH = parseTimeToHour(settings?.dayEnd, 23.0);
+              let pathD = `M 0 100 L 0 ${getEnergyY(startH, settings)}`;
+              const step = (endH - startH) / 170;
+              for (let i = 1; i <= 170; i++) {
+                const h = startH + step * i;
+                pathD += ` L ${getEnergyX(h, settings)} ${getEnergyY(h, settings)}`;
               }
               pathD += ` L 500 100 Z`;
               return pathD;
@@ -241,9 +307,13 @@ export const EnergyChart = ({
           {/* Core line path */}
           <path 
             d={(() => {
-              let pathD = `M 0 ${getEnergyY(6)}`;
-              for (let h = 6.1; h <= 23; h += 0.1) {
-                pathD += ` L ${getEnergyX(h)} ${getEnergyY(h)}`;
+              const startH = parseTimeToHour(settings?.dayStart, 6.0);
+              const endH = parseTimeToHour(settings?.dayEnd, 23.0);
+              let pathD = `M 0 ${getEnergyY(startH, settings)}`;
+              const step = (endH - startH) / 170;
+              for (let i = 1; i <= 170; i++) {
+                const h = startH + step * i;
+                pathD += ` L ${getEnergyX(h, settings)} ${getEnergyY(h, settings)}`;
               }
               return pathD;
             })()} 
@@ -254,21 +324,30 @@ export const EnergyChart = ({
           />
           
           {/* Dot representing current hour position */}
-          {exactHour >= 6 && exactHour <= 23 && (
-            <circle 
-              cx={getEnergyX(exactHour)} 
-              cy={getEnergyY(exactHour)} 
-              r="6" 
-              fill="var(--bujo-highlight)" 
-              className="animate-pulse shadow-glow" 
-            />
-          )}
+          {(() => {
+            const startH = parseTimeToHour(settings?.dayStart, 6.0);
+            const endH = parseTimeToHour(settings?.dayEnd, 23.0);
+            if (exactHour >= startH && exactHour <= endH) {
+              return (
+                <circle 
+                  cx={getEnergyX(exactHour, settings)} 
+                  cy={getEnergyY(exactHour, settings)} 
+                  r="6" 
+                  fill="var(--bujo-highlight)" 
+                  className="animate-pulse shadow-glow" 
+                />
+              );
+            }
+            return null;
+          })()}
 
           {/* Items mapped onto the curve with dashed vertical guides */}
           {items.filter(item => item.time && item.date === selectedDate).map(item => {
             const [h, m] = item.time!.split(':').map(Number);
             const itemHour = h + m / 60;
-            if (itemHour < 6 || itemHour > 23) return null;
+            const startH = parseTimeToHour(settings?.dayStart, 6.0);
+            const endH = parseTimeToHour(settings?.dayEnd, 23.0);
+            if (itemHour < startH || itemHour > endH) return null;
             
             const isCompleted = item.status === 'completed';
             const strokeColor = item.type === 'event' ? '#4A7C6C' : 'var(--bujo-highlight)';
@@ -280,8 +359,8 @@ export const EnergyChart = ({
               >
                 {/* Invisible larger hover target to stabilize mouse interactions */}
                 <circle 
-                  cx={getEnergyX(itemHour)} 
-                  cy={getEnergyY(itemHour)} 
+                  cx={getEnergyX(itemHour, settings)} 
+                  cy={getEnergyY(itemHour, settings)} 
                   r="15" 
                   fill="white"
                   fillOpacity="0"
@@ -293,9 +372,9 @@ export const EnergyChart = ({
 
                 {/* Vertical guide line */}
                 <line
-                  x1={getEnergyX(itemHour)}
-                  y1={getEnergyY(itemHour)}
-                  x2={getEnergyX(itemHour)}
+                  x1={getEnergyX(itemHour, settings)}
+                  y1={getEnergyY(itemHour, settings)}
+                  x2={getEnergyX(itemHour, settings)}
                   y2="100"
                   stroke={strokeColor}
                   strokeWidth="1"
@@ -307,8 +386,8 @@ export const EnergyChart = ({
 
                 {/* Task Circle */}
                 <circle 
-                  cx={getEnergyX(itemHour)} 
-                  cy={getEnergyY(itemHour)} 
+                  cx={getEnergyX(itemHour, settings)} 
+                  cy={getEnergyY(itemHour, settings)} 
                   r="5" 
                   fill={isCompleted ? '#10b981' : strokeColor} 
                   stroke="white" 
@@ -319,8 +398,8 @@ export const EnergyChart = ({
 
                 {/* Floating label */}
                 <text 
-                  x={getEnergyX(itemHour)} 
-                  y={getEnergyY(itemHour) - 9} 
+                  x={getEnergyX(itemHour, settings)} 
+                  y={getEnergyY(itemHour, settings) - 9} 
                   textAnchor="middle"
                   className="text-[6.5px] font-bold fill-zinc-700 dark:fill-zinc-305 select-none pointer-events-none transition-none transform-none"
                   style={{ transition: 'none', transform: 'none' }}
@@ -335,10 +414,18 @@ export const EnergyChart = ({
         {hoveredItem && (() => {
           const [h, m] = hoveredItem.time!.split(':').map(Number);
           const itemHour = h + m / 60;
-          const xPct = (getEnergyX(itemHour) / 500) * 100;
-          const yVal = getEnergyY(itemHour);
-          const isHigh = yVal <= 40;
-          const isLow = yVal > 70;
+          const xPct = (getEnergyX(itemHour, settings) / 500) * 100;
+          const yVal = getEnergyY(itemHour, settings);
+          
+          const peakStart = parseTimeToHour(settings?.energyPeakStart, 9.5);
+          const peakEnd = parseTimeToHour(settings?.energyPeakEnd, 12.5);
+          const restStart = parseTimeToHour(settings?.restStart, 13.5);
+          const restEnd = parseTimeToHour(settings?.restEnd, 16.0);
+          const windStart = parseTimeToHour(settings?.secondWindStart, 16.5);
+          const windEnd = parseTimeToHour(settings?.secondWindEnd, 20.0);
+
+          const isHigh = (itemHour >= peakStart && itemHour <= peakEnd) || (itemHour >= windStart && itemHour <= windEnd);
+          const isLow = itemHour >= restStart && itemHour <= restEnd;
           const isCompleted = hoveredItem.status === 'completed';
 
           let tooltipStyle: React.CSSProperties = {
@@ -415,7 +502,7 @@ export const EnergyChart = ({
 
       {/* Real-time ADHD Cognitive Recommendations panel */}
       <div className="rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 p-4 space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-bujo-highlight flex items-center gap-1.5">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-bujo-highlight flex items-center gap-1.5 font-mono">
           <Sparkles className="w-3.5 h-3.5" /> Recomendações de Ritmo e Energia
         </h4>
 
@@ -446,6 +533,12 @@ export const EnergyChart = ({
           })}
         </div>
       </div>
+
+      {/* Energy Rhythm Adjustment Modal */}
+      <EnergyRhythmModal 
+        isOpen={isRhythmModalOpen} 
+        onClose={() => setIsRhythmModalOpen(false)} 
+      />
     </div>
   );
 };

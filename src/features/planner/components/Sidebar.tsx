@@ -50,7 +50,7 @@ export const Sidebar = () => {
           }`}
         >
           <CheckSquare className="w-3.5 h-3.5" />
-          <span>Daily Log</span>
+          <span>Log Diário</span>
         </button>
 
         <button
@@ -63,7 +63,7 @@ export const Sidebar = () => {
           }`}
         >
           <LayoutGrid className="w-3.5 h-3.5" />
-          <span>Weekly Log</span>
+          <span>Log Semanal</span>
         </button>
 
         <button
@@ -76,7 +76,7 @@ export const Sidebar = () => {
           }`}
         >
           <CalendarDays className="w-3.5 h-3.5" />
-          <span>Monthly Log</span>
+          <span>Log Mensal</span>
         </button>
 
         <button
@@ -94,7 +94,7 @@ export const Sidebar = () => {
           }`}
         >
           <Calendar className="w-3.5 h-3.5" />
-          <span>Spread Diário</span>
+          <span>Agenda Diária</span>
         </button>
 
         <button
@@ -107,7 +107,7 @@ export const Sidebar = () => {
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
-          <span>Future Log</span>
+          <span>Log Futuro</span>
         </button>
 
         <button

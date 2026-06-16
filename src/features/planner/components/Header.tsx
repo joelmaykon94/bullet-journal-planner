@@ -23,11 +23,11 @@ export const Header = () => {
 
   const menuItems = [
     { id: 'indice', label: 'Índice', icon: Sliders },
-    { id: 'daily_log', label: 'Daily Log', icon: CheckSquare },
-    { id: 'weekly_log', label: 'Weekly Log', icon: LayoutGrid },
-    { id: 'monthly_log', label: 'Monthly Log', icon: CalendarDays },
-    { id: 'daily_spread', label: 'Spread Diário', icon: Calendar },
-    { id: 'future_log', label: 'Future Log', icon: BookOpen },
+    { id: 'daily_log', label: 'Log Diário', icon: CheckSquare },
+    { id: 'weekly_log', label: 'Log Semanal', icon: LayoutGrid },
+    { id: 'monthly_log', label: 'Log Mensal', icon: CalendarDays },
+    { id: 'daily_spread', label: 'Agenda Diária', icon: Calendar },
+    { id: 'future_log', label: 'Log Futuro', icon: BookOpen },
     { id: 'brain_dump', label: 'Despejo de Mente', icon: Brain },
     { id: 'collections', label: 'Coleções', icon: FolderOpen },
     { id: 'dream_board', label: 'Quadro dos Sonhos', icon: Sparkles },

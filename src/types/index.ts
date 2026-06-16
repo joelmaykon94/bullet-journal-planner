@@ -22,6 +22,16 @@ export interface BujoSettings {
   highlightColor: string;
   accentColor: string;
   firstTime: boolean;
+  
+  // Custom rhythm schedule settings
+  dayStart?: string;
+  energyPeakStart?: string;
+  energyPeakEnd?: string;
+  restStart?: string;
+  restEnd?: string;
+  secondWindStart?: string;
+  secondWindEnd?: string;
+  dayEnd?: string;
 }
 
 export interface AISubtaskSuggestions {

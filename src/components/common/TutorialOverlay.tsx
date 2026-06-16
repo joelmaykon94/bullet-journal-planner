@@ -187,8 +187,17 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [borderRadius, setBorderRadius] = useState('12px');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const stepData = tutorialSteps[currentStep];
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (showTutorial) {
@@ -216,9 +225,7 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
           setTargetRect(rect);
           const computedStyle = window.getComputedStyle(element);
           setBorderRadius(computedStyle.borderRadius || '12px');
-          if (element.closest('#bujo-export-area')) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
         }
       }
@@ -256,6 +263,30 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
       window.removeEventListener('scroll', handleUpdate, true);
     };
   }, [currentStep, stepData.selector, showTutorial]);
+
+  const getCardPositionClass = () => {
+    if (!isMobile) return stepData.positionClass;
+    
+    if (targetRect) {
+      const elementCenterY = targetRect.top + targetRect.height / 2;
+      if (elementCenterY > window.innerHeight / 2) {
+        return "top-4 left-1/2 -translate-x-1/2";
+      }
+    }
+    return "bottom-4 left-1/2 -translate-x-1/2";
+  };
+
+  const getArrowPlacement = (): 'top' | 'bottom' | 'left' | 'right' => {
+    const defaultPlacement = stepData.arrowPlacement || 'top';
+    if (!isMobile) return defaultPlacement;
+    
+    if (defaultPlacement === 'left' || defaultPlacement === 'right') {
+      if (targetRect) {
+        return (targetRect.top + targetRect.height / 2 > window.innerHeight / 2) ? 'top' : 'bottom';
+      }
+    }
+    return defaultPlacement;
+  };
 
   if (!showTutorial) return null;
 
@@ -394,12 +425,12 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
               transition: 'all 0.2s ease-out'
             }}
           />
-          <PointingArrow placement={stepData.arrowPlacement || 'top'} rect={targetRect} />
+          <PointingArrow placement={getArrowPlacement()} rect={targetRect} />
         </>
       )}
 
       {/* Floating Tutorial Balloon Card */}
-      <div className={`fixed ${stepData.positionClass} z-50 pointer-events-auto w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-zinc-950/95 border border-bujo-highlight/30 backdrop-blur-2xl p-6 rounded-[32px] shadow-3xl flex flex-col gap-4 text-left animate-slide-in ring-1 ring-white/10`}>
+      <div className={`fixed ${getCardPositionClass()} z-50 pointer-events-auto w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-zinc-950/95 border border-bujo-highlight/30 backdrop-blur-2xl p-6 rounded-[32px] shadow-3xl flex flex-col gap-4 text-left animate-slide-in ring-1 ring-white/10`}>
         {/* Step Indicator and Skip */}
         <div className="flex items-center justify-between border-b border-white/5 pb-2">
           <span className="text-[9px] font-bold font-mono text-zinc-500 uppercase tracking-widest">

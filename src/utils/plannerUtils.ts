@@ -17,19 +17,69 @@ export const maxQuotes = [
   "Completar essa tarefa vai te dar uma bela dose de dopamina natural!"
 ];
 
-// Key points of the ADHD energy curve: hour (6 to 23) -> Y coordinate (20 to 95)
-// In SVG coordinates, Y = 0 is maximum energy (top), Y = 100 is minimum energy (bottom)
-export const getEnergyY = (h: number): number => {
-  const hour = Math.max(6, Math.min(23, h));
-  const points = [
-    { h: 6, y: 90 },       // Waking up
-    { h: 9.5, y: 20 },     // Morning Peak Focus (09:30)
-    { h: 12.5, y: 55 },    // Midday Dip
-    { h: 14.5, y: 85 },    // Post-Lunch Crash
-    { h: 18, y: 30 },      // Evening Second Wind Peak
-    { h: 21, y: 65 },      // Wind Down
-    { h: 23, y: 95 }       // Sleeping
+export const getEnergyPoints = (settings?: {
+  dayStart?: string;
+  energyPeakStart?: string;
+  energyPeakEnd?: string;
+  restStart?: string;
+  restEnd?: string;
+  secondWindStart?: string;
+  secondWindEnd?: string;
+  dayEnd?: string;
+}) => {
+  const parseTimeToHour = (timeStr?: string, defaultHour: number = 0): number => {
+    if (!timeStr) return defaultHour;
+    const [h, m] = timeStr.split(':').map(Number);
+    if (isNaN(h) || isNaN(m)) return defaultHour;
+    return h + m / 60;
+  };
+
+  const dayStart = parseTimeToHour(settings?.dayStart, 6.0);
+  const peakStart = parseTimeToHour(settings?.energyPeakStart, 9.5);
+  const peakEnd = parseTimeToHour(settings?.energyPeakEnd, 12.5);
+  const restStart = parseTimeToHour(settings?.restStart, 13.5);
+  const restEnd = parseTimeToHour(settings?.restEnd, 16.0);
+  const windStart = parseTimeToHour(settings?.secondWindStart, 16.5);
+  const windEnd = parseTimeToHour(settings?.secondWindEnd, 20.0);
+  const dayEnd = parseTimeToHour(settings?.dayEnd, 23.0);
+
+  const peakMid = (peakStart + peakEnd) / 2;
+  const dipMid = (peakEnd + restStart) / 2;
+  const restMid = (restStart + restEnd) / 2;
+  const windMid = (windStart + windEnd) / 2;
+  const windDownMid = (windEnd + dayEnd) / 2;
+
+  const rawPoints = [
+    { h: dayStart, y: 90 },
+    { h: peakMid, y: 20 },
+    { h: dipMid, y: 55 },
+    { h: restMid, y: 85 },
+    { h: windMid, y: 30 },
+    { h: windDownMid, y: 65 },
+    { h: dayEnd, y: 95 }
   ];
+
+  rawPoints.sort((a, b) => a.h - b.h);
+
+  const points = [];
+  for (let i = 0; i < rawPoints.length; i++) {
+    if (i === 0 || rawPoints[i].h > rawPoints[i - 1].h) {
+      points.push(rawPoints[i]);
+    }
+  }
+
+  return points;
+};
+
+// Key points of the ADHD energy curve: hour -> Y coordinate (20 to 95)
+// In SVG coordinates, Y = 0 is maximum energy (top), Y = 100 is minimum energy (bottom)
+export const getEnergyY = (h: number, settings?: any): number => {
+  const points = getEnergyPoints(settings);
+  if (points.length < 2) return 50;
+
+  const minHour = points[0].h;
+  const maxHour = points[points.length - 1].h;
+  const hour = Math.max(minHour, Math.min(maxHour, h));
 
   let i = 0;
   while (i < points.length - 1 && hour > points[i+1].h) {
@@ -38,16 +88,24 @@ export const getEnergyY = (h: number): number => {
 
   const p0 = points[i];
   const p1 = points[i+1];
-  const t = (hour - p0.h) / (p1.h - p0.h);
+  
+  const span = p1.h - p0.h;
+  const t = span <= 0 ? 0 : (hour - p0.h) / span;
   
   // Cosine interpolation for organic wave curve
   const mu = (1 - Math.cos(t * Math.PI)) / 2;
   return p0.y * (1 - mu) + p1.y * mu;
 };
 
-export const getEnergyX = (h: number): number => {
-  const hour = Math.max(6, Math.min(23, h));
-  return ((hour - 6) / 17) * 500; // Map 6h - 23h to 0 - 500 SVG coordinate
+export const getEnergyX = (h: number, settings?: any): number => {
+  const points = getEnergyPoints(settings);
+  if (points.length < 2) return 250;
+  const minHour = points[0].h;
+  const maxHour = points[points.length - 1].h;
+  const hour = Math.max(minHour, Math.min(maxHour, h));
+  
+  const span = maxHour - minHour;
+  return span <= 0 ? 250 : ((hour - minHour) / span) * 500; // Map minHour - maxHour to 0 - 500 SVG coordinate
 };
 
 export const getRealTimeSuggestions = (text: string) => {
