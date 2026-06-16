@@ -6,7 +6,7 @@ export const Sidebar = () => {
   const { userXp, activeTab, setActiveTab, setSelectedDate, setStandardDate } = useBujo();
 
   return (
-    <aside className="hidden md:flex md:flex-col w-56 flex-shrink-0 gap-2.5 no-print">
+    <aside className="hidden md:flex md:flex-col w-56 flex-shrink-0 gap-2.5 no-print overflow-y-auto max-h-full pr-1.5">
       {/* Sidebar gamification card */}
       <div id="tutorial-gamification" className="p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 flex flex-col gap-2 mb-2 text-bujo-text select-none">
         <div className="flex items-center justify-between">
