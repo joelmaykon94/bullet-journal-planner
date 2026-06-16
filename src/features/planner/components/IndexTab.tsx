@@ -1,4 +1,4 @@
-import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays } from 'lucide-react';
+import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2 } from 'lucide-react';
 import { EnergyChart } from '../../adhd/components/EnergyChart';
 import { HabitTracker } from './HabitTracker';
 import { UserPersonaCard } from './UserPersonaCard';
@@ -196,6 +196,45 @@ export const IndexTab = () => {
                   <div className="text-left leading-tight">
                     <span className="text-[10px] font-bold text-zinc-200 block">Despejo de Mente</span>
                     <span className="text-[8px] text-zinc-550 block">Descarregar Ansiedade</span>
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => setActiveTab('dream_board')}
+                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
+                >
+                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div className="text-left leading-tight">
+                    <span className="text-[10px] font-bold text-zinc-200 block">Quadro dos Sonhos</span>
+                    <span className="text-[8px] text-zinc-550 block">Mentalizar e Conquistar</span>
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => setActiveTab('someday_maybe')}
+                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
+                >
+                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                    <Cloud className="w-4 h-4" />
+                  </div>
+                  <div className="text-left leading-tight">
+                    <span className="text-[10px] font-bold text-zinc-200 block">Algum Dia</span>
+                    <span className="text-[8px] text-zinc-550 block">Ideias e Planos GTD</span>
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => setActiveTab('trash')}
+                  className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 shadow-sm hover:shadow-[0_0_15px_rgba(224,142,69,0.15)] cursor-pointer transition-all flex items-center gap-3"
+                >
+                  <div className="p-1.5 rounded-xl bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                    <Trash2 className="w-4 h-4" />
+                  </div>
+                  <div className="text-left leading-tight">
+                    <span className="text-[10px] font-bold text-zinc-200 block">Lixeira</span>
+                    <span className="text-[8px] text-zinc-550 block">Itens Excluídos</span>
                   </div>
                 </div>
               </div>
