@@ -367,30 +367,30 @@ export const KnowledgeEvolutionChart = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-zinc-200/30 dark:bg-white/5 p-1 rounded-xl border border-zinc-200/30 dark:border-white/5 text-[9px] font-bold uppercase tracking-wider flex-wrap sm:flex-nowrap gap-1 sm:gap-0">
+      <div className="flex bg-zinc-200/30 dark:bg-white/5 p-1 rounded-xl border border-zinc-200/30 dark:border-white/5 text-[9px] font-bold uppercase tracking-wider overflow-x-auto whitespace-nowrap no-scrollbar gap-1">
         <button
           onClick={() => setActiveSubTab('summary')}
-          className={`flex-1 min-w-[45%] py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${activeSubTab === 'summary' ? 'bg-white dark:bg-zinc-800 text-bujo-highlight shadow-sm' : 'text-zinc-500 hover:bg-white/5'}`}
+          className={`flex-1 min-w-fit px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'summary' ? 'bg-white dark:bg-zinc-800 text-bujo-highlight shadow-sm' : 'text-zinc-500 hover:bg-white/5'}`}
         >
-          <BarChart3 className="w-3 h-3" /> Visão
+          <BarChart3 className="w-3.5 h-3.5" /> Visão
         </button>
         <button
           onClick={() => setActiveSubTab('subjects')}
-          className={`flex-1 min-w-[45%] py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${activeSubTab === 'subjects' ? 'bg-white dark:bg-zinc-800 text-bujo-highlight shadow-sm' : 'text-zinc-500 hover:bg-white/5'}`}
+          className={`flex-1 min-w-fit px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'subjects' ? 'bg-white dark:bg-zinc-800 text-bujo-highlight shadow-sm' : 'text-zinc-500 hover:bg-white/5'}`}
         >
-          <BookOpen className="w-3 h-3" /> Disciplinas
+          <BookOpen className="w-3.5 h-3.5" /> Disciplinas
         </button>
         <button
           onClick={() => setActiveSubTab('history')}
-          className={`flex-1 min-w-[45%] py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${activeSubTab === 'history' ? 'bg-white dark:bg-zinc-800 text-bujo-highlight shadow-sm' : 'text-zinc-500 hover:bg-white/5'}`}
+          className={`flex-1 min-w-fit px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'history' ? 'bg-white dark:bg-zinc-800 text-bujo-highlight shadow-sm' : 'text-zinc-500 hover:bg-white/5'}`}
         >
-          <Calendar className="w-3 h-3" /> Histórico
+          <Calendar className="w-3.5 h-3.5" /> Histórico
         </button>
         <button
           onClick={() => setActiveSubTab('brag')}
-          className={`flex-1 min-w-[45%] py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${activeSubTab === 'brag' ? 'bg-white dark:bg-zinc-800 text-bujo-highlight shadow-sm' : 'text-zinc-500 hover:bg-white/5'}`}
+          className={`flex-1 min-w-fit px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'brag' ? 'bg-white dark:bg-zinc-800 text-bujo-highlight shadow-sm' : 'text-zinc-500 hover:bg-white/5'}`}
         >
-          <Sparkles className="w-3 h-3" /> Brag Doc
+          <Sparkles className="w-3.5 h-3.5" /> Brag Doc
         </button>
       </div>
 

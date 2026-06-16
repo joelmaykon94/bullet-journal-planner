@@ -87,7 +87,7 @@ export const IndexTab = () => {
   }, {} as { [key: string]: number });
 
   return (
-    <div className="flex flex-col gap-4 animate-fade-in no-print max-w-7xl mx-auto p-1 h-full select-none font-mono">
+    <div className="flex flex-col gap-4 animate-fade-in no-print max-w-7xl mx-auto p-1 w-full h-full select-none font-mono overflow-x-hidden">
       
       {/* 1. Welcomer Banner & KPI Metrics */}
       <div className="p-4 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-4">

@@ -440,46 +440,50 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
       )}
 
       {/* Floating Tutorial Balloon Card - Improved for Mobile */}
-      <div className={`fixed ${getCardPositionClass()} z-50 pointer-events-auto w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-zinc-950/95 border border-bujo-highlight/30 backdrop-blur-2xl p-4 sm:p-6 rounded-3xl sm:rounded-[32px] shadow-3xl flex flex-col gap-3 sm:gap-4 text-left animate-slide-in ring-1 ring-white/10 max-h-[85vh] overflow-y-auto`}>
-        {/* Step Indicator and Skip */}
-        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+      <div className={`fixed ${getCardPositionClass()} z-50 pointer-events-auto w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-zinc-950/95 border border-bujo-highlight/30 backdrop-blur-2xl rounded-3xl sm:rounded-[32px] shadow-3xl flex flex-col text-left animate-slide-in ring-1 ring-white/10 max-h-[85vh] overflow-hidden`}>
+        
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between border-b border-white/5 p-4 sm:p-5 pb-2 sm:pb-3 shrink-0">
           <span className="text-[9px] font-bold font-mono text-zinc-500 uppercase tracking-widest">
             Tour • Passo {currentStep + 1} de {tutorialSteps.length}
           </span>
           <button
             onClick={() => { resetViewportScroll(); onClose(); }}
-            className="text-[9px] font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider cursor-pointer"
+            className="text-[9px] font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider cursor-pointer bg-transparent border-none"
           >
             Pular
           </button>
         </div>
 
-        {/* Title and Icon */}
-        <div className="flex items-start gap-2.5">
-          <div className="p-1 rounded-lg bg-bujo-highlight/10 border border-bujo-highlight/20 text-bujo-highlight shrink-0 mt-0.5">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-3 space-y-3">
+          {/* Title and Icon */}
+          <div className="flex items-start gap-2.5">
+            <div className="p-1 rounded-lg bg-bujo-highlight/10 border border-bujo-highlight/20 text-bujo-highlight shrink-0 mt-0.5">
+              <Sparkles className="w-4 h-4 animate-pulse" />
+            </div>
+            <h4 className="text-sm sm:text-base font-bold text-white tracking-tight">{stepData.title}</h4>
           </div>
-          <h4 className="text-sm sm:text-base font-bold text-white tracking-tight">{stepData.title}</h4>
+
+          {/* Description */}
+          <p className="text-[11px] sm:text-xs leading-relaxed text-zinc-350">
+            {stepData.description}
+          </p>
         </div>
 
-        {/* Description */}
-        <p className="text-[11px] sm:text-xs leading-relaxed text-zinc-350">
-          {stepData.description}
-        </p>
-
-        {/* Buttons Controls */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/5 mt-1">
+        {/* Footer Buttons - Fixed */}
+        <div className="flex items-center justify-between p-4 sm:p-5 pt-2 sm:pt-3 border-t border-white/5 bg-zinc-950/50 shrink-0">
           <button
             onClick={handlePrev}
             disabled={currentStep === 0}
-            className="flex items-center gap-1 text-[11px] font-semibold text-zinc-400 hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-semibold text-zinc-400 hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer bg-transparent border-none"
           >
             <ChevronLeft className="w-3.5 h-3.5" /> Anterior
           </button>
 
           <button
             onClick={handleNext}
-            className="flex items-center gap-1 py-2 px-5 bg-bujo-highlight hover:opacity-95 text-white text-[11px] font-bold rounded-xl shadow-lg transition-all cursor-pointer"
+            className="flex items-center gap-1 py-2 px-5 bg-bujo-highlight hover:opacity-95 text-white text-[11px] font-bold rounded-xl shadow-lg transition-all cursor-pointer border-none"
           >
             {currentStep === tutorialSteps.length - 1 ? (
               <>Concluir <CheckIcon className="w-3.5 h-3.5" /></>
