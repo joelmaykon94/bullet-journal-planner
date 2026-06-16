@@ -1,4 +1,4 @@
-import { ChevronRight, Sparkles, LogOut, Database, User } from 'lucide-react';
+import { ChevronRight, Sparkles, LogOut, Database, User, ShieldAlert } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -15,7 +15,8 @@ export const SettingsTab = () => {
     initLocalLLMWorker,
     askConfirmation,
     showToast,
-    syncStatus
+    syncStatus,
+    handleRetrySync
   } = useBujo();
 
   const { user, signOut, clearConfig } = useAuth();
@@ -339,6 +340,14 @@ export const SettingsTab = () => {
             </div>
           </div>
           <div className="flex gap-2 w-full sm:w-auto shrink-0">
+            {syncStatus === 'error' && (
+              <button
+                onClick={handleRetrySync}
+                className="px-4 py-2 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 border border-amber-500/30 rounded-xl transition-all cursor-pointer flex-1 sm:flex-initial"
+              >
+                Re-tentar Sincronização
+              </button>
+            )}
             <button
               onClick={() => {
                 askConfirmation({
@@ -382,6 +391,39 @@ export const SettingsTab = () => {
             </button>
           </div>
         </div>
+        {syncStatus === 'error' && (
+          <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-xs text-bujo-text space-y-3 mt-4">
+            <div className="font-bold text-red-500 flex items-center gap-1.5 uppercase tracking-wide">
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              Sincronização Falhou (Banco Desconfigurado)
+            </div>
+            <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+              Este erro normalmente significa que a tabela <code className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-white/5 border border-zinc-350 dark:border-white/10 text-bujo-highlight font-mono text-[10.5px]">bujo_user_data</code> ou as permissões de acesso (Row Level Security) não foram criadas no seu projeto do Supabase. Para corrigir, copie o script SQL abaixo, acesse o painel do Supabase, clique em <strong>SQL Editor</strong>, cole o código e clique em <strong>Run</strong>:
+            </p>
+            <div className="relative">
+              <pre className="p-4 bg-zinc-950 text-zinc-300 rounded-xl overflow-x-auto text-[10px] font-mono leading-normal select-all border border-zinc-200/10">
+{`create table if not exists public.bujo_user_data (
+  user_id uuid references auth.users not null primary key,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.bujo_user_data enable row level security;
+
+drop policy if exists "Users can manage their own data" on public.bujo_user_data;
+
+create policy "Users can manage their own data"
+  on public.bujo_user_data
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);`}
+              </pre>
+            </div>
+            <p className="text-[10px] text-zinc-500 font-sans">
+              Dica: Após rodar o script no Supabase, clique no botão <strong>Re-tentar Sincronização</strong> acima.
+            </p>
+          </div>
+        )}
       </div>
 
     </div>

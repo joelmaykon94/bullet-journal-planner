@@ -14,6 +14,7 @@ import { useAuth } from './AuthContext';
 export interface BujoContextType {
   // Sync status
   syncStatus: 'synced' | 'syncing' | 'offline' | 'error';
+  handleRetrySync: () => Promise<void>;
 
   // Items
   items: BujoItem[];
@@ -477,9 +478,13 @@ export function BujoProvider({ children }: { children: ReactNode }) {
             }
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Supabase sync error:', err);
-        if (active) setSyncStatus('error');
+        if (active) {
+          setSyncStatus('error');
+          const msg = err?.message || err?.details || JSON.stringify(err);
+          showToast(`❌ Erro de Sincronização: ${msg}`);
+        }
       }
     };
 
@@ -512,14 +517,65 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         if (error) throw error;
         lastSyncHashRef.current = currentHash;
         setSyncStatus('synced');
-      } catch (err) {
+      } catch (err: any) {
         console.error('Background sync error:', err);
+        setSyncStatus('error');
+        const msg = err?.message || JSON.stringify(err);
+        showToast(`❌ Erro ao salvar na nuvem: ${msg}`);
       }
     };
 
     const interval = setInterval(checkAndSync, 5000);
     return () => clearInterval(interval);
   }, [supabase, user, syncStatus]);
+
+  const handleRetrySync = async () => {
+    if (!supabase || !user) return;
+    setSyncStatus('syncing');
+    try {
+      const { data: row, error } = await supabase
+        .from('bujo_user_data')
+        .select('data')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      const localData = serializeLocalBujoData();
+
+      if (!row) {
+        const { error: insertError } = await supabase
+          .from('bujo_user_data')
+          .insert({ user_id: user.id, data: localData });
+
+        if (insertError) throw insertError;
+        lastSyncHashRef.current = JSON.stringify(localData);
+        setSyncStatus('synced');
+        showToast('☁️ Backup inicial criado no Supabase!');
+      } else {
+        const remoteData = row.data || {};
+        const mergedData = mergeBujoData(localData, remoteData);
+
+        Object.entries(mergedData).forEach(([key, val]) => {
+          localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+        });
+
+        lastSyncHashRef.current = JSON.stringify(mergedData);
+        setSyncStatus('synced');
+        showToast('☁️ Dados sincronizados com o Supabase!');
+        
+        if (!sessionStorage.getItem('bujo_synced_reload')) {
+          sessionStorage.setItem('bujo_synced_reload', 'true');
+          window.location.reload();
+        }
+      }
+    } catch (err: any) {
+      console.error('Manual sync retry error:', err);
+      setSyncStatus('error');
+      const msg = err?.message || err?.details || JSON.stringify(err);
+      showToast(`❌ Erro ao re-sincronizar: ${msg}`);
+    }
+  };
 
   // Sync effects
   useEffect(() => {
@@ -1731,6 +1787,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     <BujoContext.Provider value={{
       // Sync status
       syncStatus,
+      handleRetrySync,
 
       // Items
       ...itemsData,
