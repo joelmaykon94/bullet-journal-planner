@@ -7,6 +7,8 @@ export interface BujoItem {
   time?: string; // HH:MM
   subtasks?: { id: string; content: string; completed: boolean }[];
   priority?: boolean;
+  delegatedTo?: string;
+  icon?: string;
 }
 
 export interface BujoSettings {

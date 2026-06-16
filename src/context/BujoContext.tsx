@@ -50,6 +50,17 @@ export interface BujoContextType {
   toggleSubtask: (taskId: string, subtaskId: string) => void;
   deleteSubtask: (taskId: string, subtaskId: string) => void;
 
+  // Lixeira & Someday
+  trashItems: BujoItem[];
+  handleRestoreItem: (id: string) => void;
+  handleDeletePermanently: (id: string) => void;
+  handleEmptyTrash: () => void;
+  somedayItems: BujoItem[];
+  handleAddSomedayItem: (content: string, type?: 'task' | 'event' | 'note') => void;
+  handleDeleteSomedayItem: (id: string) => void;
+  handleScheduleSomedayItem: (id: string, date: string) => void;
+  handleToggleSomedayItem: (id: string) => void;
+
   // Settings
   settings: BujoSettings;
   setSettings: React.Dispatch<React.SetStateAction<BujoSettings>>;
@@ -125,8 +136,8 @@ export interface BujoContextType {
   setAnxietyLevel: React.Dispatch<React.SetStateAction<number>>;
   currentEnergy: 'high' | 'low' | 'exhausted';
   setCurrentEnergy: React.Dispatch<React.SetStateAction<'high' | 'low' | 'exhausted'>>;
-  activeTab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections';
-  setActiveTab: React.Dispatch<React.SetStateAction<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections'>>;
+  activeTab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe';
+  setActiveTab: React.Dispatch<React.SetStateAction<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe'>>;
   selectedDate: string;
   setSelectedDate: React.Dispatch<React.SetStateAction<string>>;
   showOverloadReliefModal: boolean;
@@ -292,7 +303,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     return (saved as any) || 'high';
   });
 
-  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections'>('indice');
+  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe'>('indice');
   const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [showOverloadReliefModal, setShowOverloadReliefModal] = useState<boolean>(false);
   const [focoActive, setFocoActive] = useState<boolean>(false);

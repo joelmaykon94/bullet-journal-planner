@@ -224,10 +224,115 @@ export function useBujoItems(
     showToast('Horário removido');
   };
 
-  // Delete item entirely
+  // Trash state
+  const [trashItems, setTrashItems] = useState<BujoItem[]>(() => {
+    const saved = localStorage.getItem('bujo_focus_trash_items');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bujo_focus_trash_items', JSON.stringify(trashItems));
+  }, [trashItems]);
+
+  // Someday/Maybe state
+  const [somedayItems, setSomedayItems] = useState<BujoItem[]>(() => {
+    const saved = localStorage.getItem('bujo_focus_someday_items');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'sd-1', type: 'task', status: 'open', content: 'Aprender tocar piano', date: 'someday_maybe' },
+      { id: 'sd-2', type: 'task', status: 'open', content: 'Planejar viagem para o Japão', date: 'someday_maybe' }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bujo_focus_someday_items', JSON.stringify(somedayItems));
+  }, [somedayItems]);
+
+  // Delete item entirely (send to trash)
   const handleDeleteItem = (id: string) => {
+    const itemToDelete = items.find(item => item.id === id);
+    if (itemToDelete) {
+      setTrashItems(prev => [...prev, itemToDelete]);
+    }
     setItems(prev => prev.filter(item => item.id !== id));
-    showToast('Entrada excluída');
+    showToast('Entrada enviada para a lixeira');
+  };
+
+  const handleRestoreItem = (id: string) => {
+    const itemToRestore = trashItems.find(item => item.id === id);
+    if (itemToRestore) {
+      if (itemToRestore.date === 'someday_maybe') {
+        setSomedayItems(prev => [...prev, itemToRestore]);
+      } else {
+        setItems(prev => [...prev, itemToRestore]);
+      }
+      setTrashItems(prev => prev.filter(item => item.id !== id));
+      showToast('Entrada restaurada');
+    }
+  };
+
+  const handleDeletePermanently = (id: string) => {
+    setTrashItems(prev => prev.filter(item => item.id !== id));
+    showToast('Entrada excluída permanentemente');
+  };
+
+  const handleEmptyTrash = () => {
+    setTrashItems([]);
+    showToast('Lixeira esvaziada');
+  };
+
+  const handleAddSomedayItem = (content: string, type: 'task' | 'event' | 'note' = 'task') => {
+    const newItem: BujoItem = {
+      id: 'sd-' + Math.random().toString(),
+      type,
+      status: 'open',
+      content: content.trim(),
+      date: 'someday_maybe',
+      subtasks: type === 'task' ? [] : undefined
+    };
+    setSomedayItems(prev => [...prev, newItem]);
+    showToast('Adicionado a Algum Dia/Talvez');
+  };
+
+  const handleDeleteSomedayItem = (id: string) => {
+    const itemToDelete = somedayItems.find(item => item.id === id);
+    if (itemToDelete) {
+      setTrashItems(prev => [...prev, itemToDelete]);
+    }
+    setSomedayItems(prev => prev.filter(item => item.id !== id));
+    showToast('Item enviado para a lixeira');
+  };
+
+  const handleScheduleSomedayItem = (id: string, date: string) => {
+    const item = somedayItems.find(item => item.id === id);
+    if (item) {
+      const scheduledItem: BujoItem = {
+        ...item,
+        id: Math.random().toString(),
+        date: date,
+        status: 'open'
+      };
+      setItems(prev => [...prev, scheduledItem]);
+      setSomedayItems(prev => prev.filter(item => item.id !== id));
+      showToast('Item agendado no Daily Log');
+    }
+  };
+
+  const handleToggleSomedayItem = (id: string) => {
+    setSomedayItems(prev => prev.map(item => {
+      if (item.id === id && item.type === 'task') {
+        const nextStatus = item.status === 'completed' ? 'open' : 'completed';
+        if (nextStatus === 'completed') {
+          setUserXp(p => p + 10);
+          showToast('Tarefa de Algum Dia concluída: +10 XP');
+        } else {
+          setUserXp(p => Math.max(0, p - 10));
+          showToast('Tarefa desmarcada: -10 XP');
+        }
+        return { ...item, status: nextStatus };
+      }
+      return item;
+    }));
   };
 
   // Inline content edit save
@@ -321,6 +426,16 @@ export function useBujoItems(
     handleSaveEditItem,
     addSubtask,
     toggleSubtask,
-    deleteSubtask
+    deleteSubtask,
+    // Lixeira & Someday
+    trashItems,
+    handleRestoreItem,
+    handleDeletePermanently,
+    handleEmptyTrash,
+    somedayItems,
+    handleAddSomedayItem,
+    handleDeleteSomedayItem,
+    handleScheduleSomedayItem,
+    handleToggleSomedayItem
   };
 }

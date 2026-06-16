@@ -19,6 +19,8 @@ import { SettingsTab } from './features/settings/components/SettingsTab';
 import { CollectionsLibrary } from './features/collections/components/CollectionsLibrary';
 import { FocusMode } from './features/focus/components/FocusMode';
 import { AISuggestionsModal } from './features/planner/components/AISuggestionsModal';
+import { TrashTab } from './features/planner/components/TrashTab';
+import { SomedayMaybeTab } from './features/planner/components/SomedayMaybeTab';
 
 function AppContent() {
   const {
@@ -112,6 +114,8 @@ function AppContent() {
               {activeTab === 'brain_dump' && <BrainDumpStation />}
               {activeTab === 'settings' && <SettingsTab />}
               {activeTab === 'collections' && <CollectionsLibrary />}
+              {activeTab === 'trash' && <TrashTab />}
+              {activeTab === 'someday_maybe' && <SomedayMaybeTab />}
             </main>
           </div>
         )}

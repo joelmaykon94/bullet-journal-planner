@@ -1,4 +1,4 @@
-import { Sliders, CheckSquare, Calendar, BookOpen, Brain, FolderOpen, Settings, LayoutGrid, CalendarDays } from 'lucide-react';
+import { Sliders, CheckSquare, Calendar, BookOpen, Brain, FolderOpen, Settings, LayoutGrid, CalendarDays, Trash2, Cloud } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 export const Sidebar = () => {
@@ -104,6 +104,28 @@ export const Sidebar = () => {
       >
         <FolderOpen className="w-4 h-4" />
         <span>Coleções</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('someday_maybe')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'someday_maybe' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <Cloud className="w-4 h-4" />
+        <span>Algum Dia</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('trash')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'trash' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <Trash2 className="w-4 h-4" />
+        <span>Lixeira</span>
       </button>
       <button
         onClick={() => setActiveTab('settings')}
