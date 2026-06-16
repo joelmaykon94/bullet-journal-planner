@@ -103,6 +103,48 @@ export const DailyLogTab = () => {
   const [ctxIndex, setCtxIndex] = useState(0);
   const createInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Dynamically calculate top 5 themes with the highest quantity of tasks globally
+  const top5Categories = (() => {
+    const uniqueCategories = Array.from(new Set(BUJO_ICONS.map(i => i.name)));
+    const counts = uniqueCategories.map(cat => {
+      const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat).map(i => i.emoji);
+      const count = items.filter(item => item.type === 'task' && item.icon && matchingEmojis.includes(item.icon)).length;
+      return { cat, count };
+    });
+    return counts.sort((a, b) => b.count - a.count).slice(0, 5).map(item => item.cat);
+  })();
+
+  const categoryLabels: { [key: string]: string } = {
+    dinheiro: '💰 Finanças',
+    familia: '👨‍👩‍👧‍👦 Família',
+    saude: '🩺 Saúde',
+    arte: '🎨 Arte',
+    ideia: '💡 Ideia',
+    nota: '📝 Notas',
+    data: '📅 Datas',
+    objetivo: '🎯 Foco',
+    projeto: '🚀 Projetos',
+    trabalho: '💼 Trabalho',
+    estudo: '📚 Estudos',
+    esporte: '🏃‍♂️ Esportes',
+    viagem: '✈️ Viagens',
+    compras: '🛒 Compras',
+    musica: '🎵 Música',
+    lazer: '🍿 Lazer',
+    casa: '🏠 Casa',
+    chave: '🔑 Chaves',
+    alerta: '⚠️ Alertas',
+    ferramenta: '🛠️ Ajustes',
+    conquista: '🏆 Prêmios',
+    mente: '🧘‍♂️ Mente',
+    comida: '🍕 Comida',
+    favorito: '⭐ Favoritos',
+    amor: '❤️ Amor',
+    fogo: '🔥 Urgentes',
+    energia: '🔋 Energia',
+    descanso: '💤 Descanso'
+  };
+
   const CTX_SUGGESTIONS = [
     { tag: '@computador', icon: '💻', label: 'Computador' },
     { tag: '@online', icon: '🌐', label: 'Online' },
@@ -764,7 +806,7 @@ export const DailyLogTab = () => {
               <button
                 type="button"
                 onClick={() => setSelectedContext(null)}
-                className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer ${
+                className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-all cursor-pointer ${
                   selectedContext === null 
                     ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
                     : 'bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
@@ -814,7 +856,7 @@ export const DailyLogTab = () => {
                     key={ctx}
                     type="button"
                     onClick={() => setSelectedContext(isActive ? null : ctx)}
-                    className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer ${
+                    className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-all cursor-pointer ${
                       isActive 
                         ? activeColors[ctx] 
                         : `${colors[ctx]} hover:opacity-85`
@@ -833,7 +875,7 @@ export const DailyLogTab = () => {
               <button
                 type="button"
                 onClick={() => setSelectedCategory(null)}
-                className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer ${
+                className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-all cursor-pointer ${
                   selectedCategory === null 
                     ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
                     : 'bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
@@ -841,23 +883,18 @@ export const DailyLogTab = () => {
               >
                 Todos
               </button>
-              {['dinheiro', 'familia', 'saude', 'arte', 'ideia'].map(cat => {
-                const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat || i.tooltip.toLowerCase().includes(cat)).map(i => i.emoji);
+              {top5Categories.map(cat => {
+                const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat).map(i => i.emoji);
                 const count = dateItems.filter(item => item.icon && matchingEmojis.includes(item.icon)).length;
-                if (count === 0) return null;
                 
-                const label = cat === 'dinheiro' ? '💰 Finan' :
-                              cat === 'familia' ? '👨‍👩‍👧‍👦 Fam' :
-                              cat === 'saude' ? '🩺 Saúde' :
-                              cat === 'arte' ? '🎨 Arte' : '💡 Ideia';
-                              
+                const label = categoryLabels[cat] || `🏷️ ${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
                 const isActive = selectedCategory === cat;
                 return (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setSelectedCategory(isActive ? null : cat)}
-                    className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer ${
+                    className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-all cursor-pointer ${
                       isActive 
                         ? 'bg-bujo-highlight text-white border-bujo-highlight' 
                         : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
