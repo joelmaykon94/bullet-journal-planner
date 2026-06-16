@@ -96,3 +96,15 @@ export interface ConfirmationModalConfig {
   onConfirm: () => void;
   isDanger?: boolean;
 }
+
+export interface BragEntry {
+  id: string;
+  date: string; // YYYY-MM-DD
+  title: string;
+  category: 'Projeto' | 'Mentoria' | 'Arquitetura' | 'Processo' | 'Aprendizado' | 'Feedback';
+  scope: string;
+  impact: string;
+  okrs?: string;
+  subjectId?: string; // Link to StudySubject for XP integration
+}
+
