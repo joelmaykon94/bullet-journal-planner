@@ -1,16 +1,16 @@
 ---
-updated: 2026-06-16T12:05:00Z
+updated: 2026-06-16T12:35:00Z
 ---
 
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 12 - Smart Add NLP Input
+**Phase:** 13 - Contextual Feature Help
 **Status:** complete
 
 ## Last Action
 
-Completed Phase 12 with Plan 12.1. Implemented a Todoist-inspired Natural Language Processing (NLP) parser (`smartParser.ts`) that extracts relative dates, times, and priority codes from user input. Integrated this parser into `useBujoItems` so tasks are automatically assigned the correct metadata and the text is cleaned. Updated UI placeholders to hint at the new capability.
+Completed Phase 13 with Plan 13.1. Implemented a robust contextual help system for the application. Each major feature accessible from the sidebar now has a dedicated help modal (with descriptions, step-by-step guides, and pro-tips) that triggers automatically on the first visit. Also added a floating 'Help' button that allows users to pull up this contextual help on demand at any time.
 
 ## Next Steps
 
@@ -22,7 +22,7 @@ Decisions made that affect current work:
 
 | Decision | Choice | Made | Affects |
 |----------|--------|------|---------|
-| Map Codebase First | Yes, run codebase mapping before initialization | 2026-06-15 | Project setup and roadmap |
+| Contextual Help | Trigger once per feature via localStorage state tracking | 2026-06-16 | User Onboarding UX |
 
 ## Blockers
 
@@ -34,4 +34,4 @@ None
 
 ## Session Context
 
-The user is focused on productivity enhancements, specifically rapid task entry mimicking established tools like Todoist to reduce friction in daily planning.
+The user is focused on user experience and onboarding, wanting to ensure that complex features are easily understandable without overwhelming the user with a single massive tutorial.

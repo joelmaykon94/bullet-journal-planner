@@ -89,6 +89,13 @@ updated: 2026-06-16T11:20:00Z
 **Plans**:
 - [x] Plan 12.1: Todoist-style Smart Add NLP Parser.
 
+### Phase 13: Contextual Feature Help
+**Status**: ✅ Complete
+**Objective**: Implement specific, auto-triggering contextual help modals for each feature in the sidebar.
+
+**Plans**:
+- [x] Plan 13.1: Contextual Feature Help & Floating Button.
+
 ---
 
 ## Progress Summary
@@ -107,6 +114,7 @@ updated: 2026-06-16T11:20:00Z
 | 10 | ✅ | 1/1 | 2026-06-16 |
 | 11 | ✅ | 1/1 | 2026-06-16 |
 | 12 | ✅ | 1/1 | 2026-06-16 |
+| 13 | ✅ | 1/1 | 2026-06-16 |
 
 ---
 
@@ -115,5 +123,5 @@ updated: 2026-06-16T11:20:00Z
 | Phase | Started | Completed | Duration |
 |-------|---------|-----------|----------|
 | 1-5 | 2026-06-15 | 2026-06-15 | 1 day |
-| 6-12 | 2026-06-16 | 2026-06-16 | 1 day |
+| 6-13 | 2026-06-16 | 2026-06-16 | 1 day |
 
