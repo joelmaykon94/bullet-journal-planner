@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 export const TimelineTab = () => {
@@ -153,6 +153,8 @@ export const TimelineTab = () => {
                       className={`flex items-center justify-between p-2 rounded-xl border shadow-sm text-xs cursor-grab transition-all ${
                         item.status === 'completed'
                           ? 'bg-emerald-600/10 dark:bg-emerald-500/5 border-emerald-500/25 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-600/15 dark:hover:bg-emerald-500/10'
+                          : item.status === 'cancelled'
+                          ? 'bg-red-600/10 dark:bg-red-500/5 border-red-500/25 text-red-800 dark:text-red-400 hover:bg-red-650/15 dark:hover:bg-red-500/10'
                           : 'bg-zinc-200/40 dark:bg-white/5 border-zinc-300/40 dark:border-white/10 hover:bg-zinc-300/60 dark:hover:bg-white/10 text-bujo-text'
                       }`}
                       onClick={(e) => e.stopPropagation()}
@@ -188,22 +190,33 @@ export const TimelineTab = () => {
                           <div className="flex items-center gap-2 flex-1 min-w-0">
                             {item.type === 'task' && (
                               <button
-                                onClick={() => cycleStatus(item.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  cycleStatus(item.id);
+                                }}
+                                onMouseDown={(e) => e.stopPropagation()}
                                 className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
                                   item.status === 'completed' 
                                     ? 'bg-emerald-600 border-emerald-600 text-white' 
+                                    : item.status === 'cancelled'
+                                    ? 'bg-red-600 border-red-600 text-white'
                                     : 'border-zinc-300 dark:border-white/20 hover:border-bujo-highlight'
                                 }`}
                               >
                                 {item.status === 'completed' && <Check className="w-2.5 h-2.5 stroke-[4]" />}
+                                {item.status === 'cancelled' && <X className="w-2.5 h-2.5 stroke-[4]" />}
                               </button>
                             )}
-                            <span className={`truncate ${item.status === 'completed' ? 'line-through opacity-40' : ''}`}>
+                            <span className={`truncate ${
+                              item.status === 'completed' ? 'line-through opacity-40' : 
+                              item.status === 'cancelled' ? 'line-through opacity-40 text-red-750/80 dark:text-red-400/80' : ''
+                            }`}>
                               {item.content}
                             </span>
                           </div>
                           <span className={`text-[9px] font-bold uppercase shrink-0 select-none ml-2 ${
-                            item.status === 'completed' ? 'text-emerald-600/70 dark:text-emerald-500/60' : 'text-zinc-400'
+                            item.status === 'completed' ? 'text-emerald-600/70 dark:text-emerald-500/60' : 
+                            item.status === 'cancelled' ? 'text-red-600/70 dark:text-red-500/60' : 'text-zinc-400'
                           }`}>
                             {item.type === 'event' ? 'Evento' : 'Tarefa'}
                           </span>

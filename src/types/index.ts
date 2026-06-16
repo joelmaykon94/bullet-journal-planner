@@ -1,7 +1,7 @@
 export interface BujoItem {
   id: string;
   type: 'task' | 'event' | 'note';
-  status: 'open' | 'completed' | 'migrated' | 'scheduled';
+  status: 'open' | 'completed' | 'migrated' | 'scheduled' | 'cancelled';
   content: string;
   date: string; // YYYY-MM-DD
   time?: string; // HH:MM

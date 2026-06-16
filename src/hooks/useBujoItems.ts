@@ -190,7 +190,8 @@ export function useBujoItems(
           });
         }
         else if (item.status === 'migrated') nextStatus = 'scheduled';
-        else if (item.status === 'scheduled') nextStatus = 'open';
+        else if (item.status === 'scheduled') nextStatus = 'cancelled';
+        else if (item.status === 'cancelled') nextStatus = 'open';
         return { ...item, status: nextStatus };
       }
       return item;

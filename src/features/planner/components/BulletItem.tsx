@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Edit, Trash2, ChevronUp, ChevronDown, Check, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Edit, Trash2, ChevronUp, ChevronDown, Check, ChevronRight, ChevronLeft, X } from 'lucide-react';
 import { BujoItem } from '../../../types';
 import { useBujo } from '../../../context/BujoContext';
 
@@ -131,6 +131,9 @@ export const BulletItem = ({
             {item.status === 'scheduled' && (
               <ChevronLeft className="w-4 h-4 text-indigo-400 stroke-[3.5]" />
             )}
+            {item.status === 'cancelled' && (
+              <X className="w-4 h-4 text-red-500 stroke-[3.5]" />
+            )}
           </button>
 
           {item.icon && (
@@ -208,7 +211,10 @@ export const BulletItem = ({
             ) : (
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center flex-wrap gap-2">
-                  <span className={`text-sm md:text-base break-words font-medium leading-relaxed ${item.status === 'completed' ? 'line-through opacity-50' : ''}`}>
+                  <span className={`text-sm md:text-base break-words font-medium leading-relaxed ${
+                    item.status === 'completed' ? 'line-through opacity-50' : 
+                    item.status === 'cancelled' ? 'line-through text-red-500/75 dark:text-red-400/70 opacity-60' : ''
+                  }`}>
                     {item.priority && <span className="text-bujo-highlight font-bold mr-1.5">*</span>}
                     {renderContentWithTags(item.content)}
                     {item.type === 'task' && hasSubtasks && (
