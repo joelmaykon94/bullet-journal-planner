@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Download, Printer, ChevronLeft, ChevronRight, X, Search, ArrowDownAZ } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
@@ -97,6 +97,96 @@ export const DailyLogTab = () => {
   const [standardExecutionTime, setStandardExecutionTime] = useState<string>('');
   const [iconSearch, setIconSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed'>('all');
+
+  const [showCtxAutocomplete, setShowCtxAutocomplete] = useState(false);
+  const [ctxSearch, setCtxSearch] = useState('');
+  const [ctxIndex, setCtxIndex] = useState(0);
+  const createInputRef = useRef<HTMLInputElement | null>(null);
+
+  const CTX_SUGGESTIONS = [
+    { tag: '@computador', icon: '💻', label: 'Computador' },
+    { tag: '@online', icon: '🌐', label: 'Online' },
+    { tag: '@rua', icon: '🚶', label: 'Rua / Fora' },
+    { tag: '@casa', icon: '🏠', label: 'Casa' },
+    { tag: '@trabalhando', icon: '💼', label: 'Trabalho' },
+    { tag: '@mestrado', icon: '🎓', label: 'Mestrado' },
+    { tag: '@programando', icon: '⚡', label: 'Programação' },
+    { tag: '@aguardando', icon: '⏳', label: 'Aguardando' }
+  ];
+
+  const getContextSearch = (value: string, cursorPosition: number | null) => {
+    if (cursorPosition === null) return null;
+    const textBeforeCursor = value.substring(0, cursorPosition);
+    const lastSpace = textBeforeCursor.lastIndexOf(' ');
+    const currentWord = textBeforeCursor.substring(lastSpace + 1);
+    if (currentWord.startsWith('@')) {
+      return currentWord.substring(1);
+    }
+    return null;
+  };
+
+  const selectContextSuggestion = (ctxTag: string, currentValue: string, setValue: (v: string) => void, inputEl: HTMLInputElement | null) => {
+    if (!inputEl) return;
+    const cursorPosition = inputEl.selectionStart;
+    if (cursorPosition === null) return;
+    const textBeforeCursor = currentValue.substring(0, cursorPosition);
+    const textAfterCursor = currentValue.substring(cursorPosition);
+    const lastSpace = textBeforeCursor.lastIndexOf(' ');
+    const newVal = currentValue.substring(0, lastSpace + 1) + ctxTag + ' ' + textAfterCursor;
+    setValue(newVal);
+    
+    setTimeout(() => {
+      inputEl.focus();
+      const newPos = lastSpace + 1 + ctxTag.length + 1;
+      inputEl.setSelectionRange(newPos, newPos);
+    }, 10);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleStandardInputChange(e);
+    
+    const val = e.target.value;
+    const cursor = e.target.selectionStart;
+    const search = getContextSearch(val, cursor);
+    if (search !== null) {
+      setCtxSearch(search);
+      setShowCtxAutocomplete(true);
+      setCtxIndex(0);
+    } else {
+      setShowCtxAutocomplete(false);
+    }
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const filteredCtxs = CTX_SUGGESTIONS.filter(ctx => 
+      ctx.tag.toLowerCase().includes(ctxSearch.toLowerCase()) ||
+      ctx.label.toLowerCase().includes(ctxSearch.toLowerCase())
+    );
+
+    if (showCtxAutocomplete && filteredCtxs.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setCtxIndex(prev => (prev + 1) % filteredCtxs.length);
+        return;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setCtxIndex(prev => (prev - 1 + filteredCtxs.length) % filteredCtxs.length);
+        return;
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const selected = filteredCtxs[ctxIndex];
+        selectContextSuggestion(selected.tag, standardInput, setStandardInput, createInputRef.current);
+        setShowCtxAutocomplete(false);
+        return;
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowCtxAutocomplete(false);
+        return;
+      }
+    }
+    
+    handleStandardInputKeyDown(e);
+  };
 
   const handleClearInputs = () => {
     setStandardInput('');
@@ -387,11 +477,12 @@ export const DailyLogTab = () => {
             {/* Text Input Container with Autocomplete inside */}
             <div className="relative flex-1 flex items-center bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-lg px-2.5 focus-within:border-bujo-highlight/60 focus-within:ring-1 focus-within:ring-bujo-highlight/30 transition-all w-full">
               <input
+                ref={createInputRef}
                 type="text"
                 required
                 value={standardInput}
-                onChange={handleStandardInputChange}
-                onKeyDown={handleStandardInputKeyDown}
+                onChange={handleInputChange}
+                onKeyDown={handleInputKeyDown}
                 placeholder={standardType === 'task' ? "Adicionar tarefa... Use [ para coleções e @ para contextos" : standardType === 'event' ? "Adicionar evento... Use @ para contextos" : "Adicionar nota..."}
                 className="bg-transparent border-none outline-none w-full text-xs text-bujo-text placeholder:text-zinc-500 py-1.5 pr-8"
               />
@@ -407,7 +498,7 @@ export const DailyLogTab = () => {
               )}
 
               {showAutocomplete && filteredCollections.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
+                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
                   {filteredCollections.map((col: any, idx: number) => (
                     <div
                       key={col.id}
@@ -420,6 +511,34 @@ export const DailyLogTab = () => {
                     >
                       <span className="text-base">{col.icon}</span>
                       <span>{col.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {showCtxAutocomplete && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
+                  {CTX_SUGGESTIONS.filter(ctx => 
+                    ctx.tag.toLowerCase().includes(ctxSearch.toLowerCase()) ||
+                    ctx.label.toLowerCase().includes(ctxSearch.toLowerCase())
+                  ).map((ctx, idx) => (
+                    <div
+                      key={ctx.tag}
+                      onClick={() => {
+                        selectContextSuggestion(ctx.tag, standardInput, setStandardInput, createInputRef.current);
+                        setShowCtxAutocomplete(false);
+                      }}
+                      className={`px-4 py-2 text-xs cursor-pointer transition-colors flex items-center justify-between ${
+                        idx === ctxIndex 
+                          ? 'bg-bujo-highlight/10 text-bujo-highlight font-bold' 
+                          : 'text-bujo-text hover:bg-zinc-150 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>{ctx.icon}</span>
+                        <span>{ctx.label}</span>
+                      </span>
+                      <span className="font-mono text-[10px] opacity-60">{ctx.tag}</span>
                     </div>
                   ))}
                 </div>

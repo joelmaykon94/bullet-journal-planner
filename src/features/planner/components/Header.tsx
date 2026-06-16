@@ -52,7 +52,7 @@ export const Header = () => {
             )}
 
             <div 
-              onClick={() => { if (!focoActive) setActiveTab('indice'); }}
+              onClick={() => { if (!focoActive) setActiveTab(activeTab === 'landing_page' ? 'indice' : 'landing_page'); }}
               className="flex items-center gap-2 cursor-pointer group"
             >
               <div className="p-1.5 rounded-full bg-bujo-highlight/10 border border-bujo-highlight/20 text-bujo-highlight">

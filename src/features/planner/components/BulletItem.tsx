@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Edit, Trash2, ChevronUp, ChevronDown, Check, ChevronRight, ChevronLeft, X } from 'lucide-react';
 import { BujoItem } from '../../../types';
 import { useBujo } from '../../../context/BujoContext';
+import { BUJO_ICONS } from './DailyLogTab';
 
 interface BulletItemProps {
   item: BujoItem;
@@ -58,6 +59,102 @@ export const BulletItem = ({
   const [subtaskIcon, setSubtaskIcon] = useState<string>('');
   const [showSubtaskIconDropdown, setShowSubtaskIconDropdown] = useState<boolean>(false);
   const [subtaskMinutes, setSubtaskMinutes] = useState<string>('');
+
+  const [editIconSearch, setEditIconSearch] = useState('');
+  const [showCtxAutocomplete, setShowCtxAutocomplete] = useState(false);
+  const [ctxSearch, setCtxSearch] = useState('');
+  const [ctxIndex, setCtxIndex] = useState(0);
+  const editInputRef = useRef<HTMLInputElement | null>(null);
+
+  const CTX_SUGGESTIONS = [
+    { tag: '@computador', icon: '💻', label: 'Computador' },
+    { tag: '@online', icon: '🌐', label: 'Online' },
+    { tag: '@rua', icon: '🚶', label: 'Rua / Fora' },
+    { tag: '@casa', icon: '🏠', label: 'Casa' },
+    { tag: '@trabalhando', icon: '💼', label: 'Trabalho' },
+    { tag: '@mestrado', icon: '🎓', label: 'Mestrado' },
+    { tag: '@programando', icon: '⚡', label: 'Programação' },
+    { tag: '@aguardando', icon: '⏳', label: 'Aguardando' }
+  ];
+
+  const getContextSearch = (value: string, cursorPosition: number | null) => {
+    if (cursorPosition === null) return null;
+    const textBeforeCursor = value.substring(0, cursorPosition);
+    const lastSpace = textBeforeCursor.lastIndexOf(' ');
+    const currentWord = textBeforeCursor.substring(lastSpace + 1);
+    if (currentWord.startsWith('@')) {
+      return currentWord.substring(1);
+    }
+    return null;
+  };
+
+  const selectContextSuggestion = (ctxTag: string, currentValue: string, setValue: (v: string) => void, inputEl: HTMLInputElement | null) => {
+    if (!inputEl) return;
+    const cursorPosition = inputEl.selectionStart;
+    if (cursorPosition === null) return;
+    const textBeforeCursor = currentValue.substring(0, cursorPosition);
+    const textAfterCursor = currentValue.substring(cursorPosition);
+    const lastSpace = textBeforeCursor.lastIndexOf(' ');
+    const newVal = currentValue.substring(0, lastSpace + 1) + ctxTag + ' ' + textAfterCursor;
+    setValue(newVal);
+    
+    setTimeout(() => {
+      inputEl.focus();
+      const newPos = lastSpace + 1 + ctxTag.length + 1;
+      inputEl.setSelectionRange(newPos, newPos);
+    }, 10);
+  };
+
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setEditingItemContent(val);
+    
+    const cursor = e.target.selectionStart;
+    const search = getContextSearch(val, cursor);
+    if (search !== null) {
+      setCtxSearch(search);
+      setShowCtxAutocomplete(true);
+      setCtxIndex(0);
+    } else {
+      setShowCtxAutocomplete(false);
+    }
+  };
+
+  const handleEditInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const filteredCtxs = CTX_SUGGESTIONS.filter(ctx => 
+      ctx.tag.toLowerCase().includes(ctxSearch.toLowerCase()) ||
+      ctx.label.toLowerCase().includes(ctxSearch.toLowerCase())
+    );
+
+    if (showCtxAutocomplete && filteredCtxs.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setCtxIndex(prev => (prev + 1) % filteredCtxs.length);
+        return;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setCtxIndex(prev => (prev - 1 + filteredCtxs.length) % filteredCtxs.length);
+        return;
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const selected = filteredCtxs[ctxIndex];
+        selectContextSuggestion(selected.tag, editingItemContent, setEditingItemContent, editInputRef.current);
+        setShowCtxAutocomplete(false);
+        return;
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowCtxAutocomplete(false);
+        return;
+      }
+    }
+
+    if (e.key === 'Enter') {
+      handleSaveEdit();
+    }
+    if (e.key === 'Escape') {
+      setEditingItemId(null);
+    }
+  };
 
   useEffect(() => {
     if (editingItemId === item.id) {
@@ -178,36 +275,83 @@ export const BulletItem = ({
           <div className="flex-1 min-w-0">
             {editingItemId === item.id ? (
               <div className="flex flex-col gap-2.5 w-full">
-                <div className="flex items-center gap-2 w-full">
+                <div className="relative flex items-center gap-2 w-full">
                   <input
+                    ref={editInputRef}
                     type="text"
                     value={editingItemContent}
-                    onChange={(e) => setEditingItemContent(e.target.value)}
+                    onChange={handleEditInputChange}
+                    onKeyDown={handleEditInputKeyDown}
                     className="flex-1 bg-zinc-200/50 dark:bg-white/10 border border-bujo-highlight text-sm text-bujo-text px-3 py-1.5 rounded-xl outline-none font-medium focus:ring-1 focus:ring-bujo-highlight"
                     autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleSaveEdit();
-                      if (e.key === 'Escape') setEditingItemId(null);
-                    }}
                   />
+                  {showCtxAutocomplete && (
+                    <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-40 overflow-y-auto">
+                      {CTX_SUGGESTIONS.filter(ctx => 
+                        ctx.tag.toLowerCase().includes(ctxSearch.toLowerCase()) ||
+                        ctx.label.toLowerCase().includes(ctxSearch.toLowerCase())
+                      ).map((ctx, idx) => (
+                        <div
+                          key={ctx.tag}
+                          onClick={() => {
+                            selectContextSuggestion(ctx.tag, editingItemContent, setEditingItemContent, editInputRef.current);
+                            setShowCtxAutocomplete(false);
+                          }}
+                          className={`px-3 py-2 text-xs cursor-pointer transition-colors flex items-center justify-between ${
+                            idx === ctxIndex 
+                              ? 'bg-bujo-highlight/10 text-bujo-highlight font-bold' 
+                              : 'text-bujo-text hover:bg-zinc-150 dark:hover:bg-white/5'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <span>{ctx.icon}</span>
+                            <span>{ctx.label}</span>
+                          </span>
+                          <span className="font-mono text-[10px] opacity-60">{ctx.tag}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Icon Selector */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-[11px] text-zinc-400 font-bold">Escolha um ícone/emoji:</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {['', '📚', '🏃‍♂️', '🍎', '💡', '💻', '💼', '🛒', '🎨', '🎵', '🩺', '✈️', '💬', '🔑'].map(emoji => (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-zinc-400 font-bold">Escolha um ícone/emoji:</span>
+                    {localIcon && (
                       <button
-                        key={emoji}
                         type="button"
-                        onClick={() => setLocalIcon(emoji)}
+                        onClick={() => setLocalIcon('')}
+                        className="text-[9px] text-red-500 hover:underline font-bold"
+                      >
+                        Remover ícone
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Pesquisar ícones..."
+                    value={editIconSearch}
+                    onChange={(e) => setEditIconSearch(e.target.value)}
+                    className="w-full px-2.5 py-1 text-[10px] rounded-lg bg-zinc-200/50 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 text-bujo-text placeholder-zinc-550 outline-none"
+                  />
+                  <div className="grid grid-cols-7 gap-1 max-h-24 overflow-y-auto pr-1">
+                    {BUJO_ICONS.filter(icon => 
+                      icon.name.toLowerCase().includes(editIconSearch.toLowerCase()) || 
+                      icon.tooltip.toLowerCase().includes(editIconSearch.toLowerCase())
+                    ).map(icon => (
+                      <button
+                        key={icon.emoji}
+                        type="button"
+                        onClick={() => setLocalIcon(icon.emoji)}
                         className={`w-7 h-7 flex items-center justify-center rounded-lg text-sm border transition-all ${
-                          localIcon === emoji 
+                          localIcon === icon.emoji 
                             ? 'bg-bujo-highlight border-bujo-highlight text-white font-bold scale-110 shadow-sm'
                             : 'bg-zinc-200/50 dark:bg-white/5 border-zinc-300 dark:border-white/10 hover:bg-zinc-300 dark:hover:bg-white/10'
                         }`}
+                        title={icon.tooltip}
                       >
-                        {emoji || '❌'}
+                        {icon.emoji}
                       </button>
                     ))}
                   </div>

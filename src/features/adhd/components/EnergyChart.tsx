@@ -20,6 +20,7 @@ export const EnergyChart = ({
   setShowEnergyGuide,
   selectedDate
 }: EnergyChartProps) => {
+  const [hoveredItem, setHoveredItem] = useState<BujoItem | null>(null);
   const score = getHarmonyScore();
   const currentHour = new Date().getHours();
   const currentMinute = new Date().getMinutes();
@@ -273,9 +274,12 @@ export const EnergyChart = ({
             const strokeColor = item.type === 'event' ? '#4A7C6C' : 'var(--bujo-highlight)';
 
             return (
-              <g key={item.id} className="cursor-help group/item">
-                <title>{item.content} ({item.time}) - {isCompleted ? 'Concluída' : 'Pendente'}</title>
-                
+              <g 
+                key={item.id} 
+                className="cursor-help group/item"
+                onMouseEnter={() => setHoveredItem(item)}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
                 {/* Vertical guide line */}
                 <line
                   x1={getEnergyX(itemHour)}
@@ -312,6 +316,70 @@ export const EnergyChart = ({
             );
           })}
         </svg>
+
+        {hoveredItem && (() => {
+          const [h, m] = hoveredItem.time!.split(':').map(Number);
+          const itemHour = h + m / 60;
+          const xPct = (getEnergyX(itemHour) / 500) * 100;
+          const yVal = getEnergyY(itemHour);
+          const isHigh = yVal <= 40;
+          const isLow = yVal > 70;
+          const isCompleted = hoveredItem.status === 'completed';
+
+          let tooltipStyle: React.CSSProperties = {
+            bottom: `${(1 - yVal / 100) * 170 + 36}px`
+          };
+          if (xPct < 25) {
+            tooltipStyle.left = `calc(${xPct}% + 16px)`;
+          } else if (xPct > 75) {
+            tooltipStyle.left = `calc(${xPct}% - 256px)`;
+          } else {
+            tooltipStyle.left = `calc(${xPct}% - 120px)`;
+          }
+
+          return (
+            <div 
+              className="absolute z-50 bg-[#FCFAF7] dark:bg-[#1E1B18] border border-[#E4DBC5] dark:border-zinc-800 p-3.5 rounded-2xl shadow-xl w-60 pointer-events-none transition-all duration-150 animate-scale-in text-bujo-text"
+              style={tooltipStyle}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-500 font-mono flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> {hoveredItem.time}
+                </span>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                  isHigh ? 'bg-emerald-500/10 text-emerald-500' : 
+                  isLow ? 'bg-red-500/10 text-red-400' : 'bg-indigo-500/10 text-indigo-400'
+                }`}>
+                  {isHigh ? '⚡ Pico Foco' : isLow ? '💤 Vale Crash' : '⚖️ Ritmo Estável'}
+                </span>
+              </div>
+              
+              <h5 className={`text-xs font-bold mb-2 break-words leading-tight ${isCompleted ? 'line-through opacity-50' : ''}`}>
+                {hoveredItem.content}
+              </h5>
+              
+              <div className="space-y-1.5 text-[10px] text-zinc-500 dark:text-zinc-400 border-t border-zinc-200/50 dark:border-white/5 pt-2">
+                <p>
+                  {isHigh ? '⚡ Energia Alta: Momento perfeito para executar esta tarefa com alto foco!' : 
+                   isLow ? '💤 Energia Baixa: Cuidado com o cansaço. Você pode achar esta tarefa mais pesada agora.' : 
+                   '⚖️ Energia Média: Bom momento para manter um progresso constante.'}
+                </p>
+                {hoveredItem.energy && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="bg-zinc-200/40 dark:bg-white/5 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold">
+                      Esforço: {hoveredItem.energy}/5
+                    </span>
+                    {hoveredItem.energy >= 4 && isLow && (
+                      <span className="text-red-500 dark:text-red-400 font-bold text-[8.5px] animate-pulse">
+                        ⚠️ Alerta de Sobrecarga!
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Labels for zones */}
         <div className="flex items-center justify-between px-2 mt-2 z-10 select-none">
