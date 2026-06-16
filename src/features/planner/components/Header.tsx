@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { CheckSquare, Sparkles, Download, Trash2, Settings, Cloud, CloudOff, Menu, X, Sliders, Calendar, BookOpen, Brain, FolderOpen, LayoutGrid, CalendarDays } from 'lucide-react';
+import { CheckSquare, Sparkles, Download, Trash2, Settings, Cloud, CloudOff, Menu, X, Sliders, Calendar, BookOpen, Brain, FolderOpen, LayoutGrid, CalendarDays, LogOut, User } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
+import { useAuth } from '../../../context/AuthContext';
 
 export const Header = () => {
   const {
@@ -15,6 +16,8 @@ export const Header = () => {
     setShowAIDownloadModal,
     syncStatus
   } = useBujo();
+
+  const { user, signOut, setOfflineMode } = useAuth();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -209,45 +212,93 @@ export const Header = () => {
           />
           
           {/* Drawer Panel Container */}
-          <div className="relative flex w-full max-w-xs flex-col bg-zinc-950 border-r border-white/10 p-5 shadow-3xl overflow-y-auto animate-slide-in-right">
-            <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-full bg-bujo-highlight/10 text-bujo-highlight">
-                  <CheckSquare className="w-5 h-5" />
+          <div className="relative flex w-full max-w-xs flex-col bg-zinc-950 border-r border-white/10 p-5 shadow-3xl overflow-y-auto animate-slide-in-right justify-between">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-full bg-bujo-highlight/10 text-bujo-highlight">
+                    <CheckSquare className="w-5 h-5" />
+                  </div>
+                  <span className="font-bold text-sm text-white font-mono">Menu BuJo Focus</span>
                 </div>
-                <span className="font-bold text-sm text-white font-mono">Menu BuJo Focus</span>
+                <button 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1 text-zinc-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button 
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1 text-zinc-400 hover:text-white rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              <nav className="flex flex-col gap-1.5">
+                {menuItems.map(item => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        setActiveTab(item.id as any);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-medium transition-all text-left cursor-pointer ${
+                        isActive 
+                          ? 'bg-bujo-highlight text-white font-bold shadow-lg shadow-bujo-highlight/15' 
+                          : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
 
-            <nav className="flex flex-col gap-1.5">
-              {menuItems.map(item => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveTab(item.id as any);
+            {/* Mobile User Profile Card */}
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-2 mt-6 select-none">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-bujo-highlight/15 border border-bujo-highlight/30 text-bujo-highlight flex items-center justify-center font-bold text-xs shrink-0 select-none">
+                  {user?.email ? user.email[0].toUpperCase() : 'O'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-[8px] font-bold text-zinc-550 dark:text-zinc-500 tracking-widest block select-none">Usuário</span>
+                  <span className="text-[11px] font-medium text-white truncate block select-text" title={user?.email || 'Modo Offline Local'}>
+                    {user?.email || 'Modo Offline'}
+                  </span>
+                </div>
+              </div>
+              <div className="h-[1px] bg-white/5" />
+              {user ? (
+                <button
+                  onClick={async () => {
+                    const { error } = await signOut();
+                    if (error) {
+                      showToast(`Erro ao sair: ${error.message}`);
+                    } else {
                       setMobileMenuOpen(false);
-                    }}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-medium transition-all text-left cursor-pointer ${
-                      isActive 
-                        ? 'bg-bujo-highlight text-white font-bold shadow-lg shadow-bujo-highlight/15' 
-                        : 'text-zinc-400 hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+                      window.location.reload();
+                    }
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10.5px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-red-500/20"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Sair / Trocar Conta
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setOfflineMode(false);
+                    setMobileMenuOpen(false);
+                    window.location.reload();
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-bujo-highlight hover:opacity-95 text-white text-[10.5px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-bujo-highlight/15"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  Conectar Conta
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

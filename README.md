@@ -41,11 +41,11 @@ npm install
 ```
 
 ### Passo 2: Configurar Variáveis de Ambiente
-1. Copie o arquivo de exemplo [.env.example](file:///home/joelmaykon/bullet-journal-planner/.env.example):
+1. Copie o arquivo de exemplo [.env.example](./.env.example):
    ```bash
    cp .env.example .env
    ```
-2. Abra o arquivo [.env](file:///home/joelmaykon/bullet-journal-planner/.env) gerado e configure suas chaves do Supabase:
+2. Abra o arquivo `.env` gerado e configure suas chaves do Supabase:
    - `VITE_SUPABASE_URL`: URL do seu projeto Supabase.
    - `VITE_SUPABASE_ANON_KEY`: Chave pública anônima do seu projeto.
 
@@ -66,7 +66,7 @@ Abra o seu navegador no endereço indicado (geralmente [http://localhost:5173](h
 O BuJo Focus utiliza o **Supabase** como backend para persistência segura dos logs, hábitos, coleções e progresso do usuário. Se as chaves do Supabase não forem fornecidas no `.env`, o aplicativo executará no **Modo Offline** utilizando o `localStorage` do navegador como fallback automático.
 
 ### Estrutura do Banco de Dados
-Para habilitar a persistência em nuvem, você deve ter as tabelas mapeadas no Supabase de acordo com o esquema definido no contexto do aplicativo (veja [BujoContext.tsx](file:///home/joelmaykon/bullet-journal-planner/src/context/BujoContext.tsx)).
+Para habilitar a persistência em nuvem, você deve ter as tabelas mapeadas no Supabase de acordo com o esquema definido no contexto do aplicativo (veja [BujoContext.tsx](./src/context/BujoContext.tsx)).
 
 ---
 
@@ -74,4 +74,4 @@ Para habilitar a persistência em nuvem, você deve ter as tabelas mapeadas no S
 
 Para hospedar e publicar o projeto de forma contínua a partir de commits no GitHub, consulte o nosso guia detalhado de deploy:
 
-- [Manual de Deploy no Netlify](file:///home/joelmaykon/bullet-journal-planner/docs/deploy-netlify.md)
+- [Manual de Deploy no Netlify](./docs/deploy-netlify.md)

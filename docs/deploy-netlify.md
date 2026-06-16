@@ -56,7 +56,7 @@ Na tela de configurações de deploy do Netlify, defina os seguintes parâmetros
 
 Para garantir que rotas internas do React (como `/daily_log`, `/settings`, etc.) não retornem erro **404** ao recarregar a página diretamente no navegador, o projeto inclui um arquivo de configuração de redirecionamento no diretório público:
 
-- Arquivo: [public/_redirects](file:///home/joelmaykon/bullet-journal-planner/public/_redirects)
+- Arquivo: [public/_redirects](../public/_redirects)
 - Conteúdo:
   ```text
   /*    /index.html   200
