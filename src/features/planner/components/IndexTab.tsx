@@ -283,44 +283,66 @@ export const IndexTab = () => {
         </div>
       </div>
 
-      {/* 2. Three-Column Main Dashboard Grid (Fits viewport cleanly) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 items-start">
+      {/* 2. Top Row: Ritmo Energético, Habit Tracker & Guia de Foco side-by-side (Horizontal block alignment) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
         
-        {/* Left Area (Lg:col-span-8 flex flex-col gap-4) */}
-        <div className="lg:col-span-8 flex flex-col gap-4">
-          
-          {/* Row A: Energy Chart & Habit Tracker side by side */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            
-            <div id="tutorial-energy-chart" className="lg:col-span-7">
-              <EnergyChart 
-                items={items}
-                getHarmonyScore={getHarmonyScore}
-                getHarmonyRecommendation={getHarmonyRecommendation}
-                showEnergyGuide={showEnergyGuide}
-                setShowEnergyGuide={setShowEnergyGuide}
-                selectedDate={selectedDate}
-              />
-            </div>
+        {/* Ritmo Energético */}
+        <div id="tutorial-energy-chart" className="flex flex-col h-full">
+          <EnergyChart 
+            items={items}
+            getHarmonyScore={getHarmonyScore}
+            getHarmonyRecommendation={getHarmonyRecommendation}
+            showEnergyGuide={showEnergyGuide}
+            setShowEnergyGuide={setShowEnergyGuide}
+            selectedDate={selectedDate}
+          />
+        </div>
 
-            {/* Habit Tracker at top for easy accessibility */}
-            <div id="tutorial-habit-tracker" className="lg:col-span-5">
-              <HabitTracker />
-            </div>
-          </div>
+        {/* Rastreador de Hábitos */}
+        <div id="tutorial-habit-tracker" className="flex flex-col h-full">
+          <HabitTracker />
+        </div>
 
-          {/* Row B: Knowledge Evolution Chart */}
+        {/* Guia de Foco */}
+        <div className="flex flex-col h-full">
+          <UserPersonaCard
+            userXp={userXp}
+            setUserXp={setUserXp}
+            currentEnergy={currentEnergy}
+            anxietyLevel={anxietyLevel}
+            showToast={showToast}
+            items={items}
+            soundType={soundType}
+            setSoundType={setSoundType}
+            toggleAmbientAudio={toggleAmbientAudio}
+            ambientPlaying={ambientPlaying}
+            ambientVolume={ambientVolume}
+            setAmbientVolume={setAmbientVolume}
+            aiEngine={aiEngine}
+            aiWorkerRef={aiWorkerRef}
+            localLLMState={localLLMState}
+            getCognitiveLoad={getCognitiveLoad}
+          />
+        </div>
+
+      </div>
+
+      {/* 3. Bottom Row: Knowledge Evolution Chart & Menu de Acesso Rápido */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start mt-1">
+        
+        <div className="lg:col-span-7 flex flex-col gap-4">
           <div id="tutorial-knowledge-chart">
             <KnowledgeEvolutionChart />
           </div>
+        </div>
 
-          {/* Row C: Menu de Acesso Rápido (Horizontal Grid) */}
+        <div className="lg:col-span-5">
           <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4">
             <h4 className="text-[10px] font-bold text-zinc-550 uppercase tracking-widest flex items-center gap-1.5 border-b border-zinc-200/20 dark:border-white/5 pb-2 mb-3">
               <Target className="w-3.5 h-3.5 text-bujo-highlight" />
               Menu de Acesso Rápido
             </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {[
                 { tab: 'daily_spread', label: 'Timeline', icon: Sliders },
                 { tab: 'weekly_log', label: 'Weekly Log', icon: LayoutGrid },
@@ -348,31 +370,6 @@ export const IndexTab = () => {
             </div>
           </div>
         </div>
-
-        {/* Right Area (Lg:col-span-4) -> Unified Persona & Focus Companion */}
-        <div className="lg:col-span-4 h-full flex flex-col justify-between">
-          <UserPersonaCard
-            userXp={userXp}
-            setUserXp={setUserXp}
-            currentEnergy={currentEnergy}
-            anxietyLevel={anxietyLevel}
-            showToast={showToast}
-            items={items}
-            // Sound engine integration
-            soundType={soundType}
-            setSoundType={setSoundType}
-            toggleAmbientAudio={toggleAmbientAudio}
-            ambientPlaying={ambientPlaying}
-            ambientVolume={ambientVolume}
-            setAmbientVolume={setAmbientVolume}
-            // Local AI integration
-            aiEngine={aiEngine}
-            aiWorkerRef={aiWorkerRef}
-            localLLMState={localLLMState}
-            getCognitiveLoad={getCognitiveLoad}
-          />
-        </div>
-
       </div>
     </div>
   );
