@@ -120,3 +120,24 @@ export const getLocalDateString = (d: Date = new Date()): string => {
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+export const getWeekdaysForDate = (dateStr: string): string[] => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const currentDay = date.getDay();
+  const dayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+  
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + dayOffset);
+  
+  const weekdays: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dayVal = String(d.getDate()).padStart(2, '0');
+    weekdays.push(`${y}-${m}-${dayVal}`);
+  }
+  return weekdays;
+};

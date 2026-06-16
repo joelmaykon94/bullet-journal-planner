@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { BujoItem, DreamItem } from '../types';
-import { getLocalDateString } from '../utils/plannerUtils';
+import { getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
 
 export function useBujoItems(
   setUserXp: React.Dispatch<React.SetStateAction<number>>,
@@ -150,20 +150,48 @@ export function useBujoItems(
       delegatedTo = delegationMatch[1];
     }
 
-    const newItem: BujoItem = {
-      id: Math.random().toString(),
-      type: standardType,
-      status: 'open',
-      content: content,
-      date: standardDate || selectedDate,
-      time: standardTime || undefined,
-      subtasks: standardType === 'task' ? [] : undefined,
-      icon: icon || undefined,
-      energy: standardType === 'task' ? (energy || 1) : undefined,
-      complexity: standardType === 'task' ? (complexity || 1) : undefined,
-      executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
-      delegatedTo: delegatedTo || undefined
-    };
+    const targetDate = standardDate || selectedDate;
+    const isRecurring = standardType === 'task' && content.toLowerCase().includes('todos os dias');
+    
+    let itemsToCreate: BujoItem[] = [];
+    
+    if (isRecurring) {
+      const weekdays = getWeekdaysForDate(targetDate);
+      weekdays.forEach((wDate, idx) => {
+        const idTime = Date.now() + idx;
+        const item: BujoItem = {
+          id: `${idTime}-${Math.random().toString(36).substring(2, 11)}`,
+          type: 'task',
+          status: 'open',
+          content: content,
+          date: wDate,
+          time: standardTime || undefined,
+          subtasks: [],
+          icon: icon || undefined,
+          energy: energy || 1,
+          complexity: complexity || 1,
+          executionTime: executionTime || undefined,
+          delegatedTo: delegatedTo || undefined
+        };
+        itemsToCreate.push(item);
+      });
+    } else {
+      const newItem: BujoItem = {
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+        type: standardType,
+        status: 'open',
+        content: content,
+        date: targetDate,
+        time: standardTime || undefined,
+        subtasks: standardType === 'task' ? [] : undefined,
+        icon: icon || undefined,
+        energy: standardType === 'task' ? (energy || 1) : undefined,
+        complexity: standardType === 'task' ? (complexity || 1) : undefined,
+        executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
+        delegatedTo: delegatedTo || undefined
+      };
+      itemsToCreate.push(newItem);
+    }
 
     // Check for collection sync: [Collection Name] some task
     const collectionMatch = content.match(/^\[(.*?)\]\s*(.*)/);
@@ -200,7 +228,7 @@ export function useBujoItems(
       showToast('Adicionado ao Daily Log!');
     }
 
-    setItems(prev => [newItem, ...prev]);
+    setItems(prev => [...itemsToCreate, ...prev]);
     setStandardInput('');
     setStandardTime('');
   };
@@ -213,7 +241,7 @@ export function useBujoItems(
     if (!timelineInput.trim()) return;
 
     const newItem: BujoItem = {
-      id: Math.random().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: 'task',
       status: 'open',
       content: timelineInput.trim(),
@@ -238,7 +266,7 @@ export function useBujoItems(
 
     const timeStr = `${selectedHourToSchedule.toString().padStart(2, '0')}:00`;
     const newItem: BujoItem = {
-      id: Math.random().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: newHourTaskType,
       status: 'scheduled',
       content: newHourTaskContent.trim(),

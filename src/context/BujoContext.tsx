@@ -7,7 +7,7 @@ import { useBujoSettings } from '../hooks/useBujoSettings';
 import { useCollections } from '../hooks/useCollections';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useAmbientAudio } from '../hooks/useAmbientAudio';
-import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString } from '../utils/plannerUtils';
+import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
 
 import { useAuth } from './AuthContext';
 
@@ -1244,7 +1244,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     if (!rapidText.trim()) return;
 
     const newItem: BujoItem = {
-      id: Math.random().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: rapidType,
       status: 'open',
       content: rapidText.trim(),
@@ -1267,15 +1267,38 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     if (!standardInput.trim()) return;
 
     const content = standardInput.trim();
-    const newItem: BujoItem = {
-      id: Math.random().toString(),
-      type: standardType,
-      status: 'open',
-      content: content,
-      date: standardDate || selectedDate,
-      time: standardTime || undefined,
-      subtasks: standardType === 'task' ? [] : undefined
-    };
+    const targetDate = standardDate || selectedDate;
+    const isRecurring = standardType === 'task' && content.toLowerCase().includes('todos os dias');
+    
+    let itemsToCreate: BujoItem[] = [];
+    
+    if (isRecurring) {
+      const weekdays = getWeekdaysForDate(targetDate);
+      weekdays.forEach((wDate, idx) => {
+        const idTime = Date.now() + idx;
+        const item: BujoItem = {
+          id: `${idTime}-${Math.random().toString(36).substring(2, 11)}`,
+          type: 'task',
+          status: 'open',
+          content: content,
+          date: wDate,
+          time: standardTime || undefined,
+          subtasks: []
+        };
+        itemsToCreate.push(item);
+      });
+    } else {
+      const newItem: BujoItem = {
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+        type: standardType,
+        status: 'open',
+        content: content,
+        date: targetDate,
+        time: standardTime || undefined,
+        subtasks: standardType === 'task' ? [] : undefined
+      };
+      itemsToCreate.push(newItem);
+    }
 
     // Check for collection sync: [Collection Name] some task
     const collectionMatch = content.match(/^\[(.*?)\]\s*(.*)/);
@@ -1305,7 +1328,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    setItems(prev => [newItem, ...prev]);
+    setItems(prev => [...itemsToCreate, ...prev]);
     setStandardInput('');
     setStandardTime('');
     showToast('Entrada salva com sucesso!');
@@ -1351,12 +1374,12 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const createStandardTaskWithSuggestions = (subtasks: string[]) => {
     if (!standardInput.trim()) return;
     const newItem: BujoItem = {
-      id: Math.random().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: 'task',
       status: 'open',
       content: standardInput.trim(),
       date: getLocalDateString(),
-      subtasks: subtasks.map(s => ({ id: Math.random().toString(), content: s, completed: false }))
+      subtasks: subtasks.map(s => ({ id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, content: s, completed: false }))
     };
     setItems(prev => [newItem, ...prev]);
     setStandardInput('');
@@ -1367,12 +1390,12 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const createRapidTaskWithSuggestions = (subtasks: string[]) => {
     if (!rapidText.trim()) return;
     const newItem: BujoItem = {
-      id: Math.random().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: 'task',
       status: 'open',
       content: rapidText.trim(),
       date: getLocalDateString(),
-      subtasks: subtasks.map(s => ({ id: Math.random().toString(), content: s, completed: false }))
+      subtasks: subtasks.map(s => ({ id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, content: s, completed: false }))
     };
     setItems(prev => [newItem, ...prev]);
     setRapidText('');
@@ -1626,7 +1649,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     const dateStr = `${year}-${(selectedMonth + 1).toString().padStart(2, '0')}-01`;
 
     const newEvent: BujoItem = {
-      id: Math.random().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: 'event',
       status: 'open',
       content: futureLogEventContent.trim(),
