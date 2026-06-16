@@ -192,11 +192,11 @@ export const DailyLogTab = () => {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200/50 dark:border-white/10 pb-4 gap-4">
+    <div className="flex-1 min-h-0 flex flex-col gap-3 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200/50 dark:border-white/10 pb-2 gap-2">
         <div>
-          <span className="text-[10px] text-zinc-400 uppercase font-mono tracking-widest">DIÁRIO CONSOLIDADO</span>
-          <h3 className="text-3xl font-light">
+          <span className="text-[9px] text-zinc-400 uppercase font-mono tracking-widest">DIÁRIO CONSOLIDADO</span>
+          <h3 className="text-2xl font-light">
             Daily Log — <span className="italic font-normal" style={{ fontFamily: "'Instrument Serif', serif" }}>
               {selectedDate === today ? 'Hoje' : new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
@@ -256,18 +256,18 @@ export const DailyLogTab = () => {
         </div>
       </div>
 
-      <div className="relative bg-zinc-200/30 dark:bg-white/5 p-3 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
-        <form onSubmit={handleLocalSubmit} className="flex flex-col gap-3">
+      <div className="relative bg-zinc-200/30 dark:bg-white/5 p-2 rounded-xl border border-zinc-200/40 dark:border-white/10 no-print">
+        <form onSubmit={handleLocalSubmit} className="flex flex-col gap-2">
           {/* Row 1: Primary Inputs */}
-          <div className="flex flex-col sm:flex-row gap-2.5 items-center w-full">
+          <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
             {/* Type Selector (Segmented control) */}
-            <div className="flex bg-zinc-200/50 dark:bg-zinc-950/60 p-1 rounded-xl border border-zinc-200/40 dark:border-white/5 shrink-0 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex bg-zinc-200/50 dark:bg-zinc-950/60 p-0.5 rounded-lg border border-zinc-200/40 dark:border-white/5 shrink-0 w-full sm:w-auto justify-between sm:justify-start">
               {(['task', 'event', 'note'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setStandardType(t)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-initial text-center ${
+                  className={`px-2.5 py-0.5 rounded-md text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-initial text-center ${
                     standardType === t
                       ? 'bg-bujo-highlight text-white shadow-sm'
                       : 'text-zinc-500 hover:text-bujo-text'
@@ -283,7 +283,7 @@ export const DailyLogTab = () => {
               <button
                 type="button"
                 onClick={() => setShowIconDropdown(!showIconDropdown)}
-                className="w-full sm:w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 flex items-center justify-center text-sm hover:border-bujo-highlight hover:bg-zinc-200 dark:hover:bg-white/10 transition-all cursor-pointer gap-2 sm:gap-0"
+                className="w-full sm:w-7 sm:h-7 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 flex items-center justify-center text-xs hover:border-bujo-highlight hover:bg-zinc-200 dark:hover:bg-white/10 transition-all cursor-pointer gap-2 sm:gap-0"
                 title="Escolher Ícone/Desenho"
               >
                 <span className="sm:hidden text-xs text-zinc-500 font-semibold">Ícone:</span>
@@ -291,10 +291,10 @@ export const DailyLogTab = () => {
               </button>
 
               {showIconDropdown && (
-                <div className="absolute left-0 top-full mt-2 p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 w-64 animate-scale-in">
-                  <div className="flex justify-between items-center mb-2 pb-1.5 border-b border-zinc-200/40 dark:border-white/5">
-                    <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider">Escolha um Ícone</span>
-                    <div className="flex items-center gap-2">
+                <div className="absolute left-0 top-full mt-1.5 p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-64 animate-scale-in">
+                  <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-zinc-200/40 dark:border-white/5">
+                    <span className="text-[9.5px] font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider">Escolha um Ícone</span>
+                    <div className="flex items-center gap-1.5">
                       {standardIcon && (
                         <button
                           type="button"
@@ -302,7 +302,7 @@ export const DailyLogTab = () => {
                             setStandardIcon('');
                             setShowIconDropdown(false);
                           }}
-                          className="text-[10px] text-red-500 hover:underline font-bold cursor-pointer"
+                          className="text-[9px] text-red-500 hover:underline font-bold cursor-pointer"
                         >
                           Remover
                         </button>
@@ -313,7 +313,7 @@ export const DailyLogTab = () => {
                         className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer"
                         title="Fechar"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <X className="w-3 h-3" />
                       </button>
                     </div>
                   </div>
@@ -322,9 +322,9 @@ export const DailyLogTab = () => {
                     placeholder="Pesquisar ícones..."
                     value={iconSearch}
                     onChange={(e) => setIconSearch(e.target.value)}
-                    className="w-full px-2 py-1 mb-2 text-[10px] rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-250 dark:border-white/10 text-bujo-text placeholder-zinc-500 outline-none"
+                    className="w-full px-2 py-0.5 mb-1.5 text-[9.5px] rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-250 dark:border-white/10 text-bujo-text placeholder-zinc-500 outline-none"
                   />
-                  <div className="grid grid-cols-6 gap-1.5 max-h-40 overflow-y-auto pr-1">
+                  <div className="grid grid-cols-6 gap-1 max-h-36 overflow-y-auto pr-1">
                     {BUJO_ICONS.filter(icon => 
                       icon.name.toLowerCase().includes(iconSearch.toLowerCase()) || 
                       icon.tooltip.toLowerCase().includes(iconSearch.toLowerCase())
@@ -337,7 +337,7 @@ export const DailyLogTab = () => {
                           setShowIconDropdown(false);
                           setIconSearch('');
                         }}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-base hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
+                        className={`w-7 h-7 flex items-center justify-center rounded text-base hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
                           standardIcon === icon.emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
                         }`}
                         title={icon.tooltip}
@@ -351,7 +351,7 @@ export const DailyLogTab = () => {
             </div>
 
             {/* Text Input Container with Autocomplete inside */}
-            <div className="relative flex-1 flex items-center bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-xl px-3 focus-within:border-bujo-highlight/60 focus-within:ring-1 focus-within:ring-bujo-highlight/30 transition-all w-full">
+            <div className="relative flex-1 flex items-center bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-lg px-2.5 focus-within:border-bujo-highlight/60 focus-within:ring-1 focus-within:ring-bujo-highlight/30 transition-all w-full">
               <input
                 type="text"
                 required
@@ -359,21 +359,21 @@ export const DailyLogTab = () => {
                 onChange={handleStandardInputChange}
                 onKeyDown={handleStandardInputKeyDown}
                 placeholder={standardType === 'task' ? "Adicionar tarefa... Use [ para coleções e @ para contextos" : standardType === 'event' ? "Adicionar evento... Use @ para contextos" : "Adicionar nota..."}
-                className="bg-transparent border-none outline-none w-full text-sm text-bujo-text placeholder:text-zinc-500 py-2 pr-8"
+                className="bg-transparent border-none outline-none w-full text-xs text-bujo-text placeholder:text-zinc-500 py-1.5 pr-8"
               />
               {(standardInput || standardTime || standardIcon) && (
                 <button
                   type="button"
                   onClick={handleClearInputs}
-                  className="absolute right-2 p-1 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
+                  className="absolute right-2 p-0.5 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
                   title="Limpar formulário"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3 h-3" />
                 </button>
               )}
 
               {showAutocomplete && filteredCollections.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
                   {filteredCollections.map((col: any, idx: number) => (
                     <div
                       key={col.id}
@@ -394,14 +394,14 @@ export const DailyLogTab = () => {
           </div>
 
           {/* Row 2: Metadata & Action Buttons */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2.5 border-t border-zinc-200/40 dark:border-white/5 mt-1.5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2 pt-2 border-t border-zinc-200/30 dark:border-white/5 mt-1">
             {/* Metadata Fields */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Task specific: Energy, Complexity, Duration */}
               {standardType === 'task' && (
-                <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2.5 py-1.5 rounded-xl border border-zinc-200/40 dark:border-white/5">
+                <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-zinc-200/40 dark:border-white/5">
                   <div className="flex items-center gap-1">
-                    <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Energia:</span>
+                    <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Energia:</span>
                     <select
                       value={standardEnergy}
                       onChange={(e) => setStandardEnergy(Number(e.target.value))}
@@ -415,7 +415,7 @@ export const DailyLogTab = () => {
                   <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
 
                   <div className="flex items-center gap-1">
-                    <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Complex:</span>
+                    <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Complex:</span>
                     <select
                       value={standardComplexity}
                       onChange={(e) => setStandardComplexity(Number(e.target.value))}
@@ -429,7 +429,7 @@ export const DailyLogTab = () => {
                   <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
 
                   <div className="flex items-center gap-1">
-                    <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Tempo:</span>
+                    <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Tempo:</span>
                     <input
                       type="number"
                       min="0"
@@ -445,9 +445,9 @@ export const DailyLogTab = () => {
               )}
 
               {/* Date and Time selectors */}
-              <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2.5 py-1.5 rounded-xl border border-zinc-200/40 dark:border-white/5">
+              <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-zinc-200/40 dark:border-white/5">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Data:</span>
+                  <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Data:</span>
                   <input
                     type="date"
                     value={standardDate}
@@ -459,7 +459,7 @@ export const DailyLogTab = () => {
                 <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Hora:</span>
+                  <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Hora:</span>
                   <input
                     type="time"
                     value={standardTime}
@@ -476,14 +476,14 @@ export const DailyLogTab = () => {
                 <button
                   type="button"
                   onClick={handleClearInputs}
-                  className="px-3 py-1.5 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-350 dark:border-white/15 rounded-xl text-xs font-medium hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
+                  className="px-2.5 py-1 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-350 dark:border-white/15 rounded-lg text-xs font-medium hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
                 >
                   Limpar
                 </button>
               )}
               <button
                 type="submit"
-                className="px-4 py-1.5 bg-bujo-highlight text-white rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md shadow-bujo-highlight/10"
+                className="px-3.5 py-1 bg-bujo-highlight text-white rounded-lg text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md shadow-bujo-highlight/10"
               >
                 Cadastrar
               </button>
@@ -492,8 +492,8 @@ export const DailyLogTab = () => {
         </form>
 
         {/* Quick Context Tag Appenders */}
-        <div className="flex items-center gap-1.5 flex-wrap mt-2.5 pt-2 border-t border-zinc-200/20 dark:border-white/5 pl-0.5">
-          <span className="text-[10px] text-zinc-400 font-mono tracking-wider">💡 Sugerir Contextos:</span>
+        <div className="flex items-center gap-1 flex-wrap mt-1.5 pt-1.5 border-t border-zinc-200/20 dark:border-white/5 pl-0.5">
+          <span className="text-[9.5px] text-zinc-400 font-mono tracking-wider">💡 Sugerir:</span>
           {['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'].map(ctx => {
             const icons: { [key: string]: string } = {
               '@computador': '💻 ',
@@ -515,7 +515,7 @@ export const DailyLogTab = () => {
                     setStandardInput(standardInput + space + ctx);
                   }
                 }}
-                className="px-2 py-0.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 border border-zinc-200/40 dark:border-white/5 rounded-lg text-[10px] font-semibold text-zinc-550 dark:text-zinc-300 transition-all cursor-pointer"
+                className="px-1.5 py-0.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 border border-zinc-200/40 dark:border-white/5 rounded text-[9.5px] font-semibold text-zinc-550 dark:text-zinc-300 transition-all cursor-pointer"
               >
                 {icons[ctx] || ''}{ctx.replace('@', '')}
               </button>
@@ -526,48 +526,43 @@ export const DailyLogTab = () => {
 
       {renderRealTimeSuggestions(standardInput, 'task', createStandardTaskWithSuggestions)}
 
-      {/* Unified Filter & Search Dashboard */}
-      <div className="bg-zinc-200/20 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 rounded-2xl p-4 space-y-3.5 no-print shadow-sm">
-        {/* Row 1: Search, Sort and Reset */}
-        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-          {/* Search Input */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Pesquisar tarefas ou subtarefas..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
-            />
-            {searchText && (
-              <button
-                onClick={() => setSearchText('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-bujo-text cursor-pointer p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Sort & Reset Actions */}
-          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase flex items-center gap-1">
-                <ArrowDownAZ className="w-3.5 h-3.5" /> Ordenar por:
-              </span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs text-bujo-text outline-none cursor-pointer font-medium"
-              >
-                <option value="recent" className="bg-zinc-950 text-white">Mais Recentes</option>
-                <option value="oldest" className="bg-zinc-950 text-white">Mais Antigas</option>
-                <option value="energy" className="bg-zinc-950 text-white">Esforço (Energia) ⚡</option>
-                <option value="complexity" className="bg-zinc-950 text-white">Complexidade 🧠</option>
-                <option value="time" className="bg-zinc-950 text-white">Tempo de Execução ⏱️</option>
-              </select>
+      {/* Unified Filter & Search Dashboard (Optimized Grid Layout) */}
+      <div className="bg-zinc-200/20 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 rounded-xl p-2 no-print shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
+          {/* Col 1: Search & Sort & Reset (col-span-5) */}
+          <div className="md:col-span-5 flex items-center gap-1.5 w-full">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-450 dark:text-zinc-500" />
+              <input
+                type="text"
+                placeholder="Pesquisar..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="w-full pl-7 pr-6 py-0.5 text-[11px] rounded-md bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
+              />
+              {searchText && (
+                <button
+                  onClick={() => setSearchText('')}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-bujo-text cursor-pointer p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10"
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              )}
             </div>
+
+            {/* Sort Select */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-md px-1.5 py-0.5 text-[10px] text-bujo-text outline-none cursor-pointer font-bold shrink-0"
+            >
+              <option value="recent" className="bg-zinc-950 text-white">⏱️ Recentes</option>
+              <option value="oldest" className="bg-zinc-950 text-white">⏳ Antigas</option>
+              <option value="energy" className="bg-zinc-950 text-white">⚡ Esforço</option>
+              <option value="complexity" className="bg-zinc-950 text-white">🧠 Complex</option>
+              <option value="time" className="bg-zinc-950 text-white">⏳ Tempo</option>
+            </select>
 
             {/* Clear All Filters Button */}
             {(selectedContext !== null || selectedCategory !== null || searchText.trim() !== '') && (
@@ -578,133 +573,134 @@ export const DailyLogTab = () => {
                   setSelectedCategory(null);
                   setSearchText('');
                 }}
-                className="text-xs text-bujo-highlight hover:underline font-bold transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                className="text-bujo-highlight hover:text-red-500 transition-colors cursor-pointer shrink-0 p-0.5"
+                title="Limpar todos os filtros"
               >
-                Limpar Filtros
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
-        </div>
 
-        <div className="h-px bg-zinc-200/40 dark:bg-white/5" />
+          {/* Vertical Divider (Hidden on mobile) */}
+          <div className="hidden md:block md:col-span-1 h-6 w-px bg-zinc-200/40 dark:bg-white/5 mx-auto" />
 
-        {/* Row 2: Context Filters */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-0.5">
-          <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase min-w-[75px] shrink-0">Contexto:</span>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setSelectedContext(null)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
-                selectedContext === null 
-                  ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
-                  : 'bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
-              }`}
-            >
-              Todos ({dateItems.length})
-            </button>
-            {['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'].map(ctx => {
-              const count = dateItems.filter(item => item.content.toLowerCase().includes(ctx)).length;
-              if (count === 0) return null;
-              
-              const isActive = selectedContext === ctx;
-              const colors: { [key: string]: string } = {
-                '@computador': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-                '@online': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
-                '@rua': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-                '@casa': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-                '@trabalhando': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-                '@mestrado': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-                '@programando': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
-                '@aguardando': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-              };
-              const activeColors: { [key: string]: string } = {
-                '@computador': 'bg-blue-500 text-white border-blue-500',
-                '@online': 'bg-cyan-500 text-white border-cyan-500',
-                '@rua': 'bg-amber-500 text-white border-amber-500',
-                '@casa': 'bg-emerald-500 text-white border-emerald-500',
-                '@trabalhando': 'bg-purple-500 text-white border-purple-500',
-                '@mestrado': 'bg-indigo-500 text-white border-indigo-500',
-                '@programando': 'bg-orange-500 text-white border-orange-500',
-                '@aguardando': 'bg-rose-500 text-white border-rose-500'
-              };
-              
-              const icons: { [key: string]: string } = {
-                '@computador': '💻 ',
-                '@online': '🌐 ',
-                '@rua': '🚶 ',
-                '@casa': '🏠 ',
-                '@trabalhando': '💼 ',
-                '@mestrado': '🎓 ',
-                '@programando': '⚡ ',
-                '@aguardando': '⏳ '
-              };
-      
-              return (
-                <button
-                  key={ctx}
-                  type="button"
-                  onClick={() => setSelectedContext(isActive ? null : ctx)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
-                    isActive 
-                      ? activeColors[ctx] 
-                      : `${colors[ctx]} hover:opacity-85`
-                  }`}
-                >
-                  {icons[ctx] || ''}
-                  {ctx.replace('@', '')} ({count})
-                </button>
-              );
-            })}
-          </div>
-        </div>
+          {/* Col 2: Context and Theme Filters (col-span-6) */}
+          <div className="md:col-span-6 flex flex-col gap-1 w-full">
+            {/* Context Filters */}
+            <div className="flex items-center gap-1 flex-wrap">
+              <span className="text-[9px] text-zinc-400 font-mono tracking-wider uppercase shrink-0 min-w-[28px]">Ctx:</span>
+              <button
+                type="button"
+                onClick={() => setSelectedContext(null)}
+                className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer ${
+                  selectedContext === null 
+                    ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
+                    : 'bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
+                }`}
+              >
+                Todos ({dateItems.length})
+              </button>
+              {['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'].map(ctx => {
+                const count = dateItems.filter(item => item.content.toLowerCase().includes(ctx)).length;
+                if (count === 0) return null;
+                
+                const isActive = selectedContext === ctx;
+                const colors: { [key: string]: string } = {
+                  '@computador': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+                  '@online': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+                  '@rua': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                  '@casa': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                  '@trabalhando': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+                  '@mestrado': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+                  '@programando': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+                  '@aguardando': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                };
+                const activeColors: { [key: string]: string } = {
+                  '@computador': 'bg-blue-500 text-white border-blue-500',
+                  '@online': 'bg-cyan-500 text-white border-cyan-500',
+                  '@rua': 'bg-amber-500 text-white border-amber-500',
+                  '@casa': 'bg-emerald-500 text-white border-emerald-500',
+                  '@trabalhando': 'bg-purple-500 text-white border-purple-500',
+                  '@mestrado': 'bg-indigo-500 text-white border-indigo-500',
+                  '@programando': 'bg-orange-500 text-white border-orange-500',
+                  '@aguardando': 'bg-rose-500 text-white border-rose-500'
+                };
+                
+                const icons: { [key: string]: string } = {
+                  '@computador': '💻 ',
+                  '@online': '🌐 ',
+                  '@rua': '🚶 ',
+                  '@casa': '🏠 ',
+                  '@trabalhando': '💼 ',
+                  '@mestrado': '🎓 ',
+                  '@programando': '⚡ ',
+                  '@aguardando': '⏳ '
+                };
+        
+                return (
+                  <button
+                    key={ctx}
+                    type="button"
+                    onClick={() => setSelectedContext(isActive ? null : ctx)}
+                    className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer ${
+                      isActive 
+                        ? activeColors[ctx] 
+                        : `${colors[ctx]} hover:opacity-85`
+                    }`}
+                  >
+                    {icons[ctx] || ''}
+                    {ctx.replace('@', '')} ({count})
+                  </button>
+                );
+              })}
+            </div>
 
-        {/* Row 3: Category Filters */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-0.5">
-          <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase min-w-[75px] shrink-0">Temas:</span>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(null)}
-              className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
-                selectedCategory === null 
-                  ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
-                  : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
-              }`}
-            >
-              Todos
-            </button>
-            {['dinheiro', 'familia', 'saude', 'arte', 'ideia'].map(cat => {
-              const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat || i.tooltip.toLowerCase().includes(cat)).map(i => i.emoji);
-              const count = dateItems.filter(item => item.icon && matchingEmojis.includes(item.icon)).length;
-              if (count === 0) return null;
-              
-              const label = cat === 'dinheiro' ? '💰 Dinheiro' :
-                            cat === 'familia' ? '👨‍👩‍👧‍👦 Família' :
-                            cat === 'saude' ? '🩺 Saúde' :
-                            cat === 'arte' ? '🎨 Arte' : '💡 Ideia';
-                            
-              const isActive = selectedCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(isActive ? null : cat)}
-                  className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
-                    isActive 
-                      ? 'bg-bujo-highlight text-white border-bujo-highlight' 
-                      : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
-                  }`}
-                >
-                  {label} ({count})
-                </button>
-              );
-            })}
+            {/* Theme Filters */}
+            <div className="flex items-center gap-1 flex-wrap">
+              <span className="text-[9px] text-zinc-400 font-mono tracking-wider uppercase shrink-0 min-w-[28px]">Tema:</span>
+              <button
+                type="button"
+                onClick={() => setSelectedCategory(null)}
+                className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer ${
+                  selectedCategory === null 
+                    ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
+                    : 'bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
+                }`}
+              >
+                Todos
+              </button>
+              {['dinheiro', 'familia', 'saude', 'arte', 'ideia'].map(cat => {
+                const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat || i.tooltip.toLowerCase().includes(cat)).map(i => i.emoji);
+                const count = dateItems.filter(item => item.icon && matchingEmojis.includes(item.icon)).length;
+                if (count === 0) return null;
+                
+                const label = cat === 'dinheiro' ? '💰 Finan' :
+                              cat === 'familia' ? '👨‍👩‍👧‍👦 Fam' :
+                              cat === 'saude' ? '🩺 Saúde' :
+                              cat === 'arte' ? '🎨 Arte' : '💡 Ideia';
+                              
+                const isActive = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(isActive ? null : cat)}
+                    className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer ${
+                      isActive 
+                        ? 'bg-bujo-highlight text-white border-bujo-highlight' 
+                        : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
+                    }`}
+                  >
+                    {label} ({count})
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1.5 scroll-smooth">
+      <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1.5 scroll-smooth">
         {sortedDateItems.map(item => (
           <BulletItem
             key={item.id}

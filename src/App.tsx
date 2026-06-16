@@ -109,7 +109,7 @@ function AppContent() {
             <Sidebar />
 
             {/* DYNAMIC SCROLLABLE TAB WORKSPACE */}
-            <main id="bujo-export-area" className="flex-1 min-h-0 flex flex-col gap-6 overflow-y-auto pr-1">
+            <main id="bujo-export-area" className={`flex-1 min-h-0 flex flex-col gap-6 pr-1 ${activeTab === 'daily_log' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
               {activeTab === 'indice' && <IndexTab />}
               {activeTab === 'daily_log' && <DailyLogTab />}
               {activeTab === 'weekly_log' && <WeeklyLogTab />}
