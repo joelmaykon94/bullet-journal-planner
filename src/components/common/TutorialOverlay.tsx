@@ -105,7 +105,7 @@ const tutorialSteps: TutorialStep[] = [
   },
   {
     title: "📅 Future Log (Planejamento Futuro)",
-    description: "Projete seus próximos meses de forma organizada. Excelente para anotar datas importantes, metas futuras de longo prazo e compromissos distantes.",
+    description: "Projete seus próximos meses de forma organizada. Excelente para anotar das importantes, metas futuras de longo prazo e compromissos distantes.",
     tab: "future_log",
     positionClass: "bottom-12 left-1/2 -translate-x-1/2",
     selector: "#sidebar-tab-future_log",
@@ -217,7 +217,13 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
 
     const checkElement = () => {
       if (!active) return;
-      const selector = stepData.selector;
+      
+      // On mobile, if selector is for sidebar, use mobile menu trigger as fallback
+      let selector = stepData.selector;
+      if (isMobile && selector?.startsWith('#sidebar-tab-')) {
+        selector = "#tutorial-mobile-menu-trigger";
+      }
+
       const element = selector ? document.querySelector(selector) : null;
       if (element) {
         const rect = element.getBoundingClientRect();
@@ -243,8 +249,13 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
     checkElement();
 
     const handleUpdate = () => {
-      if (stepData.selector) {
-        const element = document.querySelector(stepData.selector);
+      let selector = stepData.selector;
+      if (isMobile && selector?.startsWith('#sidebar-tab-')) {
+        selector = "#tutorial-mobile-menu-trigger";
+      }
+
+      if (selector) {
+        const element = document.querySelector(selector);
         if (element) {
           const rect = element.getBoundingClientRect();
           if (rect.width > 0 && rect.height > 0) {
@@ -262,7 +273,7 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
       window.removeEventListener('resize', handleUpdate);
       window.removeEventListener('scroll', handleUpdate, true);
     };
-  }, [currentStep, stepData.selector, showTutorial]);
+  }, [currentStep, stepData.selector, showTutorial, isMobile]);
 
   const getCardPositionClass = () => {
     if (!isMobile) return stepData.positionClass;
@@ -280,6 +291,11 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
     const defaultPlacement = stepData.arrowPlacement || 'top';
     if (!isMobile) return defaultPlacement;
     
+    // On mobile, sidebar-tab selectors were redirected to mobile-menu-trigger (top-left)
+    if (stepData.selector?.startsWith('#sidebar-tab-')) {
+      return 'top';
+    }
+
     if (defaultPlacement === 'left' || defaultPlacement === 'right') {
       if (targetRect) {
         return (targetRect.top + targetRect.height / 2 > window.innerHeight / 2) ? 'top' : 'bottom';
@@ -332,9 +348,7 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
       >
         <defs>
           <mask id="spotlight-mask">
-            {/* The white mask rectangle covers the whole screen, making the backdrop opaque */}
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            {/* The black rectangle cuts out the spotlight, making it transparent and sharp */}
             <rect 
               x={targetRect.left - 4} 
               y={targetRect.top - 4} 
@@ -345,7 +359,6 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
             />
           </mask>
         </defs>
-        {/* Semi-transparent dark overlay with the spotlight mask */}
         <rect 
           x="0" 
           y="0" 
@@ -361,10 +374,8 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none no-print">
-      {/* Background dimmer / Spotlight Cutout */}
       {renderBackdrop()}
 
-      {/* Dynamic keyframe animation injection */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes bounce-down-anim {
           0%, 100% { transform: translateY(0); }
@@ -392,7 +403,6 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
         }
       `}} />
 
-      {/* Target Element Highlight Outline */}
       {targetRect && (
         <>
           <div 
@@ -429,18 +439,18 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
         </>
       )}
 
-      {/* Floating Tutorial Balloon Card */}
-      <div className={`fixed ${getCardPositionClass()} z-50 pointer-events-auto w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-zinc-950/95 border border-bujo-highlight/30 backdrop-blur-2xl p-6 rounded-[32px] shadow-3xl flex flex-col gap-4 text-left animate-slide-in ring-1 ring-white/10`}>
+      {/* Floating Tutorial Balloon Card - Improved for Mobile */}
+      <div className={`fixed ${getCardPositionClass()} z-50 pointer-events-auto w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-zinc-950/95 border border-bujo-highlight/30 backdrop-blur-2xl p-4 sm:p-6 rounded-3xl sm:rounded-[32px] shadow-3xl flex flex-col gap-3 sm:gap-4 text-left animate-slide-in ring-1 ring-white/10 max-h-[85vh] overflow-y-auto`}>
         {/* Step Indicator and Skip */}
         <div className="flex items-center justify-between border-b border-white/5 pb-2">
           <span className="text-[9px] font-bold font-mono text-zinc-500 uppercase tracking-widest">
-            Tour do Sistema • Passo {currentStep + 1} de {tutorialSteps.length}
+            Tour • Passo {currentStep + 1} de {tutorialSteps.length}
           </span>
           <button
             onClick={() => { resetViewportScroll(); onClose(); }}
             className="text-[9px] font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider cursor-pointer"
           >
-            Pular Tour
+            Pular
           </button>
         </div>
 
@@ -449,11 +459,11 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
           <div className="p-1 rounded-lg bg-bujo-highlight/10 border border-bujo-highlight/20 text-bujo-highlight shrink-0 mt-0.5">
             <Sparkles className="w-4 h-4 animate-pulse" />
           </div>
-          <h4 className="text-base font-bold text-white tracking-tight">{stepData.title}</h4>
+          <h4 className="text-sm sm:text-base font-bold text-white tracking-tight">{stepData.title}</h4>
         </div>
 
         {/* Description */}
-        <p className="text-xs leading-relaxed text-zinc-350">
+        <p className="text-[11px] sm:text-xs leading-relaxed text-zinc-350">
           {stepData.description}
         </p>
 
@@ -469,7 +479,7 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
 
           <button
             onClick={handleNext}
-            className="flex items-center gap-1 py-1.5 px-4 bg-bujo-highlight hover:opacity-95 text-white text-[11px] font-bold rounded-xl shadow-lg transition-all cursor-pointer"
+            className="flex items-center gap-1 py-2 px-5 bg-bujo-highlight hover:opacity-95 text-white text-[11px] font-bold rounded-xl shadow-lg transition-all cursor-pointer"
           >
             {currentStep === tutorialSteps.length - 1 ? (
               <>Concluir <CheckIcon className="w-3.5 h-3.5" /></>
@@ -485,8 +495,8 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
 
 const PointingArrow = ({ placement, rect }: { placement: 'top' | 'bottom' | 'left' | 'right'; rect: DOMRect }) => {
   const getOuterStyles = (): React.CSSProperties => {
-    const size = 40; // SVG Dimensions
-    const offset = 14; // spacing from outer ring
+    const size = 40; 
+    const offset = 14; 
     
     switch (placement) {
       case 'top':

@@ -60,6 +60,7 @@ export const Header = () => {
           <div className="flex items-center gap-3">
             {!focoActive && (
               <button
+                id="tutorial-mobile-menu-trigger"
                 onClick={() => setMobileMenuOpen(true)}
                 className="p-1.5 rounded-lg border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-white md:hidden cursor-pointer bg-zinc-200/20 dark:bg-white/5"
                 title="Abrir Menu"
