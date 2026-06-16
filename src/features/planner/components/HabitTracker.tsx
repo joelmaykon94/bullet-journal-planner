@@ -15,31 +15,17 @@ export const HabitTracker = () => {
     aiWorkerRef,
     localLLMState,
     showToast,
-    setUserXp
+    setUserXp,
+    habits,
+    setHabits,
+    habitLogs: logs,
+    toggleHabitDate,
+    handleAddHabit,
+    handleDeleteHabit
   } = useBujo();
-
-  const [habits, setHabits] = useState<string[]>(() => {
-    const saved = localStorage.getItem('bujo_habits');
-    if (saved) return JSON.parse(saved);
-    return ['Beber água', 'Estudar', 'Exercício físico', 'Meditar'];
-  });
-
-  const [logs, setLogs] = useState<HabitLog>(() => {
-    const saved = localStorage.getItem('bujo_habit_logs');
-    if (saved) return JSON.parse(saved);
-    return {};
-  });
 
   const [newHabitName, setNewHabitName] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('bujo_habits', JSON.stringify(habits));
-  }, [habits]);
-
-  useEffect(() => {
-    localStorage.setItem('bujo_habit_logs', JSON.stringify(logs));
-  }, [logs]);
 
   // Generate 8 days starting from the Sunday of the current week
   const get8DaysFromStartOfWeek = () => {
@@ -160,53 +146,6 @@ export const HabitTracker = () => {
     }
   };
 
-  const toggleHabitDate = (habit: string, dateStr: string) => {
-    let isChecking = false;
-    setLogs(prev => {
-      const habitLogs = prev[habit] || {};
-      const currentVal = habitLogs[dateStr] || false;
-      isChecking = !currentVal;
-      return {
-        ...prev,
-        [habit]: {
-          ...habitLogs,
-          [dateStr]: isChecking
-        }
-      };
-    });
-
-    if (isChecking) {
-      setUserXp(prev => prev + 10);
-      showToast(`🎯 Hábito "${habit}" concluído: +10 XP`);
-    } else {
-      setUserXp(prev => Math.max(0, prev - 10));
-      showToast(`↩️ Hábito desmarcado: -10 XP`);
-    }
-  };
-
-  const handleAddHabit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const name = newHabitName.trim();
-    if (!name) return;
-    if (habits.includes(name)) {
-      showToast('Hábito já existe!');
-      return;
-    }
-    setHabits(prev => [...prev, name]);
-    setNewHabitName('');
-    showToast(`Hábito "${name}" adicionado!`);
-  };
-
-  const handleDeleteHabit = (habitToDelete: string) => {
-    setHabits(prev => prev.filter(h => h !== habitToDelete));
-    setLogs(prev => {
-      const next = { ...prev };
-      delete next[habitToDelete];
-      return next;
-    });
-    showToast(`Hábito "${habitToDelete}" removido.`);
-  };
-
   const formatDayOfWeek = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('pt-BR', { weekday: 'short' }).substring(0, 3).toUpperCase();
@@ -298,7 +237,7 @@ export const HabitTracker = () => {
       {/* 2. New Habit Input Form & Add Action */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
         <span className="text-[9.5px] font-bold text-zinc-400 uppercase tracking-wider hidden sm:inline">Gerenciar Hábitos</span>
-        <form onSubmit={handleAddHabit} className="flex gap-2 w-full sm:w-auto">
+        <form onSubmit={(e) => { e.preventDefault(); handleAddHabit(newHabitName); setNewHabitName(''); }} className="flex gap-2 w-full sm:w-auto">
           <input
             type="text"
             placeholder="Adicionar novo hábito..."

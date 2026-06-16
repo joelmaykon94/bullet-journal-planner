@@ -24,6 +24,7 @@ import { SomedayMaybeTab } from './features/planner/components/SomedayMaybeTab';
 import { DreamBoardTab } from './features/planner/components/DreamBoardTab';
 import { ConfirmationModal } from './components/common/ConfirmationModal';
 import { LandingPageTab } from './features/planner/components/LandingPageTab';
+import { GlobalSearchModal } from './features/planner/components/GlobalSearchModal';
 
 function AppContent() {
   const {
@@ -72,8 +73,38 @@ function AppContent() {
     setExpandedTaskId,
     showAIDownloadModal,
     handleConfirmAIDownload,
-    handleDeclineAIDownload
+    handleDeclineAIDownload,
+    setDeferredPrompt,
+    setIsOnline
   } = useBujo();
+
+  // PWA Install Prompt Listener
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, [setDeferredPrompt]);
+
+  // Online/Offline Status Listener
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [setIsOnline]);
 
   const filteredCollections = collections.filter((col: any) =>
     col.name.toLowerCase().includes((rapidText.match(/\[(.*)/)?.[1] || '').toLowerCase())
@@ -217,6 +248,9 @@ function AppContent() {
 
       {/* GLOBAL CUSTOM CONFIRMATION DIALOG */}
       <ConfirmationModal />
+
+      {/* GLOBAL SEARCH MODAL */}
+      <GlobalSearchModal />
 
       {/* AI LOCAL LLM DOWNLOAD CONFIRMATION MODAL */}
       {showAIDownloadModal && (

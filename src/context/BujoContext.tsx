@@ -7,6 +7,7 @@ import { useBujoSettings } from '../hooks/useBujoSettings';
 import { useCollections } from '../hooks/useCollections';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useAmbientAudio } from '../hooks/useAmbientAudio';
+import { useHabits, HabitLog } from '../hooks/useHabits';
 import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
 
 import { useAuth } from './AuthContext';
@@ -148,6 +149,27 @@ export interface BujoContextType {
   pomodoroMode: 'work' | 'break';
   setPomodoroMode: React.Dispatch<React.SetStateAction<'work' | 'break'>>;
   completedPomodoros: number;
+
+  // Habits
+  habits: string[];
+  habitLogs: HabitLog;
+  toggleHabitDate: (habit: string, dateStr: string) => void;
+  handleAddHabit: (name: string) => void;
+  handleDeleteHabit: (habit: string) => void;
+
+  // Data Management
+  exportFullDataJSON: () => void;
+  importFullDataJSON: (file: File) => Promise<void>;
+  exportTasksToCSV: () => void;
+  handleClearAllData: () => void;
+  showGlobalSearch: boolean;
+  setShowGlobalSearch: React.Dispatch<React.SetStateAction<boolean>>;
+
+  // PWA & Network
+  deferredPrompt: any;
+  setDeferredPrompt: React.Dispatch<React.SetStateAction<any>>;
+  isOnline: boolean;
+  setIsOnline: React.Dispatch<React.SetStateAction<boolean>>;
   setCompletedPomodoros: React.Dispatch<React.SetStateAction<number>>;
 
   // Ambient Audio
@@ -282,7 +304,6 @@ export interface BujoContextType {
   selectCollectionAutocomplete: (colName: string) => void;
   selectCollectionAutocompleteRapid: (colName: string) => void;
   handleSaveRapidLog: (e: React.FormEvent) => void;
-  handleSaveStandardInputForm: (e: React.FormEvent) => void;
   renderRealTimeSuggestions: (text: string, inputType: 'task' | 'event' | 'note', onSelectSuggestion: (subtasks: string[]) => void) => React.ReactNode;
   createStandardTaskWithSuggestions: (subtasks: string[]) => void;
   createRapidTaskWithSuggestions: (subtasks: string[]) => void;
@@ -1051,6 +1072,131 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   const pomodoroData = usePomodoroTimer(setUserXp, showToast);
   const audioData = useAmbientAudio(showToast);
+  const habitData = useHabits();
+
+  // Data Management Implementations
+  const exportFullDataJSON = () => {
+    const data = {
+      items: itemsData.items,
+      trashItems: itemsData.trashItems,
+      somedayItems: itemsData.somedayItems,
+      dreams: itemsData.dreams,
+      collections: collections,
+      settings: settingsData.settings,
+      habits: habitData.habits,
+      habitLogs: habitData.habitLogs,
+      userXp: userXp,
+      version: '2.0.0',
+      exportedAt: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bujo_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Backup JSON gerado com sucesso! 📦');
+  };
+
+  const importFullDataJSON = async (file: File) => {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Basic validation
+      if (!data.items || !Array.isArray(data.items)) {
+        throw new Error('Formato de arquivo inválido: lista de itens não encontrada.');
+      }
+
+      askConfirmation({
+        title: 'Importar Backup?',
+        message: 'Isso substituirá TODOS os seus dados atuais pelos dados do arquivo. Esta ação não pode ser desfeita. Deseja continuar?',
+        confirmText: 'Importar e Sobrescrever',
+        cancelText: 'Cancelar',
+        isDanger: true,
+        onConfirm: () => {
+          if (data.items) itemsData.setItems(data.items);
+          if (data.trashItems) {
+            localStorage.setItem('bujo_focus_trash_items', JSON.stringify(data.trashItems));
+          }
+          if (data.somedayItems) {
+             localStorage.setItem('bujo_focus_someday_items', JSON.stringify(data.somedayItems));
+          }
+          if (data.dreams) {
+             localStorage.setItem('bujo_focus_dreams', JSON.stringify(data.dreams));
+          }
+          if (data.collections) setCollections(data.collections);
+          if (data.settings) settingsData.setSettings(data.settings);
+          if (data.habits) habitData.setHabits(data.habits);
+          if (data.habitLogs) habitData.setHabitLogs(data.habitLogs);
+          if (data.userXp !== undefined) setUserXp(data.userXp);
+
+          showToast('Dados importados com sucesso! Recarregando...');
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      });
+    } catch (err: any) {
+      showToast(`Erro ao importar: ${err.message}`);
+    }
+  };
+
+  const exportTasksToCSV = () => {
+    const tasks = itemsData.items;
+    if (tasks.length === 0) {
+      showToast('Nenhuma tarefa para exportar.');
+      return;
+    }
+
+    const headers = ['ID', 'Data', 'Tipo', 'Conteúdo', 'Status', 'Hora', 'Energia', 'Complexidade', 'TempoExecucao', 'Responsavel', 'CriadoEm'];
+    const rows = tasks.map(t => [
+      t.id,
+      t.date,
+      t.type,
+      `"${t.content.replace(/"/g, '""')}"`,
+      t.status,
+      t.time || '',
+      t.energy || '',
+      t.complexity || '',
+      t.executionTime || '',
+      t.delegatedTo || '',
+      t.createdAt || ''
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bujo_tasks_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Exportação CSV concluída! 📊');
+  };
+
+  const handleClearAllData = () => {
+    askConfirmation({
+      title: 'LIMPAR TUDO?',
+      message: 'Esta ação apagará permanentemente TODOS os seus dados (tarefas, coleções, hábitos, sonhos e configurações) deste navegador. Isso não pode ser desfeito!',
+      confirmText: 'SIM, APAGAR TUDO',
+      cancelText: 'Cancelar',
+      isDanger: true,
+      onConfirm: () => {
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('bujo_')) {
+            localStorage.removeItem(key);
+          }
+        });
+        showToast('Todos os dados foram removidos. Recarregando...');
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    });
+  };
 
   // Additional Relocated States
   const [showTutorial, setShowTutorial] = useState<boolean>(settings.firstTime);
@@ -1105,6 +1251,10 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
   ];
   const [futureLogEventContent, setFutureLogEventContent] = useState<string>('');
+
+  const [showGlobalSearch, setShowGlobalSearch] = useState<boolean>(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
 
   // Harmony and Cognitive Load calculators
   const getCognitiveLoad = () => {
@@ -1278,80 +1428,6 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     setRapidTime('');
     setRapidPriority(false);
     setShowRapidLog(false);
-    showToast('Entrada salva com sucesso!');
-  };
-
-  const handleSaveStandardInputForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!standardInput.trim()) return;
-
-    const content = standardInput.trim();
-    const targetDate = standardDate || selectedDate;
-    const isRecurring = standardType === 'task' && content.toLowerCase().includes('todos os dias');
-    
-    let itemsToCreate: BujoItem[] = [];
-    
-    if (isRecurring) {
-      const weekdays = getWeekdaysForDate(targetDate);
-      weekdays.forEach((wDate, idx) => {
-        const idTime = Date.now() + idx;
-        const item: BujoItem = {
-          id: `${idTime}-${Math.random().toString(36).substring(2, 11)}`,
-          type: 'task',
-          status: 'open',
-          content: content,
-          date: wDate,
-          time: standardTime || undefined,
-          subtasks: [],
-          createdAt: new Date().toISOString()
-        };
-        itemsToCreate.push(item);
-      });
-    } else {
-      const newItem: BujoItem = {
-        id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-        type: standardType,
-        status: 'open',
-        content: content,
-        date: targetDate,
-        time: standardTime || undefined,
-        subtasks: standardType === 'task' ? [] : undefined,
-        createdAt: new Date().toISOString()
-      };
-      itemsToCreate.push(newItem);
-    }
-
-    // Check for collection sync: [Collection Name] some task
-    const collectionMatch = content.match(/^\[(.*?)\]\s*(.*)/);
-    if (collectionMatch && standardType === 'task') {
-      const colName = collectionMatch[1];
-      const taskContent = collectionMatch[2];
-      
-      let found = false;
-      setCollections(prev => prev.map(col => {
-        if (col.name.toLowerCase() === colName.toLowerCase()) {
-          found = true;
-          const newColItem = {
-            id: `item-${Date.now()}-${Math.random()}`,
-            title: taskContent || colName,
-            status: 'todo',
-            notes: `Adicionado via Daily Log em ${new Date().toLocaleDateString()}`,
-            media: [],
-            subtasks: []
-          };
-          return { ...col, items: [...col.items, newColItem] };
-        }
-        return col;
-      }));
-
-      if (found) {
-        showToast(`Tarefa sincronizada com a coleção "${colName}"!`);
-      }
-    }
-
-    setItems(prev => [...itemsToCreate, ...prev]);
-    setStandardInput('');
-    setStandardTime('');
     showToast('Entrada salva com sucesso!');
   };
 
@@ -2111,6 +2187,24 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       handleAISplitTask,
       handleAIOptimizeTask,
 
+      // Habits
+      ...habitData,
+      toggleHabitDate: (habit: string, dateStr: string) => habitData.toggleHabitDate(habit, dateStr, setUserXp, showToast),
+      handleAddHabit: (name: string) => habitData.handleAddHabit(name, showToast),
+      handleDeleteHabit: (habit: string) => habitData.handleDeleteHabit(habit, showToast),
+
+      // Data Management
+      exportFullDataJSON,
+      importFullDataJSON,
+      exportTasksToCSV,
+      handleClearAllData,
+      showGlobalSearch,
+      setShowGlobalSearch,
+      deferredPrompt,
+      setDeferredPrompt,
+      isOnline,
+      setIsOnline,
+
       // Extra states & handlers relocated from App.tsx
       showTutorial,
       setShowTutorial,
@@ -2171,7 +2265,6 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       selectCollectionAutocomplete,
       selectCollectionAutocompleteRapid,
       handleSaveRapidLog,
-      handleSaveStandardInputForm,
       renderRealTimeSuggestions,
       createStandardTaskWithSuggestions,
       createRapidTaskWithSuggestions,

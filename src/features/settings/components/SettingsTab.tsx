@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, Sparkles, LogOut, Database, User, ShieldAlert, Zap } from 'lucide-react';
+import { ChevronRight, Sparkles, LogOut, Database, User, ShieldAlert, Zap, Download, Upload, FileText, Trash2 } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -17,7 +17,11 @@ export const SettingsTab = () => {
     askConfirmation,
     showToast,
     syncStatus,
-    handleRetrySync
+    handleRetrySync,
+    exportFullDataJSON,
+    importFullDataJSON,
+    exportTasksToCSV,
+    handleClearAllData
   } = useBujo();
 
   const { user, signOut, clearConfig, setOfflineMode } = useAuth();
@@ -25,6 +29,13 @@ export const SettingsTab = () => {
   const [activeCompanionId, setActiveCompanionId] = useState(() => {
     return localStorage.getItem('bujo_persona_archetype') || 'zari';
   });
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      importFullDataJSON(file);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -530,24 +541,6 @@ export const SettingsTab = () => {
                 <button
                   onClick={() => {
                     askConfirmation({
-                      title: 'Desconectar Banco de Dados?',
-                      message: 'Deseja realmente desconectar este projeto do Supabase? Suas credenciais salvas localmente serão limpas do navegador.',
-                      confirmText: 'Desconectar DB',
-                      cancelText: 'Cancelar',
-                      isDanger: true,
-                      onConfirm: () => {
-                        clearConfig();
-                        window.location.reload();
-                      }
-                    });
-                  }}
-                  className="px-4 py-2 text-xs font-bold bg-zinc-200/40 dark:bg-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/20 text-bujo-text rounded-xl transition-all cursor-pointer border border-zinc-200/30 dark:border-white/10 flex-1 sm:flex-initial"
-                >
-                  Desconectar DB
-                </button>
-                <button
-                  onClick={() => {
-                    askConfirmation({
                       title: 'Sair da Conta?',
                       message: 'Tem certeza de que deseja desconectar e sair do aplicativo? Você precisará realizar o login novamente para sincronizar seus dados.',
                       confirmText: 'Sair da Conta',
@@ -605,6 +598,78 @@ create policy "Users can manage their own data"
             </p>
           </div>
         )}
+      </div>
+
+      {/* Data Management Section */}
+      <div className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-4">
+        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+          <Database className="w-4 h-4 text-bujo-highlight" />
+          Gerenciamento de Dados
+        </span>
+        <p className="text-[11px] text-zinc-500 leading-relaxed max-w-2xl">
+          Controle total sobre seus dados. Você pode exportar backups completos para segurança, importar dados de outros dispositivos ou exportar suas tarefas para planilhas (CSV).
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+          {/* Export JSON */}
+          <button
+            onClick={exportFullDataJSON}
+            className="p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 flex flex-col items-center gap-2 hover:bg-zinc-200/50 dark:hover:bg-white/10 transition-all cursor-pointer group"
+          >
+            <div className="p-2 rounded-xl bg-bujo-highlight/10 text-bujo-highlight group-hover:scale-110 transition-transform">
+              <Download className="w-5 h-5" />
+            </div>
+            <div className="text-center">
+              <span className="text-xs font-bold text-bujo-text block">Exportar JSON</span>
+              <span className="text-[9px] text-zinc-500">Backup Completo</span>
+            </div>
+          </button>
+
+          {/* Import JSON */}
+          <label className="p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 flex flex-col items-center gap-2 hover:bg-zinc-200/50 dark:hover:bg-white/10 transition-all cursor-pointer group">
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
+            <div className="p-2 rounded-xl bg-bujo-accent/10 text-bujo-accent group-hover:scale-110 transition-transform">
+              <Upload className="w-5 h-5" />
+            </div>
+            <div className="text-center">
+              <span className="text-xs font-bold text-bujo-text block">Importar JSON</span>
+              <span className="text-[9px] text-zinc-500">Restaurar Dados</span>
+            </div>
+          </label>
+
+          {/* Export CSV */}
+          <button
+            onClick={exportTasksToCSV}
+            className="p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 flex flex-col items-center gap-2 hover:bg-zinc-200/50 dark:hover:bg-white/10 transition-all cursor-pointer group"
+          >
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition-transform">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div className="text-center">
+              <span className="text-xs font-bold text-bujo-text block">Exportar CSV</span>
+              <span className="text-[9px] text-zinc-500">Para Planilhas</span>
+            </div>
+          </button>
+
+          {/* Clear All */}
+          <button
+            onClick={handleClearAllData}
+            className="p-4 rounded-2xl bg-red-500/5 border border-red-500/20 flex flex-col items-center gap-2 hover:bg-red-500/10 transition-all cursor-pointer group"
+          >
+            <div className="p-2 rounded-xl bg-red-500/10 text-red-500 group-hover:scale-110 transition-transform">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="text-center">
+              <span className="text-xs font-bold text-red-500 block">LIMPAR TUDO</span>
+              <span className="text-[9px] text-red-500/70">Ação Irreversível</span>
+            </div>
+          </button>
+        </div>
       </div>
 
     </div>

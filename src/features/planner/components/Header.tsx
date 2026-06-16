@@ -14,7 +14,10 @@ export const Header = () => {
     setPomodoroRunning,
     showToast,
     setShowAIDownloadModal,
-    syncStatus
+    syncStatus,
+    setShowGlobalSearch,
+    deferredPrompt,
+    setDeferredPrompt
   } = useBujo();
 
   const { user, signOut, setOfflineMode } = useAuth();
@@ -34,8 +37,19 @@ export const Header = () => {
     { id: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
   ];
 
-  const triggerPWAInstall = () => {
-    showToast('Para instalar: toque nos 3 pontinhos do navegador e selecione "Instalar aplicativo" ou "Adicionar à tela de início".');
+  const triggerPWAInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        showToast('🎉 BuJo Focus instalado com sucesso!');
+        setDeferredPrompt(null);
+      } else {
+        showToast('Instalação cancelada pelo usuário.');
+      }
+    } else {
+      showToast('Para instalar: toque nos 3 pontinhos do navegador e selecione "Instalar aplicativo" ou "Adicionar à tela de início".');
+    }
   };
 
   return (
@@ -69,7 +83,22 @@ export const Header = () => {
         <div className="flex items-center gap-2">
           {!focoActive && (
             <>
+              {/* Global Search Trigger */}
+              <button
+                onClick={() => setShowGlobalSearch(true)}
+                className="flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 hover:text-bujo-text transition-all cursor-pointer group"
+                title="Pesquisa Global (Ctrl+K)"
+              >
+                <Search className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">Pesquisar</span>
+                <div className="hidden lg:flex items-center gap-0.5 ml-1 opacity-50">
+                  <span className="text-[8px] border border-white/20 px-1 rounded">⌘</span>
+                  <span className="text-[8px] border border-white/20 px-1 rounded">K</span>
+                </div>
+              </button>
+
               {/* Cloud Sync Status Badge */}
+
               <div 
                 className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-all ${
                   syncStatus === 'synced'
