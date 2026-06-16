@@ -412,6 +412,38 @@ export function useBujoItems(
     showToast('Micro-tarefa removida');
   };
 
+  const handleUpdateItemDelegatedTo = (id: string, delegatedTo: string) => {
+    setItems(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, delegatedTo: delegatedTo.trim() || undefined };
+      }
+      return item;
+    }));
+    setSomedayItems(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, delegatedTo: delegatedTo.trim() || undefined };
+      }
+      return item;
+    }));
+    showToast('Responsável atualizado');
+  };
+
+  const handleUpdateItemIcon = (id: string, icon: string) => {
+    setItems(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, icon: icon || undefined };
+      }
+      return item;
+    }));
+    setSomedayItems(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, icon: icon || undefined };
+      }
+      return item;
+    }));
+    showToast('Ícone do item atualizado');
+  };
+
   return {
     items,
     setItems,
@@ -436,6 +468,9 @@ export function useBujoItems(
     handleAddSomedayItem,
     handleDeleteSomedayItem,
     handleScheduleSomedayItem,
-    handleToggleSomedayItem
+    handleToggleSomedayItem,
+    // Delegation & Icon
+    handleUpdateItemDelegatedTo,
+    handleUpdateItemIcon
   };
 }

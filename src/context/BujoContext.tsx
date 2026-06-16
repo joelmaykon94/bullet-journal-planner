@@ -60,6 +60,8 @@ export interface BujoContextType {
   handleDeleteSomedayItem: (id: string) => void;
   handleScheduleSomedayItem: (id: string, date: string) => void;
   handleToggleSomedayItem: (id: string) => void;
+  handleUpdateItemDelegatedTo: (id: string, delegatedTo: string) => void;
+  handleUpdateItemIcon: (id: string, icon: string) => void;
 
   // Settings
   settings: BujoSettings;
