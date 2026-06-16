@@ -164,7 +164,7 @@ export const BulletItem = ({
           </button>
 
           {item.icon && (
-            <span className="text-lg flex items-center justify-center shrink-0 mt-0.5 select-none" title="Ícone da tarefa">
+            <span className="text-xs md:text-[13px] flex items-center justify-center shrink-0 mt-0.5 select-none" title="Ícone da tarefa">
               {item.icon}
             </span>
           )}
@@ -378,7 +378,7 @@ export const BulletItem = ({
                       {sub.completed && <Check className="w-2.5 h-2.5 stroke-[4]" />}
                     </button>
                     <span className={`truncate flex items-center gap-1.5 ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
-                      {sub.icon && <span className="text-xs select-none" title="Ícone do micro-passo">{sub.icon}</span>}
+                      {sub.icon && <span className="text-[11px] select-none shrink-0" title="Ícone do micro-passo">{sub.icon}</span>}
                       <span>{sub.content}</span>
                       {sub.executionTime && (
                         <span className="text-[9px] bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-mono ml-1.5 inline-flex items-center gap-0.5 select-none" title="Tempo de execução do micro-passo">
