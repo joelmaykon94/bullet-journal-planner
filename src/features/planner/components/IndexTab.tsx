@@ -200,7 +200,7 @@ export const IndexTab = () => {
                     '@programando': '⚡',
                     '@aguardando': '⏳'
                   };
-                  return Object.entries(contextCounts).slice(0, 5).map(([ctx, count]) => (
+                  return Object.entries(contextCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([ctx, count]) => (
                     <div key={ctx} className="flex flex-col items-center gap-1 group relative">
                       <div className="absolute bottom-full mb-1 px-1.5 py-0.5 rounded bg-zinc-950 text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-bold shadow-md">
                         {ctx}: {count}
@@ -228,7 +228,7 @@ export const IndexTab = () => {
               <div className="flex items-end justify-around h-16 pt-2">
                 {(() => {
                   const maxCat = Math.max(...Object.values(categoryCounts), 1);
-                  return Object.entries(categoryCounts).slice(0, 5).map(([icon, count]) => {
+                  return Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([icon, count]) => {
                     const bujoIcon = BUJO_ICONS.find(i => i.emoji === icon);
                     const name = bujoIcon ? bujoIcon.name : '';
                     return (
@@ -260,7 +260,7 @@ export const IndexTab = () => {
               <div className="flex items-end justify-around h-16 pt-2">
                 {(() => {
                   const maxDel = Math.max(...Object.values(delegateCounts), 1);
-                  return Object.entries(delegateCounts).slice(0, 5).map(([name, count]) => (
+                  return Object.entries(delegateCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => (
                     <div key={name} className="flex flex-col items-center gap-1 group relative">
                       <div className="absolute bottom-full mb-1 px-1.5 py-0.5 rounded bg-zinc-950 text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-bold shadow-md">
                         {name}: {count}
