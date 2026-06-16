@@ -65,7 +65,8 @@ export function useBujoItems(
     standardDate: string,
     selectedDate: string,
     standardTime: string,
-    setStandardTime: React.Dispatch<React.SetStateAction<string>>
+    setStandardTime: React.Dispatch<React.SetStateAction<string>>,
+    icon?: string
   ) => {
     if (!standardInput.trim()) return;
 
@@ -77,7 +78,8 @@ export function useBujoItems(
       content: content,
       date: standardDate || selectedDate,
       time: standardTime || undefined,
-      subtasks: standardType === 'task' ? [] : undefined
+      subtasks: standardType === 'task' ? [] : undefined,
+      icon: icon || undefined
     };
 
     // Check for collection sync: [Collection Name] some task
@@ -365,7 +367,8 @@ export function useBujoItems(
   const addSubtask = (
     taskId: string,
     newSubtaskText: string,
-    setNewSubtaskText: React.Dispatch<React.SetStateAction<string>>
+    setNewSubtaskText: React.Dispatch<React.SetStateAction<string>>,
+    icon?: string
   ) => {
     if (!newSubtaskText.trim()) return;
     setItems(prev => prev.map(item => {
@@ -373,7 +376,7 @@ export function useBujoItems(
         const sub = item.subtasks || [];
         return {
           ...item,
-          subtasks: [...sub, { id: Math.random().toString(), content: newSubtaskText.trim(), completed: false }]
+          subtasks: [...sub, { id: Math.random().toString(), content: newSubtaskText.trim(), completed: false, icon }]
         };
       }
       return item;

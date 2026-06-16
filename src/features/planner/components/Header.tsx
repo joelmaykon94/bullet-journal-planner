@@ -9,7 +9,8 @@ export const Header = () => {
     aiEngine,
     localLLMState,
     setPomodoroRunning,
-    showToast
+    showToast,
+    setShowAIDownloadModal
   } = useBujo();
 
   const triggerPWAInstall = () => {
@@ -36,12 +37,17 @@ export const Header = () => {
             <>
               {/* AI Status Badge Button */}
               <button
+                id="tutorial-ai-badge"
                 onClick={() => {
-                  setActiveTab('settings');
-                  setTimeout(() => {
-                    const el = document.getElementById('local-llm-activation-center');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }, 150);
+                  if (aiEngine === 'local') {
+                    setShowAIDownloadModal(true);
+                  } else {
+                    setActiveTab('settings');
+                    setTimeout(() => {
+                      const el = document.getElementById('local-llm-activation-center');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }, 150);
+                  }
                 }}
                 className={`flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full border transition-all ${
                   aiEngine === 'local_llm'
@@ -72,6 +78,7 @@ export const Header = () => {
 
               {/* Install PWA Button */}
               <button
+                id="tutorial-install-pwa"
                 onClick={triggerPWAInstall}
                 className="flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 hover:text-bujo-text transition-all"
                 title="Instalar como Aplicativo PWA"

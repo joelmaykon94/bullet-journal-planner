@@ -393,8 +393,8 @@ Escreva um conselho ou comentário no seu tom de voz em no máximo 2 frases. Sej
       {/* Character Profile Section */}
       <div className="flex gap-3 items-center">
         {/* Companion Avatar */}
-        <div className={`w-14 h-14 rounded-[20px] bg-gradient-to-br ${activeArch.themeColor} p-0.5 shadow-sm flex-shrink-0 animate-bounce-slow`}>
-          <div className="w-full h-full rounded-[18px] bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center text-3xl select-none">
+        <div id="tutorial-mascot" className={`w-14 h-14 rounded-[20px] bg-gradient-to-br ${activeArch.themeColor} p-0.5 shadow-sm flex-shrink-0 animate-bounce-slow`}>
+          <div className="w-full h-full rounded-[18px] bg-zinc-100 dark:bg-zinc-955 flex items-center justify-center text-3xl select-none">
             {dynamicEmoji}
           </div>
         </div>

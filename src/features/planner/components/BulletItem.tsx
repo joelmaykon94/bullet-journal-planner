@@ -21,7 +21,7 @@ interface BulletItemProps {
   deleteSubtask: (taskId: string, subtaskId: string) => void;
   newSubtaskText: string;
   setNewSubtaskText: (text: string) => void;
-  addSubtask: (taskId: string) => void;
+  addSubtask: (taskId: string, icon?: string) => void;
   getSubtaskCompletionString: (item: BujoItem) => string;
 }
 
@@ -50,6 +50,8 @@ export const BulletItem = ({
 
   const [localDelegatedTo, setLocalDelegatedTo] = useState(item.delegatedTo || '');
   const [localIcon, setLocalIcon] = useState(item.icon || '');
+  const [subtaskIcon, setSubtaskIcon] = useState<string>('');
+  const [showSubtaskIconDropdown, setShowSubtaskIconDropdown] = useState<boolean>(false);
 
   useEffect(() => {
     if (editingItemId === item.id) {
@@ -293,8 +295,9 @@ export const BulletItem = ({
                 >
                   {sub.completed && <Check className="w-2.5 h-2.5 stroke-[4]" />}
                 </button>
-                <span className={`truncate ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
-                  {sub.content}
+                <span className={`truncate flex items-center gap-1.5 ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                  {sub.icon && <span className="text-sm select-none" title="Ícone do micro-passo">{sub.icon}</span>}
+                  <span>{sub.content}</span>
                 </span>
               </div>
               <button
@@ -308,20 +311,121 @@ export const BulletItem = ({
             </div>
           ))}
 
-          <div className="flex gap-2 pt-1 no-print">
-            <input
-              type="text"
-              placeholder="Novo micro-passo..."
-              value={newSubtaskText}
-              onChange={(e) => setNewSubtaskText(e.target.value)}
-              className="bg-transparent border-b border-zinc-200/80 dark:border-white/10 outline-none text-xs text-bujo-text placeholder:text-zinc-500 flex-1 py-1"
-            />
-            <button
-              onClick={() => addSubtask(item.id)}
-              className="px-2 py-1 bg-zinc-300/40 dark:bg-white/10 text-[10px] font-bold rounded-lg"
-            >
-              Adicionar
-            </button>
+          {/* New Subtask Input Form with Icon Picker and Cancel Actions */}
+          <div className="flex items-center gap-2 pt-1 no-print relative">
+            {/* Icon Picker for Subtask */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowSubtaskIconDropdown(!showSubtaskIconDropdown)}
+                className="w-6 h-6 rounded bg-zinc-200/50 dark:bg-white/5 border border-zinc-350 dark:border-white/10 flex items-center justify-center text-xs hover:border-bujo-highlight hover:bg-zinc-200/80 dark:hover:bg-white/10 transition-all cursor-pointer"
+                title="Escolher Ícone para o micro-passo"
+              >
+                {subtaskIcon || '🎨'}
+              </button>
+
+              {showSubtaskIconDropdown && (
+                <div className="absolute left-0 bottom-full mb-2 p-2 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-52 animate-scale-in">
+                  <div className="flex justify-between items-center mb-1 pb-1 border-b border-zinc-200/40 dark:border-white/5">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Ícone</span>
+                    <div className="flex items-center gap-1.5">
+                      {subtaskIcon && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSubtaskIcon('');
+                            setShowSubtaskIconDropdown(false);
+                          }}
+                          className="text-[9px] text-red-500 hover:underline font-bold cursor-pointer"
+                        >
+                          Limpar
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowSubtaskIconDropdown(false)}
+                        className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-405 hover:text-bujo-text cursor-pointer"
+                        title="Fechar"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+                    {['📝', '🎯', '🚀', '💡', '📚', '🏃‍♂️', '🍎', '🛒', '🎨', '🍿', '🏠', '🔑', '💬', '⚠️', '🛠️', '💰', '🏆', '🧘‍♂️', '🍕', '🔥'].map(emoji => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          setSubtaskIcon(emoji);
+                          setShowSubtaskIconDropdown(false);
+                        }}
+                        className={`w-7 h-7 flex items-center justify-center rounded text-sm hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
+                          subtaskIcon === emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="relative flex-1 flex items-center">
+              <input
+                type="text"
+                placeholder="Novo micro-passo..."
+                value={newSubtaskText}
+                onChange={(e) => setNewSubtaskText(e.target.value)}
+                className="bg-transparent border-b border-zinc-200/80 dark:border-white/10 outline-none text-xs text-bujo-text placeholder:text-zinc-500 w-full py-1 pr-6"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    addSubtask(item.id, subtaskIcon);
+                    setSubtaskIcon('');
+                  }
+                }}
+              />
+              {(newSubtaskText || subtaskIcon) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewSubtaskText('');
+                    setSubtaskIcon('');
+                    setShowSubtaskIconDropdown(false);
+                  }}
+                  className="absolute right-1 p-0.5 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
+                  title="Limpar"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex gap-1">
+              {(newSubtaskText || subtaskIcon) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewSubtaskText('');
+                    setSubtaskIcon('');
+                    setShowSubtaskIconDropdown(false);
+                  }}
+                  className="px-2 py-1 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-350 dark:border-white/15 rounded text-[10px] font-bold hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  addSubtask(item.id, subtaskIcon);
+                  setSubtaskIcon('');
+                }}
+                className="px-2.5 py-1 bg-zinc-300/40 dark:bg-white/10 text-[10px] font-bold rounded hover:bg-zinc-300/60 dark:hover:bg-white/20 transition-all cursor-pointer"
+              >
+                Adicionar
+              </button>
+            </div>
           </div>
         </div>
       )}

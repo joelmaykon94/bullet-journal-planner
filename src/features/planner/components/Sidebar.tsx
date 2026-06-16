@@ -7,7 +7,7 @@ export const Sidebar = () => {
   return (
     <aside className="hidden md:flex md:flex-col w-56 flex-shrink-0 gap-2.5 no-print">
       {/* Sidebar gamification card */}
-      <div className="p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 flex flex-col gap-2 mb-2 text-bujo-text select-none">
+      <div id="tutorial-gamification" className="p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 flex flex-col gap-2 mb-2 text-bujo-text select-none">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Progresso</span>
           <span className="text-xs font-bold text-bujo-highlight font-mono">Nível {Math.floor(userXp / 100) + 1}</span>
@@ -18,6 +18,7 @@ export const Sidebar = () => {
         <span className="text-[9px] text-zinc-400 text-right block font-mono">{userXp % 100} / 100 XP</span>
       </div>
       <button
+        id="sidebar-tab-indice"
         onClick={() => setActiveTab('indice')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'indice' 
@@ -29,6 +30,7 @@ export const Sidebar = () => {
         <span>Índice</span>
       </button>
       <button
+        id="sidebar-tab-daily_log"
         onClick={() => setActiveTab('daily_log')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'daily_log' 
@@ -40,6 +42,7 @@ export const Sidebar = () => {
         <span>Daily Log</span>
       </button>
       <button
+        id="sidebar-tab-weekly_log"
         onClick={() => setActiveTab('weekly_log')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'weekly_log' 
@@ -51,6 +54,7 @@ export const Sidebar = () => {
         <span>Weekly Log</span>
       </button>
       <button
+        id="sidebar-tab-monthly_log"
         onClick={() => setActiveTab('monthly_log')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'monthly_log' 
@@ -62,6 +66,7 @@ export const Sidebar = () => {
         <span>Monthly Log</span>
       </button>
       <button
+        id="sidebar-tab-daily_spread"
         onClick={() => setActiveTab('daily_spread')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'daily_spread' 
@@ -73,6 +78,7 @@ export const Sidebar = () => {
         <span>Spread Diário</span>
       </button>
       <button
+        id="sidebar-tab-future_log"
         onClick={() => setActiveTab('future_log')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'future_log' 
@@ -84,6 +90,7 @@ export const Sidebar = () => {
         <span>Future Log</span>
       </button>
       <button
+        id="sidebar-tab-brain_dump"
         onClick={() => setActiveTab('brain_dump')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'brain_dump' 
@@ -95,6 +102,7 @@ export const Sidebar = () => {
         <span>Despejo de Mente</span>
       </button>
       <button
+        id="sidebar-tab-collections"
         onClick={() => setActiveTab('collections')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'collections' 
@@ -106,6 +114,7 @@ export const Sidebar = () => {
         <span>Coleções</span>
       </button>
       <button
+        id="sidebar-tab-dream_board"
         onClick={() => setActiveTab('dream_board')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'dream_board' 
@@ -117,6 +126,7 @@ export const Sidebar = () => {
         <span>Quadro dos Sonhos</span>
       </button>
       <button
+        id="sidebar-tab-someday_maybe"
         onClick={() => setActiveTab('someday_maybe')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'someday_maybe' 
@@ -128,6 +138,7 @@ export const Sidebar = () => {
         <span>Algum Dia</span>
       </button>
       <button
+        id="sidebar-tab-trash"
         onClick={() => setActiveTab('trash')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'trash' 
@@ -139,6 +150,7 @@ export const Sidebar = () => {
         <span>Lixeira</span>
       </button>
       <button
+        id="sidebar-tab-settings"
         onClick={() => setActiveTab('settings')}
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
           activeTab === 'settings' 

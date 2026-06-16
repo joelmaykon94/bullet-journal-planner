@@ -103,7 +103,7 @@ export function useCollections(
     showToast(`Coleção "${newCol.name}" criada!`);
   };
 
-  const handleCreateCollectionItem = (colId: string) => {
+  const handleCreateCollectionItem = (colId: string, icon?: string) => {
     if (!newColItemTitle.trim()) return;
 
     const newItem = {
@@ -112,7 +112,8 @@ export function useCollections(
       status: 'todo' as const,
       notes: newColItemNotes.trim(),
       media: [],
-      subtasks: []
+      subtasks: [],
+      icon: icon || undefined
     };
 
     setCollections(prev => prev.map(col => {
@@ -155,7 +156,7 @@ export function useCollections(
     }));
   };
 
-  const handleAddCollectionItemSubtask = (colId: string, itemId: string, subtaskText: string) => {
+  const handleAddCollectionItemSubtask = (colId: string, itemId: string, subtaskText: string, icon?: string) => {
     if (!subtaskText.trim()) return;
     setCollections(prev => prev.map(col => {
       if (col.id === colId) {
@@ -166,7 +167,7 @@ export function useCollections(
               const sub = item.subtasks || [];
               return {
                 ...item,
-                subtasks: [...sub, { id: `col-sub-${Date.now()}-${Math.random()}`, content: subtaskText.trim(), completed: false }]
+                subtasks: [...sub, { id: `col-sub-${Date.now()}-${Math.random()}`, content: subtaskText.trim(), completed: false, icon }]
               };
             }
             return item;

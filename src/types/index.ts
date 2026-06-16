@@ -5,7 +5,7 @@ export interface BujoItem {
   content: string;
   date: string; // YYYY-MM-DD
   time?: string; // HH:MM
-  subtasks?: { id: string; content: string; completed: boolean }[];
+  subtasks?: { id: string; content: string; completed: boolean; icon?: string }[];
   priority?: boolean;
   delegatedTo?: string;
   icon?: string;
@@ -45,6 +45,7 @@ export interface CollectionItem {
   notes: string;
   media: MediaItem[];
   subtasks: Subtask[];
+  icon?: string;
 }
 
 export interface MediaItem {
@@ -58,6 +59,7 @@ export interface Subtask {
   id: string;
   content: string;
   completed: boolean;
+  icon?: string;
 }
 
 export interface DreamItem {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, Printer, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
 
@@ -14,7 +14,7 @@ export const DailyLogTab = () => {
     setStandardTime,
     exportToPDF,
     handlePrint,
-    handleSaveStandardInputForm,
+    handleSaveStandardInput,
     standardType,
     setStandardType,
     standardInput,
@@ -49,6 +49,34 @@ export const DailyLogTab = () => {
 
   const today = new Date().toISOString().split('T')[0];
   const [selectedContext, setSelectedContext] = useState<string | null>(null);
+  const [standardIcon, setStandardIcon] = useState<string>('');
+  const [showIconDropdown, setShowIconDropdown] = useState<boolean>(false);
+
+  const handleClearInputs = () => {
+    setStandardInput('');
+    setStandardTime('');
+    setStandardIcon('');
+    setShowIconDropdown(false);
+  };
+
+  const handleLocalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!standardInput.trim()) return;
+
+    handleSaveStandardInput(
+      standardInput,
+      setStandardInput,
+      standardType,
+      standardDate,
+      selectedDate,
+      standardTime,
+      setStandardTime,
+      standardIcon
+    );
+
+    setStandardIcon('');
+    setShowIconDropdown(false);
+  };
   const dateItems = items.filter(i => i.date === selectedDate);
   const filteredDateItems = dateItems.filter(item => {
     if (!selectedContext) return true;
@@ -125,7 +153,7 @@ export const DailyLogTab = () => {
       </div>
 
       <div className="relative">
-        <form onSubmit={handleSaveStandardInputForm} className="flex flex-col md:flex-row gap-2 bg-zinc-200/30 dark:bg-white/5 p-2 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
+        <form onSubmit={handleLocalSubmit} className="flex flex-col md:flex-row gap-2 bg-zinc-200/30 dark:bg-white/5 p-2 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
           <div className="flex gap-2 flex-1 items-center">
             <select
               value={standardType}
@@ -137,15 +165,86 @@ export const DailyLogTab = () => {
               <option value="note" className="bg-bujo-bg text-bujo-text">- Nota</option>
             </select>
 
-            <input
-              type="text"
-              required
-              value={standardInput}
-              onChange={handleStandardInputChange}
-              onKeyDown={handleStandardInputKeyDown}
-              placeholder="Adicionar entrada rápida... Use [ para coleções"
-              className="bg-transparent border-none outline-none flex-1 text-sm text-bujo-text placeholder:text-zinc-500 py-2 px-1"
-            />
+            {/* Icon Picker Trigger */}
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowIconDropdown(!showIconDropdown)}
+                className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 flex items-center justify-center text-sm hover:border-bujo-highlight hover:bg-zinc-200 dark:hover:bg-white/10 transition-all cursor-pointer"
+                title="Escolher Ícone/Desenho"
+              >
+                {standardIcon || '🎨'}
+              </button>
+
+              {showIconDropdown && (
+                <div className="absolute left-0 top-full mt-2 p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 w-64 animate-scale-in">
+                  <div className="flex justify-between items-center mb-2 pb-1.5 border-b border-zinc-200/40 dark:border-white/5">
+                    <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider">Escolha um Ícone</span>
+                    <div className="flex items-center gap-2">
+                      {standardIcon && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setStandardIcon('');
+                            setShowIconDropdown(false);
+                          }}
+                          className="text-[10px] text-red-500 hover:underline font-bold cursor-pointer"
+                        >
+                          Remover
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowIconDropdown(false)}
+                        className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer"
+                        title="Fechar"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-6 gap-1.5 max-h-40 overflow-y-auto pr-1">
+                    {['📝', '📅', '🎯', '🚀', '💡', '💼', '📚', '🏃‍♂️', '🍎', '✈️', '🛒', '🎨', '🎵', '🍿', '🏠', '🔑', '💬', '⚠️', '🛠️', '💰', '🏆', '🧘‍♂️', '🩺', '🍕', '🚗', '⭐', '❤️', '🔥', '🔋', '💤'].map(emoji => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          setStandardIcon(emoji);
+                          setShowIconDropdown(false);
+                        }}
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-base hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
+                          standardIcon === emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="relative flex-1 flex items-center">
+              <input
+                type="text"
+                required
+                value={standardInput}
+                onChange={handleStandardInputChange}
+                onKeyDown={handleStandardInputKeyDown}
+                placeholder="Adicionar entrada rápida... Use [ para coleções"
+                className="bg-transparent border-none outline-none w-full text-sm text-bujo-text placeholder:text-zinc-500 py-2 pl-1 pr-8"
+              />
+              {(standardInput || standardTime || standardIcon) && (
+                <button
+                  type="button"
+                  onClick={handleClearInputs}
+                  className="absolute right-1 p-1 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
+                  title="Limpar formulário"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-zinc-200/45 dark:border-white/10 pt-2 md:pt-0 pl-0 md:pl-2 shrink-0 justify-between md:justify-start">
@@ -164,12 +263,23 @@ export const DailyLogTab = () => {
               />
             </div>
 
-            <button
-              type="submit"
-              className="px-4 py-2 bg-bujo-highlight text-white rounded-xl text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer shrink-0"
-            >
-              Salvar
-            </button>
+            <div className="flex gap-2">
+              {(standardInput || standardTime || standardIcon) && (
+                <button
+                  type="button"
+                  onClick={handleClearInputs}
+                  className="px-3 py-2 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-350 dark:border-white/15 rounded-xl text-xs font-semibold hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                type="submit"
+                className="px-4 py-2 bg-bujo-highlight text-white rounded-xl text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer shrink-0"
+              >
+                Salvar
+              </button>
+            </div>
           </div>
         </form>
 

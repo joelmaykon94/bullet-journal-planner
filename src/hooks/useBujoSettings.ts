@@ -24,6 +24,7 @@ export function useBujoSettings() {
   useEffect(() => {
     const root = document.documentElement;
     document.body.classList.add('dark-theme');
+    root.classList.add('dark');
     root.style.setProperty('--bujo-bg', '#040707'); // Deep cozy forest night obsidian green-black
     root.style.setProperty('--bujo-text', '#e2e8f0');
     root.style.setProperty('--bujo-highlight', settings.highlightColor);

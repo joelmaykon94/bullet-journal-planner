@@ -68,7 +68,10 @@ function AppContent() {
     createRapidTaskWithSuggestions,
     focoActive,
     expandedTaskId,
-    setExpandedTaskId
+    setExpandedTaskId,
+    showAIDownloadModal,
+    handleConfirmAIDownload,
+    handleDeclineAIDownload
   } = useBujo();
 
   const filteredCollections = collections.filter((col: any) =>
@@ -212,6 +215,64 @@ function AppContent() {
 
       {/* GLOBAL CUSTOM CONFIRMATION DIALOG */}
       <ConfirmationModal />
+
+      {/* AI LOCAL LLM DOWNLOAD CONFIRMATION MODAL */}
+      {showAIDownloadModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in no-print">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden p-6 animate-scale-in text-zinc-850 dark:text-zinc-100 flex flex-col gap-4">
+            <div className="flex items-center gap-2.5 pb-2.5 border-b border-zinc-200/40 dark:border-white/5">
+              <div className="w-8 h-8 rounded-xl bg-bujo-highlight/10 flex items-center justify-center text-bujo-highlight font-bold">
+                🤖
+              </div>
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-bujo-highlight">
+                  Ativar IA Local Avançada?
+                </h3>
+                <span className="text-[9px] text-zinc-500 font-semibold uppercase font-mono">Modelo ONNX no Browser</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-xs leading-relaxed text-zinc-550 dark:text-zinc-400">
+                O BuJo Focus possui uma <strong>Inteligência Artificial Local</strong> capaz de quebrar tarefas em micro-passos e otimizar descrições de forma 100% offline e privada.
+              </p>
+              
+              <div className="p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-950 border border-zinc-250/50 dark:border-white/5 text-[11px] text-zinc-550 dark:text-zinc-400 space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-emerald-500">✓</span>
+                  <span><strong>100% Privado</strong>: Seus dados nunca saem do seu computador.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-emerald-500">✓</span>
+                  <span><strong>Tamanho</strong>: ~350MB de dados baixados no cache do browser apenas uma vez.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-emerald-500">✓</span>
+                  <span><strong>Funciona Offline</strong>: Não requer conexão de internet após o download inicial.</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 pt-2 text-xs">
+              <button
+                type="button"
+                onClick={handleDeclineAIDownload}
+                className="flex-1 py-2.5 border border-zinc-250 dark:border-white/10 hover:bg-zinc-150 dark:hover:bg-white/5 font-bold rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+              >
+                Lembrar Mais Tarde
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAIDownload}
+                className="flex-1 py-2.5 bg-bujo-highlight text-white hover:opacity-95 font-bold rounded-xl shadow-md transition-colors cursor-pointer flex items-center justify-center gap-1"
+              >
+                <span>Baixar e Ativar</span>
+                <span className="text-[10px] opacity-80">(~350MB)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

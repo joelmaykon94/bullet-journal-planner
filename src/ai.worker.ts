@@ -71,7 +71,7 @@ self.onmessage = async (e: MessageEvent) => {
   else if (type === 'generate') {
     try {
       const { text, maxTokens, mode = 'split' } = data;
-      const defaultMaxTokens = mode === 'optimize' ? 30 : 80;
+      const defaultMaxTokens = mode === 'optimize' ? 30 : (mode === 'braindump' ? 150 : 80);
       const finalMaxTokens = maxTokens || defaultMaxTokens;
       const gen = await getGenerator(() => {});
 
@@ -89,6 +89,27 @@ Reescreva: ${text}<|im_end|>
 `;
       } else if (mode === 'advise') {
         formattedPrompt = text;
+      } else if (mode === 'braindump') {
+        formattedPrompt = `<|im_start|>system
+Você é um assistente de produtividade. Organize o despejo de pensamentos (brain dump) em uma lista de itens rotulados como T (Tarefa), E (Evento/Compromisso) ou N (Nota/Sentimento).
+Regras:
+1. Extraia todas as tarefas concretas, ações, compromissos com horários e pensamentos/notas.
+2. Cada item deve começar exatamente com "T: ", "E: " ou "N: ".
+3. Para eventos com horário, coloque o horário formato HH:MM ao final (ex: Ligar para minha mãe | 15:00).
+4. Escreva APENAS a lista estruturada de forma concisa. Sem introduções.
+<|im_end|>
+<|im_start|>user
+Despejo: Preciso limpar a casa no fim de semana. Lembrar da consulta médica amanhã às 15:00. O céu hoje está bonito. Preciso comprar leite.
+<|im_end|>
+<|im_start|>assistant
+T: Limpar a casa no fim de semana
+E: Consulta médica amanhã | 15:00
+N: O céu hoje está bonito
+T: Comprar leite<|im_end|>
+<|im_start|>user
+Despejo: ${text}<|im_end|>
+<|im_start|>assistant
+`;
       } else {
         formattedPrompt = `<|im_start|>system
 Divida a tarefa em 3 a 4 micro-passos sequenciais muito simples em pt-BR. Escreva APENAS a lista começando com "- Passo X:". Sem introduções.<|im_end|>
@@ -136,7 +157,7 @@ Divida: ${text}<|im_end|>
 
       // Recompor o resultado
       let cleanResult = '';
-      if (mode === 'optimize' || mode === 'advise') {
+      if (mode === 'optimize' || mode === 'advise' || mode === 'braindump') {
         cleanResult = generatedText
           .replace(/<\|im_end\|>/g, '')
           .replace(/<\|im_start\|>/g, '')

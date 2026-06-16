@@ -2,6 +2,7 @@ import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles,
 import { EnergyChart } from '../../adhd/components/EnergyChart';
 import { HabitTracker } from './HabitTracker';
 import { UserPersonaCard } from './UserPersonaCard';
+import { KnowledgeEvolutionChart } from '../../education/components/KnowledgeEvolutionChart';
 import { useBujo } from '../../../context/BujoContext';
 
 export const IndexTab = () => {
@@ -69,6 +70,7 @@ export const IndexTab = () => {
         <div className="flex items-center gap-3 flex-wrap">
           {/* Carga Cognitiva */}
           <div 
+            id="tutorial-cognitive-load"
             onClick={() => setShowOverloadReliefModal(true)}
             className="px-3.5 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex flex-col justify-center text-center min-w-[95px]"
             title="Clique para Alívio Cognitivo IA"
@@ -116,7 +118,7 @@ export const IndexTab = () => {
           {/* Row A: Energy Chart & Quick Access tools side by side */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             
-            <div className="md:col-span-8">
+            <div id="tutorial-energy-chart" className="md:col-span-8">
               <EnergyChart 
                 items={items}
                 getHarmonyScore={getHarmonyScore}
@@ -241,9 +243,16 @@ export const IndexTab = () => {
             </div>
           </div>
 
-          {/* Row B: Habit Tracker */}
-          <HabitTracker />
-        </div>
+           {/* Row B: Knowledge Evolution Chart */}
+           <div id="tutorial-knowledge-chart">
+             <KnowledgeEvolutionChart />
+           </div>
+
+           {/* Row C: Habit Tracker */}
+           <div id="tutorial-habit-tracker">
+             <HabitTracker />
+           </div>
+         </div>
 
         {/* Right Area (Lg:col-span-4) -> Unified Persona & Focus Companion */}
         <div className="lg:col-span-4 h-full flex flex-col justify-between">

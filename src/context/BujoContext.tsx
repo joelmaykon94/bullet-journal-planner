@@ -21,7 +21,8 @@ export interface BujoContextType {
     standardDate: string,
     selectedDate: string,
     standardTime: string,
-    setStandardTime: React.Dispatch<React.SetStateAction<string>>
+    setStandardTime: React.Dispatch<React.SetStateAction<string>>,
+    icon?: string
   ) => void;
   handleTimelineAddInput: (
     timelineInput: string,
@@ -45,7 +46,8 @@ export interface BujoContextType {
   addSubtask: (
     taskId: string,
     newSubtaskText: string,
-    setNewSubtaskText: React.Dispatch<React.SetStateAction<string>>
+    setNewSubtaskText: React.Dispatch<React.SetStateAction<string>>,
+    icon?: string
   ) => void;
   toggleSubtask: (taskId: string, subtaskId: string) => void;
   deleteSubtask: (taskId: string, subtaskId: string) => void;
@@ -97,10 +99,10 @@ export interface BujoContextType {
   setDecomposingCollectionItemIds: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   handleCreateCollection: (e: React.FormEvent) => void;
   handleDeleteCollection: (colId: string) => void;
-  handleCreateCollectionItem: (colId: string) => void;
+  handleCreateCollectionItem: (colId: string, icon?: string) => void;
   handleDeleteCollectionItem: (colId: string, itemId: string) => void;
   handleUpdateCollectionItemStatus: (colId: string, itemId: string, newStatus: 'todo' | 'doing' | 'done') => void;
-  handleAddCollectionItemSubtask: (colId: string, itemId: string, subtaskText: string) => void;
+  handleAddCollectionItemSubtask: (colId: string, itemId: string, subtaskText: string, icon?: string) => void;
   handleToggleCollectionItemSubtask: (colId: string, itemId: string, subtaskId: string) => void;
   handleDeleteCollectionItemSubtask: (colId: string, itemId: string, subtaskId: string) => void;
   handleUploadCollectionItemMedia: (colId: string, itemId: string, e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -172,8 +174,13 @@ export interface BujoContextType {
   localLLMError: string;
   initLocalLLMWorker: () => void;
   aiWorkerRef: React.MutableRefObject<Worker | null>;
+  showAIDownloadModal: boolean;
+  setShowAIDownloadModal: React.Dispatch<React.SetStateAction<boolean>>;
+  handleConfirmAIDownload: () => void;
+  handleDeclineAIDownload: () => void;
   breakingTaskIds: { [key: string]: boolean };
   setBreakingTaskIds: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+
   activeLLMSplitTaskId: string | null;
   setActiveLLMSplitTaskId: React.Dispatch<React.SetStateAction<string | null>>;
   activeLLMCollectionItemId: string | null;
@@ -345,8 +352,11 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   // AI states
   const [aiEngine, setAiEngine] = useState<'local_llm' | 'local'>(() => {
     const saved = localStorage.getItem('bujo_ai_engine');
-    return saved === 'local' ? 'local' : 'local_llm';
+    if (saved) return saved as 'local_llm' | 'local';
+    return 'local'; // Default to simple rules engine for new users to avoid auto-download
   });
+
+  const [showAIDownloadModal, setShowAIDownloadModal] = useState<boolean>(false);
 
   const [localLLMState, setLocalLLMState] = useState<string>('idle');
   const [localLLMProgress, setLocalLLMProgress] = useState<{ [key: string]: number }>({});
@@ -404,6 +414,65 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           const mode = e.data.mode || 'split';
 
           if (mode === 'advise') {
+            return;
+          }
+
+          if (mode === 'braindump') {
+            const dumpTasks: any[] = [];
+            const dumpEvents: any[] = [];
+            const dumpNotes: any[] = [];
+            
+            const lines = resultText.split('\n').map((l: string) => l.trim()).filter(Boolean);
+            lines.forEach((line: string) => {
+              const cleanedLine = line.replace(/^[TEN]:\s*/i, '').trim();
+              if (line.toUpperCase().startsWith('T:')) {
+                dumpTasks.push({
+                  id: Math.random().toString(),
+                  type: 'task',
+                  status: 'open',
+                  content: cleanedLine,
+                  date: new Date().toISOString().split('T')[0]
+                });
+              } else if (line.toUpperCase().startsWith('E:')) {
+                const parts = cleanedLine.split('|');
+                const content = (parts[0] || '').trim();
+                const time = (parts[1] || '12:00').trim();
+                dumpEvents.push({
+                  id: Math.random().toString(),
+                  type: 'event',
+                  status: 'open',
+                  content,
+                  date: new Date().toISOString().split('T')[0],
+                  time
+                });
+              } else if (line.toUpperCase().startsWith('N:')) {
+                dumpNotes.push({
+                  id: Math.random().toString(),
+                  type: 'note',
+                  status: 'open',
+                  content: cleanedLine,
+                  date: new Date().toISOString().split('T')[0]
+                });
+              }
+            });
+            
+            let emotion = 'Mente processada com sucesso pela IA Local.';
+            const textLower = brainDumpTextRef.current.toLowerCase();
+            const anxietyKeywords = ['ansioso', 'preocupado', 'medo', 'pânico', 'desespero', 'correndo', 'atrasado', 'prazos', 'estresse'];
+            const fatigueKeywords = ['cansado', 'exausto', 'sono', 'sem energia', 'desanimado', 'fadiga', 'preguiça'];
+            const positiveKeywords = ['feliz', 'animado', 'ótimo', 'produtivo', 'consegui', 'legal', 'aliviado'];
+
+            if (anxietyKeywords.some(w => textLower.includes(w))) {
+              emotion = '⚠️ Identificamos ansiedade relacionada a prazos ou volume de tarefas.';
+            } else if (fatigueKeywords.some(w => textLower.includes(w))) {
+              emotion = '🔋 Identificamos fadiga física ou mental. Considere descansar.';
+            } else if (positiveKeywords.some(w => textLower.includes(w))) {
+              emotion = '✨ Foco otimista e positivo. Excelente momento para iniciar!';
+            }
+
+            setBrainDumpResult({ tasks: dumpTasks, events: dumpEvents, notes: dumpNotes, emotion });
+            setIsProcessingBrainDump(false);
+            showToast('Caos mental organizado pela IA com sucesso!');
             return;
           }
 
@@ -514,6 +583,31 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         aiWorkerRef.current = null;
       }
     };
+  }, []);
+
+  const handleConfirmAIDownload = () => {
+    localStorage.setItem('bujo_asked_ai_download', 'true');
+    setAiEngine('local_llm');
+    setShowAIDownloadModal(false);
+    initLocalLLMWorker();
+  };
+
+  const handleDeclineAIDownload = () => {
+    localStorage.setItem('bujo_asked_ai_download', 'true');
+    setShowAIDownloadModal(false);
+  };
+
+  useEffect(() => {
+    const asked = localStorage.getItem('bujo_asked_ai_download');
+    const savedEngine = localStorage.getItem('bujo_ai_engine');
+    
+    // Only show if never asked before, and not already using local_llm
+    if (asked !== 'true' && savedEngine !== 'local_llm') {
+      const timer = setTimeout(() => {
+        setShowAIDownloadModal(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Hook integrations
@@ -686,6 +780,10 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const [showEnergyGuide, setShowEnergyGuide] = useState<boolean>(false);
   
   const [brainDumpText, setBrainDumpText] = useState<string>('');
+  const brainDumpTextRef = useRef<string>('');
+  useEffect(() => {
+    brainDumpTextRef.current = brainDumpText;
+  }, [brainDumpText]);
   const [isProcessingBrainDump, setIsProcessingBrainDump] = useState<boolean>(false);
   const [brainDumpResult, setBrainDumpResult] = useState<any | null>(null);
 
@@ -1052,9 +1150,39 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     setIsProcessingBrainDump(true);
     showToast('IA analisando o despejo de pensamentos...');
 
+    if (aiEngine === 'local_llm') {
+      if (localLLMState !== 'ready') {
+        initLocalLLMWorker();
+        showToast('IA Local carregando... Aguarde.');
+        setIsProcessingBrainDump(false);
+        setActiveTab('settings');
+        return;
+      }
+      if (aiWorkerRef.current) {
+        aiWorkerRef.current.postMessage({
+          type: 'generate',
+          data: { text: brainDumpText, mode: 'braindump' }
+        });
+      }
+      return;
+    }
+
     setTimeout(() => {
       const text = brainDumpText;
-      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      
+      const cleanBujoContent = (str: string) => {
+        return str
+          .replace(/^[,.\s-]+/, '')
+          .replace(/^(?:preciso\s+(?:de\s+)?|tenho\s+(?:que|de)\s+|lembrar\s+(?:de|da|do)\s+|quero\s+|vou\s+|devo\s+)/i, '')
+          .trim()
+          .replace(/^\w/, (c) => c.toUpperCase());
+      };
+
+      const sentences = text
+        .split(/(?:[.\n!?]|\be\s+(?:também|preciso|tenho|vou|devo)\b)/i)
+        .map(s => s.trim())
+        .filter(s => s.length > 3);
+
       const dumpTasks: BujoItem[] = [];
       const dumpEvents: BujoItem[] = [];
       const dumpNotes: BujoItem[] = [];
@@ -1074,10 +1202,12 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         emotion = '✨ Foco otimista e positivo. Excelente momento para iniciar!';
       }
 
-      lines.forEach(line => {
-        const lowerLine = line.toLowerCase();
-        const timeMatch = line.match(/(\d{1,2})h(\d{2})?|(\d{1,2}):(\d{2})/);
-        const isEvent = ['reunião', 'encontro', 'médico', 'consulta', 'aula', 'festa', 'evento', 'almoço', 'jantar'].some(w => lowerLine.includes(w));
+      sentences.forEach(sentence => {
+        const cleaned = cleanBujoContent(sentence);
+        const lowerCleaned = cleaned.toLowerCase();
+        
+        const timeMatch = sentence.match(/(\d{1,2})h(\d{2})?|(\d{1,2}):(\d{2})/i);
+        const isEvent = ['reunião', 'encontro', 'médico', 'consulta', 'aula', 'festa', 'evento', 'almoço', 'jantar', 'compromisso'].some(w => lowerCleaned.includes(w));
         
         if (timeMatch || isEvent) {
           let time = '12:00';
@@ -1086,28 +1216,29 @@ export function BujoProvider({ children }: { children: ReactNode }) {
             const m = timeMatch[2] || timeMatch[4] || '00';
             time = `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
           }
+          const eventContent = cleaned.replace(/(\d{1,2})h(\d{2})?|(\d{1,2}):(\d{2})/gi, '').trim();
           dumpEvents.push({
             id: Math.random().toString(),
             type: 'event',
             status: 'open',
-            content: line.replace(/(\d{1,2})h(\d{2})?|(\d{1,2}):(\d{2})/, '').trim(),
+            content: eventContent,
             date: new Date().toISOString().split('T')[0],
             time: time
           });
-        } else if (['fazer', 'comprar', 'limpar', 'estudar', 'enviar', 'ligar', 'escrever', 'revisar', 'pagar', 'terminar', 'organizar'].some(w => lowerLine.includes(w))) {
-          dumpTasks.push({
-            id: Math.random().toString(),
-            type: 'task',
-            status: 'open',
-            content: line,
-            date: new Date().toISOString().split('T')[0]
-          });
-        } else {
+        } else if (['sinto', 'estou', 'pensando', 'acho', 'triste', 'feliz', 'ansioso', 'cansado', 'bonito', 'legal'].some(w => lowerCleaned.includes(w))) {
           dumpNotes.push({
             id: Math.random().toString(),
             type: 'note',
             status: 'open',
-            content: line,
+            content: cleaned,
+            date: new Date().toISOString().split('T')[0]
+          });
+        } else {
+          dumpTasks.push({
+            id: Math.random().toString(),
+            type: 'task',
+            status: 'open',
+            content: cleaned,
             date: new Date().toISOString().split('T')[0]
           });
         }
@@ -1470,6 +1601,10 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       localLLMError,
       initLocalLLMWorker,
       aiWorkerRef,
+      showAIDownloadModal,
+      setShowAIDownloadModal,
+      handleConfirmAIDownload,
+      handleDeclineAIDownload,
       breakingTaskIds,
       setBreakingTaskIds,
       activeLLMSplitTaskId,

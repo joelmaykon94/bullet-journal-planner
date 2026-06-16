@@ -40,6 +40,18 @@ export const CollectionsLibrary = () => {
   const [showAddMediaLink, setShowAddMediaLink] = useState(false);
   const [mediaLinkName, setMediaLinkName] = useState('');
   const [mediaLinkUrl, setMediaLinkUrl] = useState('');
+  const [showColIconDropdown, setShowColIconDropdown] = useState(false);
+  const [newColItemIcon, setNewColItemIcon] = useState('');
+  const [showColItemIconDropdown, setShowColItemIconDropdown] = useState(false);
+  const [colSubIcon, setColSubIcon] = useState('');
+  const [showColSubIconDropdown, setShowColSubIconDropdown] = useState(false);
+
+  const handleCancelCreateCollection = () => {
+    setNewColName('');
+    setNewColDesc('');
+    setNewColIcon('📚');
+    setShowCreateCollectionModal(false);
+  };
 
   const activeCollection = collections.find(c => c.id === selectedCollectionId);
   const activeItem = activeCollection?.items.find((i: any) => i.id === selectedItemId);
@@ -153,13 +165,16 @@ export const CollectionsLibrary = () => {
                           : 'bg-zinc-200/10 dark:bg-white/[0.01] border-zinc-250/20 dark:border-white/5 hover:border-zinc-350'
                       }`}
                     >
-                      <div className="space-y-1 min-w-0 pr-2">
-                        <span className="text-xs font-semibold block truncate leading-tight">{item.title}</span>
-                        {totalSubtasks > 0 && (
-                          <span className="text-[9px] text-zinc-500 font-mono block">
-                            Progresso: {completedSubtasks}/{totalSubtasks} micro-tarefas
-                          </span>
-                        )}
+                      <div className="space-y-1 min-w-0 pr-2 flex items-center gap-1.5 flex-1">
+                        {item.icon && <span className="text-base select-none shrink-0" title="Ícone do item">{item.icon}</span>}
+                        <div className="min-w-0 flex-1">
+                          <span className="text-xs font-semibold block truncate leading-tight">{item.title}</span>
+                          {totalSubtasks > 0 && (
+                            <span className="text-[9px] text-zinc-500 font-mono block">
+                              Progresso: {completedSubtasks}/{totalSubtasks} micro-tarefas
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -196,22 +211,116 @@ export const CollectionsLibrary = () => {
             </div>
 
             <div className="p-3 bg-zinc-200/30 dark:bg-white/5 rounded-2xl border border-zinc-250/20 dark:border-white/5 space-y-2">
-              <span className="text-[9px] font-bold text-zinc-500 uppercase block">Rápido: Adicionar Item</span>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Título do item..."
-                  value={newColItemTitle}
-                  onChange={e => setNewColItemTitle(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      handleCreateCollectionItem(activeCollection.id);
-                    }
-                  }}
-                  className="flex-1 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-bujo-text outline-none focus:border-bujo-highlight"
-                />
+              <div className="flex justify-between items-center">
+                <span className="text-[9px] font-bold text-zinc-500 uppercase block">Rápido: Adicionar Item</span>
+                {(newColItemTitle || newColItemIcon) && (
+                  <button
+                    onClick={() => {
+                      setNewColItemTitle('');
+                      setNewColItemIcon('');
+                      setShowColItemIconDropdown(false);
+                    }}
+                    className="text-[9px] text-zinc-500 hover:text-red-500 font-bold cursor-pointer"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2 items-center relative">
+                {/* Icon picker for collection item */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowColItemIconDropdown(!showColItemIconDropdown)}
+                    className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 flex items-center justify-center text-sm hover:border-bujo-highlight transition-all cursor-pointer"
+                    title="Escolher Ícone/Desenho"
+                  >
+                    {newColItemIcon || '🎨'}
+                  </button>
+
+                  {showColItemIconDropdown && (
+                    <div className="absolute left-0 bottom-full mb-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-56 animate-scale-in">
+                      <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-zinc-200/40 dark:border-white/5">
+                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Escolha um Ícone</span>
+                        <div className="flex items-center gap-1.5">
+                          {newColItemIcon && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNewColItemIcon('');
+                                setShowColItemIconDropdown(false);
+                              }}
+                              className="text-[9px] text-red-500 hover:underline font-bold cursor-pointer"
+                            >
+                              Limpar
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setShowColItemIconDropdown(false)}
+                            className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer"
+                            title="Fechar"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+                        {['📝', '🎯', '🚀', '💡', '📚', '🏃‍♂️', '🍎', '🛒', '🎨', '🍿', '🏠', '🔑', '💬', '⚠️', '🛠️', '💰', '🏆', '🧘‍♂️', '🍕', '🔥'].map(emoji => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              setNewColItemIcon(emoji);
+                              setShowColItemIconDropdown(false);
+                            }}
+                            className={`w-7 h-7 flex items-center justify-center rounded text-sm hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
+                              newColItemIcon === emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
+                            }`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative flex-1 flex items-center">
+                  <input
+                    type="text"
+                    placeholder="Título do item..."
+                    value={newColItemTitle}
+                    onChange={e => setNewColItemTitle(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        handleCreateCollectionItem(activeCollection.id, newColItemIcon);
+                        setNewColItemIcon('');
+                      }
+                    }}
+                    className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 pr-8 text-xs text-bujo-text outline-none focus:border-bujo-highlight"
+                  />
+                  {(newColItemTitle || newColItemIcon) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewColItemTitle('');
+                        setNewColItemIcon('');
+                        setShowColItemIconDropdown(false);
+                      }}
+                      className="absolute right-2.5 p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
+                      title="Limpar"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
                 <button
-                  onClick={() => handleCreateCollectionItem(activeCollection.id)}
+                  onClick={() => {
+                    handleCreateCollectionItem(activeCollection.id, newColItemIcon);
+                    setNewColItemIcon('');
+                  }}
                   className="p-2 bg-bujo-highlight text-white hover:opacity-95 rounded-xl transition-all"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
@@ -261,14 +370,15 @@ export const CollectionsLibrary = () => {
                             onChange={() => handleToggleCollectionItemSubtask(activeCollection.id, activeItem.id, st.id)}
                             className="rounded border-zinc-350 text-bujo-highlight focus:ring-bujo-highlight w-3.5 h-3.5"
                           />
-                          <span className={`text-xs flex-1 leading-normal ${st.completed ? 'line-through text-zinc-500' : 'text-zinc-300'}`}>
-                            {st.content}
+                          <span className={`text-xs flex-1 leading-normal flex items-center gap-1.5 ${st.completed ? 'line-through text-zinc-500' : 'text-zinc-300'}`}>
+                            {st.icon && <span className="text-sm select-none shrink-0" title="Ícone do micro-passo">{st.icon}</span>}
+                            <span>{st.content}</span>
                           </span>
                           <button
                             onClick={() => handleDeleteCollectionItemSubtask(activeCollection.id, activeItem.id, st.id)}
                             className="p-0.5 text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <X className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       ))}
@@ -283,19 +393,96 @@ export const CollectionsLibrary = () => {
                         e.preventDefault();
                         const form = e.target as HTMLFormElement;
                         const input = form.elements.namedItem('subtaskText') as HTMLInputElement;
-                        if (input.value.trim()) {
-                          handleAddCollectionItemSubtask(activeCollection.id, activeItem.id, input.value.trim());
+                        if (input.value.trim() || colSubIcon) {
+                          handleAddCollectionItemSubtask(activeCollection.id, activeItem.id, input.value.trim(), colSubIcon);
                           input.value = '';
+                          setColSubIcon('');
                         }
                       }}
-                      className="flex gap-1.5 pt-1"
+                      className="flex gap-1.5 pt-1 relative"
                     >
-                      <input
-                        type="text"
-                        name="subtaskText"
-                        placeholder="Adicionar micro-passo manual..."
-                        className="flex-1 bg-zinc-200/40 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-bujo-highlight placeholder:text-zinc-650"
-                      />
+                      {/* Icon selector for collection subtask */}
+                      <div className="relative shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setShowColSubIconDropdown(!showColSubIconDropdown)}
+                          className="w-8 h-8 rounded-lg bg-zinc-200/40 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 flex items-center justify-center text-xs hover:border-bujo-highlight transition-all cursor-pointer"
+                          title="Escolher Ícone"
+                        >
+                          {colSubIcon || '🎨'}
+                        </button>
+
+                        {showColSubIconDropdown && (
+                          <div className="absolute left-0 bottom-full mb-2 p-2 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-52 animate-scale-in">
+                            <div className="flex justify-between items-center mb-1 pb-1 border-b border-zinc-200/40 dark:border-white/5">
+                              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Ícone</span>
+                              <div className="flex items-center gap-1.5">
+                                {colSubIcon && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setColSubIcon('');
+                                      setShowColSubIconDropdown(false);
+                                    }}
+                                    className="text-[9px] text-red-500 hover:underline font-bold cursor-pointer"
+                                  >
+                                    Limpar
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setShowColSubIconDropdown(false)}
+                                  className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer"
+                                  title="Fechar"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+                              {['📝', '🎯', '🚀', '💡', '📚', '🏃‍♂️', '🍎', '🛒', '🎨', '🍿', '🏠', '🔑', '💬', '⚠️', '🛠️', '💰', '🏆', '🧘‍♂️', '🍕', '🔥'].map(emoji => (
+                                <button
+                                  key={emoji}
+                                  type="button"
+                                  onClick={() => {
+                                    setColSubIcon(emoji);
+                                    setShowColSubIconDropdown(false);
+                                  }}
+                                  className={`w-7 h-7 flex items-center justify-center rounded text-sm hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
+                                    colSubIcon === emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
+                                  }`}
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="relative flex-1 flex items-center">
+                        <input
+                          type="text"
+                          name="subtaskText"
+                          placeholder="Adicionar micro-passo manual..."
+                          className="w-full bg-zinc-200/40 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-lg px-2 py-1.5 pr-8 text-xs outline-none focus:border-bujo-highlight placeholder:text-zinc-650"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            const form = e.currentTarget.closest('form') as HTMLFormElement;
+                            const input = form.elements.namedItem('subtaskText') as HTMLInputElement;
+                            input.value = '';
+                            setColSubIcon('');
+                            setShowColSubIconDropdown(false);
+                          }}
+                          className="absolute right-2 p-0.5 rounded-full hover:bg-zinc-250 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
+                          title="Limpar"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
                       <button type="submit" className="px-2.5 py-1.5 bg-bujo-highlight text-white rounded-lg text-xs font-bold">
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -440,7 +627,7 @@ export const CollectionsLibrary = () => {
                 <span>📚</span> Criar Nova Coleção
               </h3>
               <button
-                onClick={() => setShowCreateCollectionModal(false)}
+                onClick={handleCancelCreateCollection}
                 className="p-1 rounded-lg hover:bg-zinc-200/50 dark:hover:bg-white/10 transition-colors text-zinc-500 hover:text-bujo-text cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -448,16 +635,60 @@ export const CollectionsLibrary = () => {
             </div>
 
             <form onSubmit={handleCreateCollection} className="space-y-4 text-left">
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 relative">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Ícone / Emoji</label>
-                <input
-                  type="text"
-                  required
-                  maxLength={2}
-                  value={newColIcon}
-                  onChange={e => setNewColIcon(e.target.value)}
-                  className="w-16 bg-zinc-150 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-center text-lg outline-none focus:border-bujo-highlight"
-                />
+                <div className="flex gap-2 items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowColIconDropdown(!showColIconDropdown)}
+                    className="w-12 h-12 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl flex items-center justify-center text-xl outline-none hover:border-bujo-highlight transition-all cursor-pointer"
+                  >
+                    {newColIcon}
+                  </button>
+                  <input
+                    type="text"
+                    required
+                    maxLength={2}
+                    value={newColIcon}
+                    onChange={e => setNewColIcon(e.target.value)}
+                    className="w-16 bg-zinc-100 dark:bg-zinc-955 border border-zinc-205 dark:border-zinc-800 rounded-xl px-3 py-2 text-center text-sm outline-none focus:border-bujo-highlight"
+                    title="Ou digite o emoji diretamente"
+                  />
+                  <span className="text-[10px] text-zinc-550">Clique no ícone ou digite um emoji</span>
+                </div>
+
+                {showColIconDropdown && (
+                  <div className="absolute left-0 top-full mt-2 p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 w-64 animate-scale-in">
+                    <div className="flex justify-between items-center mb-2 pb-1.5 border-b border-zinc-200/40 dark:border-white/5">
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Escolha um Ícone</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowColIconDropdown(false)}
+                        className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-450 hover:text-bujo-text cursor-pointer"
+                        title="Fechar"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-6 gap-1.5 max-h-40 overflow-y-auto">
+                      {['📚', '🎨', '💼', '💻', '📝', '📅', '🎯', '🚀', '💡', '🏃‍♂️', '🍎', '✈️', '🛒', '🎵', '🍿', '🏠', '🔑', '💬', '⚠️', '🛠️', '💰', '🏆', '🧘‍♂️', '🩺', '🍕', '🌸', '🌻', '🐶', '🐱', '🌍'].map(emoji => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => {
+                            setNewColIcon(emoji);
+                            setShowColIconDropdown(false);
+                          }}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-lg hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
+                            newColIcon === emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
+                          }`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -486,7 +717,7 @@ export const CollectionsLibrary = () => {
               <div className="flex justify-end gap-2 pt-2 text-xs">
                 <button
                   type="button"
-                  onClick={() => setShowCreateCollectionModal(false)}
+                  onClick={handleCancelCreateCollection}
                   className="px-4 py-2 text-zinc-500 hover:text-bujo-text font-bold"
                 >
                   Cancelar

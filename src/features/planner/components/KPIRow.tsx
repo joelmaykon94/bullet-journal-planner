@@ -18,7 +18,7 @@ export const KPIRow = ({ items, completedPomodoros, getCognitiveLoad, onOverload
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {/* CARD 1: Carga Cognitiva */}
-      <div className="liquid-glass p-5 rounded-2xl border border-zinc-200/30 dark:border-white/5 flex flex-col justify-between min-h-[110px] hover:border-bujo-highlight/30 transition-all">
+      <div id="tutorial-cognitive-load" className="liquid-glass p-5 rounded-2xl border border-zinc-200/30 dark:border-white/5 flex flex-col justify-between min-h-[110px] hover:border-bujo-highlight/30 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Carga Cognitiva</span>
           <button
