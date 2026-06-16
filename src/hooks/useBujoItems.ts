@@ -381,17 +381,38 @@ export function useBujoItems(
     showToast('Lixeira esvaziada');
   };
 
-  const handleAddSomedayItem = (content: string, type: 'task' | 'event' | 'note' = 'task') => {
+  const handleAddSomedayItem = (content: string, type: 'task' | 'event' | 'note' = 'task', category?: string) => {
     const newItem: BujoItem = {
       id: 'sd-' + Math.random().toString(),
       type,
       status: 'open',
       content: content.trim(),
       date: 'someday_maybe',
+      category,
       subtasks: type === 'task' ? [] : undefined
     };
     setSomedayItems(prev => [...prev, newItem]);
     showToast('Adicionado a Algum Dia/Talvez');
+  };
+
+  const handleUpdateSomedayItemCategory = (id: string, category: string) => {
+    setSomedayItems(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, category: category || undefined };
+      }
+      return item;
+    }));
+    showToast('Categoria atualizada');
+  };
+
+  const handleEditSomedayItemContent = (id: string, newContent: string) => {
+    setSomedayItems(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, content: newContent.trim() };
+      }
+      return item;
+    }));
+    showToast('Item atualizado');
   };
 
   const handleDeleteSomedayItem = (id: string) => {
@@ -688,6 +709,8 @@ export function useBujoItems(
     handleDeleteSomedayItem,
     handleScheduleSomedayItem,
     handleToggleSomedayItem,
+    handleUpdateSomedayItemCategory,
+    handleEditSomedayItemContent,
     // Delegation & Icon
     handleUpdateItemDelegatedTo,
     handleUpdateItemIcon,

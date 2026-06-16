@@ -77,10 +77,12 @@ export interface BujoContextType {
   handleDeletePermanently: (id: string) => void;
   handleEmptyTrash: () => void;
   somedayItems: BujoItem[];
-  handleAddSomedayItem: (content: string, type?: 'task' | 'event' | 'note') => void;
+  handleAddSomedayItem: (content: string, type?: 'task' | 'event' | 'note', category?: string) => void;
   handleDeleteSomedayItem: (id: string) => void;
   handleScheduleSomedayItem: (id: string, date: string) => void;
   handleToggleSomedayItem: (id: string) => void;
+  handleUpdateSomedayItemCategory: (id: string, category: string) => void;
+  handleEditSomedayItemContent: (id: string, newContent: string) => void;
   handleUpdateItemDelegatedTo: (id: string, delegatedTo: string) => void;
   handleUpdateItemIcon: (id: string, icon: string) => void;
 

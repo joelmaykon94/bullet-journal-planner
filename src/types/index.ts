@@ -12,6 +12,7 @@ export interface BujoItem {
   energy?: number; // 1-5
   complexity?: number; // 1-5
   executionTime?: number; // in minutes
+  category?: string;
 }
 
 export interface BujoSettings {
