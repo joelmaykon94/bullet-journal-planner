@@ -440,7 +440,13 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
       )}
 
       {/* Floating Tutorial Balloon Card - Improved for Mobile */}
-      <div className={`fixed ${getCardPositionClass()} z-50 pointer-events-auto w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-zinc-950/95 border border-bujo-highlight/30 backdrop-blur-2xl rounded-3xl sm:rounded-[32px] shadow-3xl flex flex-col text-left animate-slide-in ring-1 ring-white/10 max-h-[85vh] overflow-hidden`}>
+      <div 
+        className={`fixed z-50 pointer-events-auto bg-zinc-950/95 border border-bujo-highlight/30 backdrop-blur-2xl rounded-3xl sm:rounded-[32px] shadow-3xl flex flex-col text-left animate-slide-in ring-1 ring-white/10 max-h-[85vh] overflow-hidden ${
+          isMobile 
+            ? 'left-4 right-4 w-auto ' + (targetRect && targetRect.top + targetRect.height / 2 > window.innerHeight / 2 ? 'top-4' : 'bottom-4')
+            : getCardPositionClass() + ' w-[calc(100vw-2rem)] max-w-sm sm:max-w-md'
+        }`}
+      >
         
         {/* Header - Fixed */}
         <div className="flex items-center justify-between border-b border-white/5 p-4 sm:p-5 pb-2 sm:pb-3 shrink-0">
