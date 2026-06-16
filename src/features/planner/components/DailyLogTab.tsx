@@ -256,28 +256,38 @@ export const DailyLogTab = () => {
         </div>
       </div>
 
-      <div className="relative">
-        <form onSubmit={handleLocalSubmit} className="flex flex-col md:flex-row gap-2 bg-zinc-200/30 dark:bg-white/5 p-2 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
-          <div className="flex gap-2 flex-1 items-center">
-            <select
-              value={standardType}
-              onChange={(e) => setStandardType(e.target.value as any)}
-              className="bg-transparent border-none text-xs text-bujo-text font-bold p-2 outline-none cursor-pointer shrink-0"
-            >
-              <option value="task" className="bg-bujo-bg text-bujo-text">• Tarefa</option>
-              <option value="event" className="bg-bujo-bg text-bujo-text">O Evento</option>
-              <option value="note" className="bg-bujo-bg text-bujo-text">- Nota</option>
-            </select>
+      <div className="relative bg-zinc-200/30 dark:bg-white/5 p-3 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
+        <form onSubmit={handleLocalSubmit} className="flex flex-col gap-3">
+          {/* Row 1: Primary Inputs */}
+          <div className="flex flex-col sm:flex-row gap-2.5 items-center w-full">
+            {/* Type Selector (Segmented control) */}
+            <div className="flex bg-zinc-200/50 dark:bg-zinc-950/60 p-1 rounded-xl border border-zinc-200/40 dark:border-white/5 shrink-0 w-full sm:w-auto justify-between sm:justify-start">
+              {(['task', 'event', 'note'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setStandardType(t)}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-initial text-center ${
+                    standardType === t
+                      ? 'bg-bujo-highlight text-white shadow-sm'
+                      : 'text-zinc-500 hover:text-bujo-text'
+                  }`}
+                >
+                  {t === 'task' ? '• Tarefa' : t === 'event' ? '○ Evento' : '- Nota'}
+                </button>
+              ))}
+            </div>
 
             {/* Icon Picker Trigger */}
-            <div className="relative shrink-0">
+            <div className="relative shrink-0 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setShowIconDropdown(!showIconDropdown)}
-                className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 flex items-center justify-center text-sm hover:border-bujo-highlight hover:bg-zinc-200 dark:hover:bg-white/10 transition-all cursor-pointer"
+                className="w-full sm:w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 flex items-center justify-center text-sm hover:border-bujo-highlight hover:bg-zinc-200 dark:hover:bg-white/10 transition-all cursor-pointer gap-2 sm:gap-0"
                 title="Escolher Ícone/Desenho"
               >
-                {standardIcon || '🎨'}
+                <span className="sm:hidden text-xs text-zinc-500 font-semibold">Ícone:</span>
+                <span>{standardIcon || '🎨'}</span>
               </button>
 
               {showIconDropdown && (
@@ -340,97 +350,150 @@ export const DailyLogTab = () => {
               )}
             </div>
 
-            <div className="relative flex-1 flex items-center">
+            {/* Text Input Container with Autocomplete inside */}
+            <div className="relative flex-1 flex items-center bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-xl px-3 focus-within:border-bujo-highlight/60 focus-within:ring-1 focus-within:ring-bujo-highlight/30 transition-all w-full">
               <input
                 type="text"
                 required
                 value={standardInput}
                 onChange={handleStandardInputChange}
                 onKeyDown={handleStandardInputKeyDown}
-                placeholder="Adicionar entrada rápida... Use [ para coleções"
-                className="bg-transparent border-none outline-none w-full text-sm text-bujo-text placeholder:text-zinc-500 py-2 pl-1 pr-8"
+                placeholder={standardType === 'task' ? "Adicionar tarefa... Use [ para coleções e @ para contextos" : standardType === 'event' ? "Adicionar evento... Use @ para contextos" : "Adicionar nota..."}
+                className="bg-transparent border-none outline-none w-full text-sm text-bujo-text placeholder:text-zinc-500 py-2 pr-8"
               />
               {(standardInput || standardTime || standardIcon) && (
                 <button
                   type="button"
                   onClick={handleClearInputs}
-                  className="absolute right-1 p-1 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
+                  className="absolute right-2 p-1 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
                   title="Limpar formulário"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
+
+              {showAutocomplete && filteredCollections.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
+                  {filteredCollections.map((col: any, idx: number) => (
+                    <div
+                      key={col.id}
+                      onClick={() => selectCollectionAutocomplete(col.name)}
+                      className={`px-4 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2 ${
+                        idx === autocompleteIndex 
+                          ? 'bg-bujo-highlight/10 text-bujo-highlight font-bold' 
+                          : 'text-bujo-text hover:bg-zinc-100 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="text-base">{col.icon}</span>
+                      <span>{col.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-zinc-200/45 dark:border-white/10 pt-2 md:pt-0 pl-0 md:pl-2 shrink-0 justify-between md:justify-start">
-            {standardType === 'task' && (
-              <div className="flex gap-1.5 items-center">
-                <select
-                  value={standardEnergy}
-                  onChange={(e) => setStandardEnergy(Number(e.target.value))}
-                  className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-xl px-2 py-1.5 text-xs text-bujo-text outline-none cursor-pointer"
-                  title="Esforço / Energia (1-5)"
-                >
-                  {[1, 2, 3, 4, 5].map(v => <option key={v} value={v}>⚡ {v}</option>)}
-                </select>
-                <select
-                  value={standardComplexity}
-                  onChange={(e) => setStandardComplexity(Number(e.target.value))}
-                  className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-xl px-2 py-1.5 text-xs text-bujo-text outline-none cursor-pointer"
-                  title="Complexidade (1-5)"
-                >
-                  {[1, 2, 3, 4, 5].map(v => <option key={v} value={v}>🧠 {v}</option>)}
-                </select>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="min"
-                  value={standardExecutionTime}
-                  onChange={(e) => setStandardExecutionTime(e.target.value)}
-                  className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-xl px-2 py-1.5 text-xs text-bujo-text outline-none w-14 font-mono placeholder:text-zinc-500 text-center"
-                  title="Tempo estimado (minutos)"
-                />
+          {/* Row 2: Metadata & Action Buttons */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2.5 border-t border-zinc-200/40 dark:border-white/5 mt-1.5">
+            {/* Metadata Fields */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Task specific: Energy, Complexity, Duration */}
+              {standardType === 'task' && (
+                <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2.5 py-1.5 rounded-xl border border-zinc-200/40 dark:border-white/5">
+                  <div className="flex items-center gap-1">
+                    <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Energia:</span>
+                    <select
+                      value={standardEnergy}
+                      onChange={(e) => setStandardEnergy(Number(e.target.value))}
+                      className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-semibold py-0"
+                      title="Esforço / Energia (1-5)"
+                    >
+                      {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-zinc-950 text-white">⚡ {v}</option>)}
+                    </select>
+                  </div>
+                  
+                  <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
+
+                  <div className="flex items-center gap-1">
+                    <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Complex:</span>
+                    <select
+                      value={standardComplexity}
+                      onChange={(e) => setStandardComplexity(Number(e.target.value))}
+                      className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-semibold py-0"
+                      title="Complexidade (1-5)"
+                    >
+                      {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-zinc-950 text-white">🧠 {v}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
+
+                  <div className="flex items-center gap-1">
+                    <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Tempo:</span>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="min"
+                      value={standardExecutionTime}
+                      onChange={(e) => setStandardExecutionTime(e.target.value)}
+                      className="bg-transparent border-none text-bujo-text outline-none w-10 font-mono text-xs text-center placeholder:text-zinc-500 font-semibold"
+                      title="Tempo estimado (minutos)"
+                    />
+                    <span className="text-[10px] text-zinc-500 select-none">min</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Date and Time selectors */}
+              <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2.5 py-1.5 rounded-xl border border-zinc-200/40 dark:border-white/5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Data:</span>
+                  <input
+                    type="date"
+                    value={standardDate}
+                    onChange={(e) => setStandardDate(e.target.value)}
+                    className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-mono py-0"
+                  />
+                </div>
+                
+                <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
+
+                <div className="flex items-center gap-1.5">
+                  <span className="text-zinc-400 select-none text-[10px] uppercase font-mono tracking-wider">Hora:</span>
+                  <input
+                    type="time"
+                    value={standardTime}
+                    onChange={(e) => setStandardTime(e.target.value)}
+                    className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-mono py-0 w-16"
+                  />
+                </div>
               </div>
-            )}
-            <div className="flex gap-2 items-center">
-              <input
-                type="date"
-                value={standardDate}
-                onChange={(e) => setStandardDate(e.target.value)}
-                className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-bujo-text outline-none cursor-pointer font-mono"
-              />
-              <input
-                type="time"
-                value={standardTime}
-                onChange={(e) => setStandardTime(e.target.value)}
-                className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-bujo-text outline-none cursor-pointer font-mono w-24"
-              />
             </div>
 
-            <div className="flex gap-2">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 ml-auto w-full lg:w-auto justify-end">
               {(standardInput || standardTime || standardIcon) && (
                 <button
                   type="button"
                   onClick={handleClearInputs}
-                  className="px-3 py-2 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-350 dark:border-white/15 rounded-xl text-xs font-semibold hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
+                  className="px-3 py-1.5 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-350 dark:border-white/15 rounded-xl text-xs font-medium hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
                 >
-                  Cancelar
+                  Limpar
                 </button>
               )}
               <button
                 type="submit"
-                className="px-4 py-2 bg-bujo-highlight text-white rounded-xl text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer shrink-0"
+                className="px-4 py-1.5 bg-bujo-highlight text-white rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md shadow-bujo-highlight/10"
               >
-                Salvar
+                Cadastrar
               </button>
             </div>
           </div>
         </form>
 
         {/* Quick Context Tag Appenders */}
-        <div className="flex items-center gap-1.5 flex-wrap mt-3 pl-1 no-print">
-          <span className="text-[10px] text-zinc-400 font-mono tracking-wider">💡 Contextos GTD (Adicionar à tarefa):</span>
+        <div className="flex items-center gap-1.5 flex-wrap mt-2.5 pt-2 border-t border-zinc-200/20 dark:border-white/5 pl-0.5">
+          <span className="text-[10px] text-zinc-400 font-mono tracking-wider">💡 Sugerir Contextos:</span>
           {['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'].map(ctx => {
             const icons: { [key: string]: string } = {
               '@computador': '💻 ',
@@ -452,185 +515,193 @@ export const DailyLogTab = () => {
                     setStandardInput(standardInput + space + ctx);
                   }
                 }}
-                className="px-2 py-1 bg-zinc-150 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-white/5 rounded-lg text-[10px] font-bold text-bujo-text transition-all cursor-pointer"
+                className="px-2 py-0.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 border border-zinc-200/40 dark:border-white/5 rounded-lg text-[10px] font-semibold text-zinc-550 dark:text-zinc-300 transition-all cursor-pointer"
               >
                 {icons[ctx] || ''}{ctx.replace('@', '')}
               </button>
             );
           })}
         </div>
-
-        {showAutocomplete && filteredCollections.length > 0 && (
-          <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
-            {filteredCollections.map((col: any, idx: number) => (
-              <div
-                key={col.id}
-                onClick={() => selectCollectionAutocomplete(col.name)}
-                className={`px-4 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2 ${
-                  idx === autocompleteIndex 
-                    ? 'bg-bujo-highlight/10 text-bujo-highlight font-bold' 
-                    : 'text-bujo-text hover:bg-zinc-100 dark:hover:bg-white/5'
-                }`}
-              >
-                <span className="text-base">{col.icon}</span>
-                <span>{col.name}</span>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
+
       {renderRealTimeSuggestions(standardInput, 'task', createStandardTaskWithSuggestions)}
 
-      {/* Controls Row: Search & Sort */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between no-print py-3 border-t border-zinc-200/40 dark:border-white/10 mt-4">
-        {/* Search Input */}
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-          <input
-            type="text"
-            placeholder="Pesquisar tarefas..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 text-bujo-text placeholder-zinc-505 outline-none focus:border-bujo-highlight/50 transition-colors"
-          />
-          {searchText && (
-            <button
-              onClick={() => setSearchText('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-bujo-text cursor-pointer p-0.5 rounded-full hover:bg-zinc-300/50 dark:hover:bg-white/10"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
+      {/* Unified Filter & Search Dashboard */}
+      <div className="bg-zinc-200/20 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 rounded-2xl p-4 space-y-3.5 no-print shadow-sm">
+        {/* Row 1: Search, Sort and Reset */}
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+          {/* Search Input */}
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Pesquisar tarefas ou subtarefas..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
+            />
+            {searchText && (
+              <button
+                onClick={() => setSearchText('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-bujo-text cursor-pointer p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Sort & Reset Actions */}
+          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase flex items-center gap-1">
+                <ArrowDownAZ className="w-3.5 h-3.5" /> Ordenar por:
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs text-bujo-text outline-none cursor-pointer font-medium"
+              >
+                <option value="recent" className="bg-zinc-950 text-white">Mais Recentes</option>
+                <option value="oldest" className="bg-zinc-950 text-white">Mais Antigas</option>
+                <option value="energy" className="bg-zinc-950 text-white">Esforço (Energia) ⚡</option>
+                <option value="complexity" className="bg-zinc-950 text-white">Complexidade 🧠</option>
+                <option value="time" className="bg-zinc-950 text-white">Tempo de Execução ⏱️</option>
+              </select>
+            </div>
+
+            {/* Clear All Filters Button */}
+            {(selectedContext !== null || selectedCategory !== null || searchText.trim() !== '') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedContext(null);
+                  setSelectedCategory(null);
+                  setSearchText('');
+                }}
+                className="text-xs text-bujo-highlight hover:underline font-bold transition-all cursor-pointer flex items-center gap-1 shrink-0"
+              >
+                Limpar Filtros
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Sort Selector */}
-        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
-          <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase flex items-center gap-1">
-            <ArrowDownAZ className="w-3.5 h-3.5" /> Ordenar por:
-          </span>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-zinc-200/50 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs text-bujo-text outline-none cursor-pointer font-sans"
-          >
-            <option value="recent" className="bg-zinc-950 text-white">Mais Recentes</option>
-            <option value="oldest" className="bg-zinc-950 text-white">Mais Antigas</option>
-            <option value="energy" className="bg-zinc-950 text-white">Esforço (Energia) ⚡</option>
-            <option value="complexity" className="bg-zinc-950 text-white">Complexidade 🧠</option>
-            <option value="time" className="bg-zinc-950 text-white">Tempo de Execução ⏱️</option>
-          </select>
+        <div className="h-px bg-zinc-200/40 dark:bg-white/5" />
+
+        {/* Row 2: Context Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-0.5">
+          <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase min-w-[75px] shrink-0">Contexto:</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setSelectedContext(null)}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                selectedContext === null 
+                  ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
+                  : 'bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
+              }`}
+            >
+              Todos ({dateItems.length})
+            </button>
+            {['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'].map(ctx => {
+              const count = dateItems.filter(item => item.content.toLowerCase().includes(ctx)).length;
+              if (count === 0) return null;
+              
+              const isActive = selectedContext === ctx;
+              const colors: { [key: string]: string } = {
+                '@computador': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+                '@online': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+                '@rua': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                '@casa': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                '@trabalhando': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+                '@mestrado': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+                '@programando': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+                '@aguardando': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+              };
+              const activeColors: { [key: string]: string } = {
+                '@computador': 'bg-blue-500 text-white border-blue-500',
+                '@online': 'bg-cyan-500 text-white border-cyan-500',
+                '@rua': 'bg-amber-500 text-white border-amber-500',
+                '@casa': 'bg-emerald-500 text-white border-emerald-500',
+                '@trabalhando': 'bg-purple-500 text-white border-purple-500',
+                '@mestrado': 'bg-indigo-500 text-white border-indigo-500',
+                '@programando': 'bg-orange-500 text-white border-orange-500',
+                '@aguardando': 'bg-rose-500 text-white border-rose-500'
+              };
+              
+              const icons: { [key: string]: string } = {
+                '@computador': '💻 ',
+                '@online': '🌐 ',
+                '@rua': '🚶 ',
+                '@casa': '🏠 ',
+                '@trabalhando': '💼 ',
+                '@mestrado': '🎓 ',
+                '@programando': '⚡ ',
+                '@aguardando': '⏳ '
+              };
+      
+              return (
+                <button
+                  key={ctx}
+                  type="button"
+                  onClick={() => setSelectedContext(isActive ? null : ctx)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                    isActive 
+                      ? activeColors[ctx] 
+                      : `${colors[ctx]} hover:opacity-85`
+                  }`}
+                >
+                  {icons[ctx] || ''}
+                  {ctx.replace('@', '')} ({count})
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Context Filter Row */}
-      <div className="flex items-center gap-1.5 flex-wrap no-print py-2 border-t border-zinc-200/40 dark:border-white/10">
-        <span className="text-[10px] text-zinc-400 font-mono tracking-wider mr-1">Filtrar por Contexto:</span>
-        <button
-          type="button"
-          onClick={() => setSelectedContext(null)}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-            selectedContext === null 
-              ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 ring-1 ring-zinc-800 dark:ring-white' 
-              : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border border-zinc-200 dark:border-white/5'
-          }`}
-        >
-          Todos ({dateItems.length})
-        </button>
-        {['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'].map(ctx => {
-          const count = dateItems.filter(item => item.content.toLowerCase().includes(ctx)).length;
-          if (count === 0) return null;
-          
-          const isActive = selectedContext === ctx;
-          const colors: { [key: string]: string } = {
-            '@computador': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
-            '@online': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
-            '@rua': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30',
-            '@casa': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-            '@trabalhando': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30',
-            '@mestrado': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30',
-            '@programando': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30',
-            '@aguardando': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30'
-          };
-          const activeColors: { [key: string]: string } = {
-            '@computador': 'bg-blue-500 text-white border-blue-500',
-            '@online': 'bg-cyan-500 text-white border-cyan-500',
-            '@rua': 'bg-amber-500 text-white border-amber-500',
-            '@casa': 'bg-emerald-500 text-white border-emerald-500',
-            '@trabalhando': 'bg-purple-500 text-white border-purple-500',
-            '@mestrado': 'bg-indigo-500 text-white border-indigo-500',
-            '@programando': 'bg-orange-500 text-white border-orange-500',
-            '@aguardando': 'bg-rose-500 text-white border-rose-500'
-          };
-          
-          const icons: { [key: string]: string } = {
-            '@computador': '💻 ',
-            '@online': '🌐 ',
-            '@rua': '🚶 ',
-            '@casa': '🏠 ',
-            '@trabalhando': '💼 ',
-            '@mestrado': '🎓 ',
-            '@programando': '⚡ ',
-            '@aguardando': '⏳ '
-          };
- 
-          return (
+        {/* Row 3: Category Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-0.5">
+          <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase min-w-[75px] shrink-0">Temas:</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
-              key={ctx}
               type="button"
-              onClick={() => setSelectedContext(isActive ? null : ctx)}
-              className={`px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                isActive 
-                  ? activeColors[ctx] 
-                  : `${colors[ctx]} hover:opacity-85`
+              onClick={() => setSelectedCategory(null)}
+              className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                selectedCategory === null 
+                  ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
+                  : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
               }`}
             >
-              {icons[ctx] || ''}
-              {ctx.replace('@', '')} ({count})
+              Todos
             </button>
-          );
-        })}
-      </div>
-
-      {/* Category Filters Row */}
-      <div className="flex items-center gap-1.5 flex-wrap no-print py-2 border-t border-zinc-200/40 dark:border-white/10 mt-1">
-        <span className="text-[10px] text-zinc-400 font-mono tracking-wider mr-1">Filtrar por Tema:</span>
-        <button
-          type="button"
-          onClick={() => setSelectedCategory(null)}
-          className={`px-2.5 py-0.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-            selectedCategory === null 
-              ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 ring-1 ring-zinc-800 dark:ring-white' 
-              : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border border-zinc-200 dark:border-white/5'
-          }`}
-        >
-          Todos
-        </button>
-        {['dinheiro', 'familia', 'saude', 'arte', 'ideia'].map(cat => {
-          const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat || i.tooltip.toLowerCase().includes(cat)).map(i => i.emoji);
-          const count = dateItems.filter(item => item.icon && matchingEmojis.includes(item.icon)).length;
-          if (count === 0) return null;
-          
-          const label = cat === 'dinheiro' ? '💰 Dinheiro' :
-                        cat === 'familia' ? '👨‍👩‍👧‍👦 Família' :
-                        cat === 'saude' ? '🩺 Saúde' :
-                        cat === 'arte' ? '🎨 Arte' : '💡 Ideia';
-                        
-          const isActive = selectedCategory === cat;
-          return (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setSelectedCategory(isActive ? null : cat)}
-              className={`px-2.5 py-0.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                isActive 
-                  ? 'bg-bujo-highlight text-white border-bujo-highlight' 
-                  : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border border-zinc-200 dark:border-white/5'
-              }`}
-            >
-              {label} ({count})
-            </button>
-          );
-        })}
+            {['dinheiro', 'familia', 'saude', 'arte', 'ideia'].map(cat => {
+              const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat || i.tooltip.toLowerCase().includes(cat)).map(i => i.emoji);
+              const count = dateItems.filter(item => item.icon && matchingEmojis.includes(item.icon)).length;
+              if (count === 0) return null;
+              
+              const label = cat === 'dinheiro' ? '💰 Dinheiro' :
+                            cat === 'familia' ? '👨‍👩‍👧‍👦 Família' :
+                            cat === 'saude' ? '🩺 Saúde' :
+                            cat === 'arte' ? '🎨 Arte' : '💡 Ideia';
+                            
+              const isActive = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(isActive ? null : cat)}
+                  className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                    isActive 
+                      ? 'bg-bujo-highlight text-white border-bujo-highlight' 
+                      : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
+                  }`}
+                >
+                  {label} ({count})
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1.5 scroll-smooth">
