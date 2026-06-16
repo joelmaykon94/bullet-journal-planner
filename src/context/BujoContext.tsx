@@ -9,7 +9,12 @@ import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useAmbientAudio } from '../hooks/useAmbientAudio';
 import { maxQuotes, getRealTimeSuggestions, adhdTriggers } from '../utils/plannerUtils';
 
+import { useAuth } from './AuthContext';
+
 export interface BujoContextType {
+  // Sync status
+  syncStatus: 'synced' | 'syncing' | 'offline' | 'error';
+
   // Items
   items: BujoItem[];
   setItems: React.Dispatch<React.SetStateAction<BujoItem[]>>;
@@ -335,6 +340,186 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const askConfirmation = (config: ConfirmationModalConfig) => {
     setConfirmModal(config);
   };
+
+  // Supabase Sync integration
+  const { supabase, user } = useAuth();
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
+  const lastSyncHashRef = useRef<string>('');
+
+  const serializeLocalBujoData = () => {
+    const data: { [key: string]: any } = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('bujo_') && key !== 'bujo_supabase_config') {
+        const val = localStorage.getItem(key);
+        if (val !== null) {
+          try {
+            data[key] = JSON.parse(val);
+          } catch {
+            data[key] = val;
+          }
+        }
+      }
+    }
+    return data;
+  };
+
+  const mergeBujoData = (local: any, remote: any) => {
+    const merged = { ...remote, ...local };
+
+    const mergeArrayById = (locArr: any[], remArr: any[]) => {
+      const map = new Map();
+      remArr.forEach(item => {
+        if (item && typeof item === 'object') {
+          map.set(item.id || JSON.stringify(item), item);
+        } else {
+          map.set(item, item);
+        }
+      });
+      locArr.forEach(item => {
+        if (item && typeof item === 'object') {
+          const key = item.id || JSON.stringify(item);
+          const existing = map.get(key);
+          if (existing && typeof existing === 'object') {
+            map.set(key, { ...existing, ...item });
+          } else {
+            map.set(key, item);
+          }
+        } else {
+          map.set(item, item);
+        }
+      });
+      return Array.from(map.values());
+    };
+
+    for (const key of Object.keys(remote)) {
+      if (local[key] !== undefined) {
+        const localVal = local[key];
+        const remoteVal = remote[key];
+
+        if (Array.isArray(localVal) && Array.isArray(remoteVal)) {
+          merged[key] = mergeArrayById(localVal, remoteVal);
+        } else if (
+          localVal && typeof localVal === 'object' &&
+          remoteVal && typeof remoteVal === 'object'
+        ) {
+          if (key === 'bujo_habit_logs') {
+            const mergedLogs = { ...remoteVal };
+            for (const habit of Object.keys(localVal)) {
+              mergedLogs[habit] = {
+                ...(remoteVal[habit] || {}),
+                ...(localVal[habit] || {})
+              };
+            }
+            merged[key] = mergedLogs;
+          } else {
+            merged[key] = { ...remoteVal, ...localVal };
+          }
+        } else if (key === 'bujo_focus_xp') {
+          merged[key] = Math.max(Number(localVal) || 0, Number(remoteVal) || 0);
+        } else {
+          merged[key] = localVal !== null && localVal !== undefined ? localVal : remoteVal;
+        }
+      }
+    }
+
+    return merged;
+  };
+
+  useEffect(() => {
+    if (!supabase || !user) {
+      setSyncStatus('offline');
+      return;
+    }
+
+    let active = true;
+
+    const performInitialSync = async () => {
+      setSyncStatus('syncing');
+      try {
+        const { data: row, error } = await supabase
+          .from('bujo_user_data')
+          .select('data')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        const localData = serializeLocalBujoData();
+
+        if (!row) {
+          const { error: insertError } = await supabase
+            .from('bujo_user_data')
+            .insert({ user_id: user.id, data: localData });
+
+          if (insertError) throw insertError;
+          if (active) {
+            lastSyncHashRef.current = JSON.stringify(localData);
+            setSyncStatus('synced');
+            showToast('☁️ Backup inicial criado no Supabase!');
+          }
+        } else {
+          const remoteData = row.data || {};
+          const mergedData = mergeBujoData(localData, remoteData);
+
+          Object.entries(mergedData).forEach(([key, val]) => {
+            localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+          });
+
+          if (active) {
+            lastSyncHashRef.current = JSON.stringify(mergedData);
+            setSyncStatus('synced');
+            showToast('☁️ Dados sincronizados com o Supabase!');
+            
+            if (!sessionStorage.getItem('bujo_synced_reload')) {
+              sessionStorage.setItem('bujo_synced_reload', 'true');
+              window.location.reload();
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Supabase sync error:', err);
+        if (active) setSyncStatus('error');
+      }
+    };
+
+    performInitialSync();
+
+    return () => {
+      active = false;
+    };
+  }, [supabase, user]);
+
+  useEffect(() => {
+    if (!supabase || !user || syncStatus === 'error') return;
+
+    const checkAndSync = async () => {
+      const localData = serializeLocalBujoData();
+      const currentHash = JSON.stringify(localData);
+
+      if (currentHash === lastSyncHashRef.current) return;
+
+      setSyncStatus('syncing');
+      try {
+        const { error } = await supabase
+          .from('bujo_user_data')
+          .upsert({ 
+            user_id: user.id, 
+            data: localData,
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) throw error;
+        lastSyncHashRef.current = currentHash;
+        setSyncStatus('synced');
+      } catch (err) {
+        console.error('Background sync error:', err);
+      }
+    };
+
+    const interval = setInterval(checkAndSync, 5000);
+    return () => clearInterval(interval);
+  }, [supabase, user, syncStatus]);
 
   // Sync effects
   useEffect(() => {
@@ -1544,6 +1729,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   return (
     <BujoContext.Provider value={{
+      // Sync status
+      syncStatus,
+
       // Items
       ...itemsData,
       assignItemToTime,
