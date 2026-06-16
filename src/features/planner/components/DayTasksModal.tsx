@@ -218,7 +218,7 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
                 required
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder={inputType === 'task' ? "Adicionar tarefa... Use [ para coleções e @ para contextos" : inputType === 'event' ? "Adicionar evento..." : "Adicionar nota..."}
+                placeholder={inputType === 'task' ? "Ex: Revisar docs amanhã às 14h p1 #Time" : inputType === 'event' ? "Adicionar evento..." : "Adicionar nota..."}
                 className="flex-1 bg-zinc-950 border border-white/5 rounded-lg px-2.5 py-1 text-xs text-white placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
               />
             </div>

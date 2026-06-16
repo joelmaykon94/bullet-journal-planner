@@ -536,7 +536,7 @@ export const DailyLogTab = () => {
                 value={standardInput}
                 onChange={handleInputChange}
                 onKeyDown={handleInputKeyDown}
-                placeholder={standardType === 'task' ? "Adicionar tarefa... Use [ para coleções e @ para contextos" : standardType === 'event' ? "Adicionar evento... Use @ para contextos" : "Adicionar nota..."}
+                placeholder={standardType === 'task' ? "Ex: Revisar docs amanhã às 14h p1 #Time" : standardType === 'event' ? "Adicionar evento... Use @ para contextos" : "Adicionar nota..."}
                 className="bg-transparent border-none outline-none w-full text-xs text-bujo-text placeholder:text-zinc-500 py-1.5 pr-8"
               />
               {(standardInput || standardTime || standardIcon) && (
