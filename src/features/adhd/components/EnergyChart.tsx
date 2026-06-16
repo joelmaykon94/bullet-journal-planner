@@ -165,7 +165,7 @@ export const EnergyChart = ({
       )}
 
       {/* SVG Energy Chart Graph */}
-      <div className="relative w-full h-[250px] bg-zinc-300/10 dark:bg-zinc-950/20 rounded-2xl border border-zinc-200/20 dark:border-white/5 p-4 flex flex-col justify-end">
+      <div className="relative w-full h-[250px] bg-zinc-300/10 dark:bg-zinc-950/20 rounded-2xl border border-zinc-200/20 dark:border-white/5">
         {/* Horizontal Energy grid helper lines (Y-axis scale) */}
         <div className="absolute inset-x-0 top-[52px] border-b border-dashed border-zinc-300/5 dark:border-white/[0.03] pointer-events-none z-0">
           <span className="absolute left-2.5 -translate-y-1/2 text-[7px] font-mono text-zinc-500 uppercase tracking-widest">Alta (Pico)</span>
@@ -277,9 +277,20 @@ export const EnergyChart = ({
               <g 
                 key={item.id} 
                 className="cursor-help group/item"
-                onMouseEnter={() => setHoveredItem(item)}
-                onMouseLeave={() => setHoveredItem(null)}
               >
+                {/* Invisible larger hover target to stabilize mouse interactions */}
+                <circle 
+                  cx={getEnergyX(itemHour)} 
+                  cy={getEnergyY(itemHour)} 
+                  r="15" 
+                  fill="white"
+                  fillOpacity="0"
+                  className="cursor-help transition-none transform-none"
+                  style={{ transition: 'none', transform: 'none' }}
+                  onMouseEnter={() => setHoveredItem(item)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                />
+
                 {/* Vertical guide line */}
                 <line
                   x1={getEnergyX(itemHour)}
@@ -290,6 +301,8 @@ export const EnergyChart = ({
                   strokeWidth="1"
                   strokeDasharray="2,2"
                   opacity="0.5"
+                  className="pointer-events-none transition-none transform-none"
+                  style={{ transition: 'none', transform: 'none' }}
                 />
 
                 {/* Task Circle */}
@@ -300,7 +313,8 @@ export const EnergyChart = ({
                   fill={isCompleted ? '#10b981' : strokeColor} 
                   stroke="white" 
                   strokeWidth="1.5"
-                  className="transition-transform duration-200 hover:scale-125"
+                  className="pointer-events-none transition-none transform-none"
+                  style={{ transition: 'none', transform: 'none' }}
                 />
 
                 {/* Floating label */}
@@ -308,7 +322,8 @@ export const EnergyChart = ({
                   x={getEnergyX(itemHour)} 
                   y={getEnergyY(itemHour) - 9} 
                   textAnchor="middle"
-                  className="text-[6.5px] font-bold fill-zinc-700 dark:fill-zinc-305 select-none pointer-events-none"
+                  className="text-[6.5px] font-bold fill-zinc-700 dark:fill-zinc-305 select-none pointer-events-none transition-none transform-none"
+                  style={{ transition: 'none', transform: 'none' }}
                 >
                   {item.content.length > 12 ? item.content.substring(0, 10) + '..' : item.content}
                 </text>
@@ -339,7 +354,7 @@ export const EnergyChart = ({
 
           return (
             <div 
-              className="absolute z-50 bg-[#FCFAF7] dark:bg-[#1E1B18] border border-[#E4DBC5] dark:border-zinc-800 p-3.5 rounded-2xl shadow-xl w-60 pointer-events-none transition-all duration-150 animate-scale-in text-bujo-text"
+              className="absolute z-50 bg-[#FCFAF7] dark:bg-[#1E1B18] border border-[#E4DBC5] dark:border-zinc-800 p-3.5 rounded-2xl shadow-xl w-60 pointer-events-none animate-scale-in text-bujo-text"
               style={tooltipStyle}
             >
               <div className="flex items-center justify-between mb-1.5">
@@ -382,7 +397,7 @@ export const EnergyChart = ({
         })()}
 
         {/* Labels for zones */}
-        <div className="flex items-center justify-between px-2 mt-2 z-10 select-none">
+        <div className="absolute inset-x-4 bottom-2 flex items-center justify-between z-10 select-none">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
             <span className="text-[8px] font-bold text-zinc-500 uppercase">Pico Foco</span>
