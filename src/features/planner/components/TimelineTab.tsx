@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 export const TimelineTab = () => {
@@ -16,7 +16,8 @@ export const TimelineTab = () => {
     setEditingItemContent,
     handleSaveEditItemForm,
     setEditingItemId,
-    openTasksUnscheduled
+    openTasksUnscheduled,
+    cycleStatus
   } = useBujo();
 
   const today = new Date().toISOString().split('T')[0];
@@ -149,7 +150,11 @@ export const TimelineTab = () => {
                       key={item.id}
                       draggable={editingItemId !== item.id}
                       onDragStart={(e) => e.dataTransfer.setData('text/plain', item.id)}
-                      className="flex items-center justify-between p-2 rounded-xl bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 shadow-sm text-xs hover:bg-zinc-300/60 dark:hover:bg-white/10 cursor-grab"
+                      className={`flex items-center justify-between p-2 rounded-xl border shadow-sm text-xs cursor-grab transition-all ${
+                        item.status === 'completed'
+                          ? 'bg-emerald-600/10 dark:bg-emerald-500/5 border-emerald-500/25 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-600/15 dark:hover:bg-emerald-500/10'
+                          : 'bg-zinc-200/40 dark:bg-white/5 border-zinc-300/40 dark:border-white/10 hover:bg-zinc-300/60 dark:hover:bg-white/10 text-bujo-text'
+                      }`}
                       onClick={(e) => e.stopPropagation()}
                     >
                       {editingItemId === item.id ? (
@@ -180,8 +185,28 @@ export const TimelineTab = () => {
                         </div>
                       ) : (
                         <>
-                          <span className={item.status === 'completed' ? 'line-through opacity-40' : ''}>{item.content}</span>
-                          <span className="text-[10px] text-zinc-400 font-bold uppercase">{item.type === 'event' ? 'Evento' : 'Tarefa'}</span>
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {item.type === 'task' && (
+                              <button
+                                onClick={() => cycleStatus(item.id)}
+                                className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+                                  item.status === 'completed' 
+                                    ? 'bg-emerald-600 border-emerald-600 text-white' 
+                                    : 'border-zinc-300 dark:border-white/20 hover:border-bujo-highlight'
+                                }`}
+                              >
+                                {item.status === 'completed' && <Check className="w-2.5 h-2.5 stroke-[4]" />}
+                              </button>
+                            )}
+                            <span className={`truncate ${item.status === 'completed' ? 'line-through opacity-40' : ''}`}>
+                              {item.content}
+                            </span>
+                          </div>
+                          <span className={`text-[9px] font-bold uppercase shrink-0 select-none ml-2 ${
+                            item.status === 'completed' ? 'text-emerald-600/70 dark:text-emerald-500/60' : 'text-zinc-400'
+                          }`}>
+                            {item.type === 'event' ? 'Evento' : 'Tarefa'}
+                          </span>
                         </>
                       )}
                     </div>
