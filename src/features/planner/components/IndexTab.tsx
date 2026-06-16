@@ -283,94 +283,84 @@ export const IndexTab = () => {
         </div>
       </div>
 
-      {/* 2. Top Row: Ritmo Energético, Habit Tracker & Guia de Foco side-by-side (Horizontal block alignment) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-        
-        {/* Ritmo Energético */}
-        <div id="tutorial-energy-chart" className="flex flex-col h-full">
-          <EnergyChart 
-            items={items}
-            getHarmonyScore={getHarmonyScore}
-            getHarmonyRecommendation={getHarmonyRecommendation}
-            showEnergyGuide={showEnergyGuide}
-            setShowEnergyGuide={setShowEnergyGuide}
-            selectedDate={selectedDate}
-          />
-        </div>
-
-        {/* Rastreador de Hábitos */}
-        <div id="tutorial-habit-tracker" className="flex flex-col h-full">
-          <HabitTracker />
-        </div>
-
-        {/* Guia de Foco */}
-        <div className="flex flex-col h-full">
-          <UserPersonaCard
-            userXp={userXp}
-            setUserXp={setUserXp}
-            currentEnergy={currentEnergy}
-            anxietyLevel={anxietyLevel}
-            showToast={showToast}
-            items={items}
-            soundType={soundType}
-            setSoundType={setSoundType}
-            toggleAmbientAudio={toggleAmbientAudio}
-            ambientPlaying={ambientPlaying}
-            ambientVolume={ambientVolume}
-            setAmbientVolume={setAmbientVolume}
-            aiEngine={aiEngine}
-            aiWorkerRef={aiWorkerRef}
-            localLLMState={localLLMState}
-            getCognitiveLoad={getCognitiveLoad}
-          />
-        </div>
-
+      {/* 2. Ritmo Energético (Full width) */}
+      <div id="tutorial-energy-chart" className="w-full">
+        <EnergyChart 
+          items={items}
+          getHarmonyScore={getHarmonyScore}
+          getHarmonyRecommendation={getHarmonyRecommendation}
+          showEnergyGuide={showEnergyGuide}
+          setShowEnergyGuide={setShowEnergyGuide}
+          selectedDate={selectedDate}
+        />
       </div>
 
-      {/* 3. Bottom Row: Knowledge Evolution Chart & Menu de Acesso Rápido */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start mt-1">
-        
-        <div className="lg:col-span-7 flex flex-col gap-4">
-          <div id="tutorial-knowledge-chart">
-            <KnowledgeEvolutionChart />
-          </div>
-        </div>
+      {/* 3. Rastreador de Hábitos (Full width) */}
+      <div id="tutorial-habit-tracker" className="w-full">
+        <HabitTracker />
+      </div>
 
-        <div className="lg:col-span-5">
-          <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4">
-            <h4 className="text-[10px] font-bold text-zinc-550 uppercase tracking-widest flex items-center gap-1.5 border-b border-zinc-200/20 dark:border-white/5 pb-2 mb-3">
-              <Target className="w-3.5 h-3.5 text-bujo-highlight" />
-              Menu de Acesso Rápido
-            </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {[
-                { tab: 'daily_spread', label: 'Timeline', icon: Sliders },
-                { tab: 'weekly_log', label: 'Weekly Log', icon: LayoutGrid },
-                { tab: 'monthly_log', label: 'Monthly Log', icon: CalendarDays },
-                { tab: 'collections', label: 'Coleções', icon: ListChecks },
-                { tab: 'brain_dump', label: 'Brain Dump', icon: Brain },
-                { tab: 'dream_board', label: 'Sonhos', icon: Sparkles },
-                { tab: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
-                { tab: 'trash', label: 'Lixeira', icon: Trash2 }
-              ].map(item => {
-                const Icon = item.icon;
-                return (
-                  <div 
-                    key={item.tab}
-                    onClick={() => setActiveTab(item.tab as any)}
-                    className="p-2.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-1"
-                  >
-                    <div className="p-1.5 rounded-lg bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <span className="text-[9px] font-bold text-zinc-200 block truncate w-full">{item.label}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+      {/* 4. Guia de Foco (Full width) */}
+      <div className="w-full">
+        <UserPersonaCard
+          userXp={userXp}
+          setUserXp={setUserXp}
+          currentEnergy={currentEnergy}
+          anxietyLevel={anxietyLevel}
+          showToast={showToast}
+          items={items}
+          soundType={soundType}
+          setSoundType={setSoundType}
+          toggleAmbientAudio={toggleAmbientAudio}
+          ambientPlaying={ambientPlaying}
+          ambientVolume={ambientVolume}
+          setAmbientVolume={setAmbientVolume}
+          aiEngine={aiEngine}
+          aiWorkerRef={aiWorkerRef}
+          localLLMState={localLLMState}
+          getCognitiveLoad={getCognitiveLoad}
+        />
+      </div>
+
+      {/* 5. Knowledge Evolution Chart (Full width) */}
+      <div id="tutorial-knowledge-chart" className="w-full">
+        <KnowledgeEvolutionChart />
+      </div>
+
+      {/* 6. Menu de Acesso Rápido (Full width) */}
+      <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 w-full">
+        <h4 className="text-[10px] font-bold text-zinc-555 uppercase tracking-widest flex items-center gap-1.5 border-b border-zinc-200/20 dark:border-white/5 pb-2 mb-3">
+          <Target className="w-3.5 h-3.5 text-bujo-highlight" />
+          Menu de Acesso Rápido
+        </h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+          {[
+            { tab: 'daily_spread', label: 'Timeline', icon: Sliders },
+            { tab: 'weekly_log', label: 'Weekly Log', icon: LayoutGrid },
+            { tab: 'monthly_log', label: 'Monthly Log', icon: CalendarDays },
+            { tab: 'collections', label: 'Coleções', icon: ListChecks },
+            { tab: 'brain_dump', label: 'Brain Dump', icon: Brain },
+            { tab: 'dream_board', label: 'Sonhos', icon: Sparkles },
+            { tab: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
+            { tab: 'trash', label: 'Lixeira', icon: Trash2 }
+          ].map(item => {
+            const Icon = item.icon;
+            return (
+              <div 
+                key={item.tab}
+                onClick={() => setActiveTab(item.tab as any)}
+                className="p-2.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-1"
+              >
+                <div className="p-1.5 rounded-lg bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-[9px] font-bold text-zinc-200 block truncate w-full">{item.label}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
+
     </div>
   );
 };
