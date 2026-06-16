@@ -1,13 +1,13 @@
 ---
-milestone: v1.0
-version: 1.0.0
-updated: 2026-06-15T19:48:00Z
+milestone: v2.0
+version: 2.0.0
+updated: 2026-06-16T10:40:00Z
 ---
 
 # Roadmap
 
-> **Current Phase:** 5 - Index Tab UI & Layout Optimization
-> **Status:** ✅ Complete
+> **Current Phase:** 9 - Quality of Life, Advanced Modals & Core Enhancements
+> **Status:** ⏳ In Progress
 
 ## Must-Haves (from SPEC)
 
@@ -25,81 +25,46 @@ updated: 2026-06-15T19:48:00Z
 ### Phase 1: Directory Organization & Context Foundation
 **Status:** ✅ Complete
 **Objective:** Align directory structure with feature rules and establish the context provider skeleton.
-**Requirements:** SPEC Goal 3
-
-**Plans:**
-- [x] Plan 1.1: Context Skeleton and Hooks Directory Setup
-- [x] Plan 1.2: Viewport-Locked Layout Integration (Option A)
-
----
 
 ### Phase 2: Procedural Audio & Auxiliary Refactoring
 **Status:** ✅ Complete
 **Objective:** Extract the complex Web Audio API synthesizer code and secondary UI helpers.
-**Depends on:** Phase 1
-**Requirements:** SPEC Goal 2, SPEC Goal 4
-
-**Plans:**
-- [x] Plan 2.1: Extract Procedural Audio Synthesis to Custom Hook
-- [x] Plan 2.2: Refactor UI Components to Consume Ambient Audio Hook
-
----
 
 ### Phase 3: Core State & State Hooks Extraction
 **Status:** ✅ Complete
 **Objective:** Move all bullet log, collections, settings, and Pomodoro timer states from `App.tsx` to modular hooks.
-**Depends on:** Phase 2
-**Requirements:** SPEC Goal 1, SPEC Goal 4
-
-**Plans:**
-- [x] Plan 3.1: Extract Items and Settings State Hooks
-- [x] Plan 3.2: Extract Collections and Custom Lists State Hook
-- [x] Plan 3.3: Extract Pomodoro Timer State Hook
-
----
 
 ### Phase 4: App.tsx Slimming & Validation
 **Status:** ✅ Complete
 **Objective:** Wrap application in Context, wire child components, clean up App.tsx, and run full test verification.
-**Depends on:** Phase 3
-**Requirements:** SPEC Goal 4, Success Criteria
-
-**Plans:**
-- [x] Plan 4.1: Simplify `src/App.tsx` to a layout shell, utilizing context for state sharing.
-- [x] Plan 4.2: Verify and resolve import paths, type definitions, build correctness, and functionality.
-
----
 
 ### Phase 5: Index Tab UI & Layout Optimization
 **Status**: ✅ Complete
-**Objective**: Redesign the components at the Indice (IndexTab) to optimize the Quick Access Menu layout and sizing, fix spacing using Flexbox/Grid to avoid overflows and overlaps, and design modern square or rectangular cards for a beautiful, responsive ADHD-friendly UX.
-**Depends on**: Phase 4
-
-**Plans**:
-- [x] Plan 5.1: Redesign and adjust spacing/aspect ratios of IndexTab layout and Quick Access cards.
-- [x] Plan 5.2: Verify layout responsiveness, locked viewport compliance, and zero overlaps.
-
----
+**Objective**: Redesign the components at the Indice (IndexTab) to optimize the Quick Access Menu layout and sizing.
 
 ### Phase 6: Advanced GTD & Visual Customization features
 **Status**: ✅ Complete
-**Objective**: Implement Trash Bin (Lixeira), Someday/Maybe (Algum Dia/Talvez) capture workspace, delegation status, task visual icons/avatar picker, and a gamified Dream Board (Quadro dos Sonhos).
-**Depends on**: Phase 5
-
-**Plans**:
-- [x] Plan 6.1: Trash Bin (Lixeira) & Someday/Maybe (Algum Dia) Tab
-- [x] Plan 6.2: Task Delegation & Icon/Avatar Selection
-- [x] Plan 6.3: Dream Board (Quadro dos Sonhos)
-
----
+**Objective**: Implement Trash Bin (Lixeira), Someday/Maybe (Algum Dia/Talvez), delegation status, task visual icons, and Dream Board.
 
 ### Phase 7: Supabase Persistence & Local Storage Migration
+**Status**: ✅ Complete
+**Objective**: Replace pure LocalStorage persistence with an integrated local-first Supabase cloud database sync.
+
+### Phase 8: Local LLM AI Assistant & Task Decomposition
+**Status**: ✅ Complete
+**Objective**: Integrate Local LLM (Web Worker) for task decomposition and cognitive relief suggestions.
+
+### Phase 9: Quality of Life, Advanced Modals & Core Enhancements
 **Status**: ⏳ In Progress
-**Objective**: Replace pure LocalStorage persistence with an integrated local-first Supabase cloud database sync, migrating all existing local storage user data to Supabase upon sign-in.
-**Depends on**: Phase 6
+**Objective**: Implement detailed view modals, core UI refinements, and improved task management workflows.
 
 **Plans**:
-- [ ] Plan 7.1: Setup Supabase Database Schema and Data Synchronization logic
+- [x] Plan 9.1: Timeline UI Enhancements and Visual Feedback.
+- [x] Plan 9.2: Advanced Search and Filtering across all logs.
+- [x] Plan 9.3: Weekly & Monthly Log Day Modals.
+- [x] Plan 9.4: Global Data Management & Technical Debt Removal.
+- [x] Plan 9.5: Global Search & Omnibox.
+- [x] Plan 9.6: PWA Install & Offline Awareness.
 
 ---
 
@@ -113,7 +78,9 @@ updated: 2026-06-15T19:48:00Z
 | 4 | ✅ | 2/2 | 2026-06-15 |
 | 5 | ✅ | 2/2 | 2026-06-15 |
 | 6 | ✅ | 3/3 | 2026-06-16 |
-| 7 | ⏳ | 1/1 | In Progress |
+| 7 | ✅ | 1/1 | 2026-06-16 |
+| 8 | ✅ | 2/2 | 2026-06-16 |
+| 9 | ✅ | 6/6 | 2026-06-16 |
 
 ---
 
@@ -121,11 +88,5 @@ updated: 2026-06-15T19:48:00Z
 
 | Phase | Started | Completed | Duration |
 |-------|---------|-----------|----------|
-| 1 | 2026-06-15 | 2026-06-15 | 10m |
-| 2 | 2026-06-15 | 2026-06-15 | 5m |
-| 3 | 2026-06-15 | 2026-06-15 | 5m |
-| 4 | 2026-06-15 | 2026-06-15 | 15m |
-| 5 | 2026-06-15 | 2026-06-15 | 10m |
-| 6 | 2026-06-15 | 2026-06-16 | 45m |
-| 7 | 2026-06-16 | | |
-
+| 1-5 | 2026-06-15 | 2026-06-15 | 1 day |
+| 6-9 | 2026-06-16 | | |
