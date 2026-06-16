@@ -13,6 +13,7 @@ export interface BujoItem {
   complexity?: number; // 1-5
   executionTime?: number; // in minutes
   category?: string;
+  createdAt?: string; // ISO string representing when it was created
 }
 
 export interface BujoSettings {

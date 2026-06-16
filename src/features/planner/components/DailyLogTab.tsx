@@ -313,6 +313,11 @@ export const DailyLogTab = () => {
   // Sort items based on selected sorting
   const sortedDateItems = [...filteredDateItems].sort((a, b) => {
     if (sortBy === 'oldest') {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : Infinity;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : Infinity;
+      if (aTime !== bTime) {
+        return aTime - bTime;
+      }
       return a.id.localeCompare(b.id);
     }
     if (sortBy === 'energy') {
@@ -330,7 +335,12 @@ export const DailyLogTab = () => {
       const bVal = b.executionTime || 0;
       return bVal - aVal;
     }
-    // Default: 'recent' (descending id comparison)
+    // Default: 'recent'
+    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    if (aTime !== bTime) {
+      return bTime - aTime;
+    }
     return b.id.localeCompare(a.id);
   });
 

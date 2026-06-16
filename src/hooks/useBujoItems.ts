@@ -171,7 +171,8 @@ export function useBujoItems(
           energy: energy || 1,
           complexity: complexity || 1,
           executionTime: executionTime || undefined,
-          delegatedTo: delegatedTo || undefined
+          delegatedTo: delegatedTo || undefined,
+          createdAt: new Date().toISOString()
         };
         itemsToCreate.push(item);
       });
@@ -188,7 +189,8 @@ export function useBujoItems(
         energy: standardType === 'task' ? (energy || 1) : undefined,
         complexity: standardType === 'task' ? (complexity || 1) : undefined,
         executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
-        delegatedTo: delegatedTo || undefined
+        delegatedTo: delegatedTo || undefined,
+        createdAt: new Date().toISOString()
       };
       itemsToCreate.push(newItem);
     }
@@ -246,7 +248,8 @@ export function useBujoItems(
       status: 'open',
       content: timelineInput.trim(),
       date: getLocalDateString(),
-      subtasks: []
+      subtasks: [],
+      createdAt: new Date().toISOString()
     };
 
     setItems(prev => [newItem, ...prev]);
@@ -272,7 +275,8 @@ export function useBujoItems(
       content: newHourTaskContent.trim(),
       date: getLocalDateString(),
       time: timeStr,
-      subtasks: newHourTaskType === 'task' ? [] : undefined
+      subtasks: newHourTaskType === 'task' ? [] : undefined,
+      createdAt: new Date().toISOString()
     };
 
     setItems(prev => [newItem, ...prev]);
@@ -417,7 +421,8 @@ export function useBujoItems(
       content: content.trim(),
       date: 'someday_maybe',
       category,
-      subtasks: type === 'task' ? [] : undefined
+      subtasks: type === 'task' ? [] : undefined,
+      createdAt: new Date().toISOString()
     };
     setSomedayItems(prev => [...prev, newItem]);
     showToast('Adicionado a Algum Dia/Talvez');
@@ -457,9 +462,10 @@ export function useBujoItems(
     if (item) {
       const scheduledItem: BujoItem = {
         ...item,
-        id: Math.random().toString(),
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
         date: date,
-        status: 'open'
+        status: 'open',
+        createdAt: item.createdAt || new Date().toISOString()
       };
       setItems(prev => [...prev, scheduledItem]);
       setSomedayItems(prev => prev.filter(item => item.id !== id));

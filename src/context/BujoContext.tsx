@@ -679,35 +679,38 @@ export function BujoProvider({ children }: { children: ReactNode }) {
             const dumpNotes: any[] = [];
             
             const lines = resultText.split('\n').map((l: string) => l.trim()).filter(Boolean);
-            lines.forEach((line: string) => {
+            lines.forEach((line: string, index: number) => {
               const cleanedLine = line.replace(/^[TEN]:\s*/i, '').trim();
               if (line.toUpperCase().startsWith('T:')) {
                 dumpTasks.push({
-                  id: Math.random().toString(),
+                  id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
                   type: 'task',
                   status: 'open',
                   content: cleanedLine,
-                  date: getLocalDateString()
+                  date: getLocalDateString(),
+                  createdAt: new Date().toISOString()
                 });
               } else if (line.toUpperCase().startsWith('E:')) {
                 const parts = cleanedLine.split('|');
                 const content = (parts[0] || '').trim();
                 const time = (parts[1] || '12:00').trim();
                 dumpEvents.push({
-                  id: Math.random().toString(),
+                  id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
                   type: 'event',
                   status: 'open',
                   content,
                   date: getLocalDateString(),
-                  time
+                  time,
+                  createdAt: new Date().toISOString()
                 });
               } else if (line.toUpperCase().startsWith('N:')) {
                 dumpNotes.push({
-                  id: Math.random().toString(),
+                  id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
                   type: 'note',
                   status: 'open',
                   content: cleanedLine,
-                  date: getLocalDateString()
+                  date: getLocalDateString(),
+                  createdAt: new Date().toISOString()
                 });
               }
             });
@@ -1004,7 +1007,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         id: `st-${Date.now()}-${Math.random()}`,
         content: st.content,
         completed: st.completed
-      }))
+      })),
+      createdAt: new Date().toISOString()
     };
     setItems(prev => [newItem, ...prev]);
     showToast(`"${item.title}" migrado para o Daily Log!`);
@@ -1283,7 +1287,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           content: content,
           date: wDate,
           time: standardTime || undefined,
-          subtasks: []
+          subtasks: [],
+          createdAt: new Date().toISOString()
         };
         itemsToCreate.push(item);
       });
@@ -1295,7 +1300,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         content: content,
         date: targetDate,
         time: standardTime || undefined,
-        subtasks: standardType === 'task' ? [] : undefined
+        subtasks: standardType === 'task' ? [] : undefined,
+        createdAt: new Date().toISOString()
       };
       itemsToCreate.push(newItem);
     }
@@ -1379,7 +1385,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       status: 'open',
       content: standardInput.trim(),
       date: getLocalDateString(),
-      subtasks: subtasks.map(s => ({ id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, content: s, completed: false }))
+      subtasks: subtasks.map(s => ({ id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, content: s, completed: false })),
+      createdAt: new Date().toISOString()
     };
     setItems(prev => [newItem, ...prev]);
     setStandardInput('');
@@ -1395,7 +1402,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       status: 'open',
       content: rapidText.trim(),
       date: getLocalDateString(),
-      subtasks: subtasks.map(s => ({ id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, content: s, completed: false }))
+      subtasks: subtasks.map(s => ({ id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, content: s, completed: false })),
+      createdAt: new Date().toISOString()
     };
     setItems(prev => [newItem, ...prev]);
     setRapidText('');
@@ -1503,7 +1511,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         emotion = '✨ Foco otimista e positivo. Excelente momento para iniciar!';
       }
 
-      sentences.forEach(sentence => {
+      sentences.forEach((sentence, index) => {
         const cleaned = cleanBujoContent(sentence);
         const lowerCleaned = cleaned.toLowerCase();
         
@@ -1519,28 +1527,31 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           }
           const eventContent = cleaned.replace(/(\d{1,2})h(\d{2})?|(\d{1,2}):(\d{2})/gi, '').trim();
           dumpEvents.push({
-            id: Math.random().toString(),
+            id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
             type: 'event',
             status: 'open',
             content: eventContent,
             date: getLocalDateString(),
-            time: time
+            time: time,
+            createdAt: new Date().toISOString()
           });
         } else if (['sinto', 'estou', 'pensando', 'acho', 'triste', 'feliz', 'ansioso', 'cansado', 'bonito', 'legal'].some(w => lowerCleaned.includes(w))) {
           dumpNotes.push({
-            id: Math.random().toString(),
+            id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
             type: 'note',
             status: 'open',
             content: cleaned,
-            date: getLocalDateString()
+            date: getLocalDateString(),
+            createdAt: new Date().toISOString()
           });
         } else {
           dumpTasks.push({
-            id: Math.random().toString(),
+            id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
             type: 'task',
             status: 'open',
             content: cleaned,
-            date: getLocalDateString()
+            date: getLocalDateString(),
+            createdAt: new Date().toISOString()
           });
         }
       });
