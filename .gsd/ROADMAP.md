@@ -81,6 +81,18 @@ updated: 2026-06-15T19:48:00Z
 
 ---
 
+### Phase 6: Advanced GTD & Visual Customization features
+**Status**: 🚧 In Progress
+**Objective**: Implement Trash Bin (Lixeira), Someday/Maybe (Algum Dia/Talvez) capture workspace, delegation status, task visual icons/avatar picker, and a gamified Dream Board (Quadro dos Sonhos).
+**Depends on**: Phase 5
+
+**Plans**:
+- [ ] Plan 6.1: Trash Bin (Lixeira) & Someday/Maybe (Algum Dia) Tab
+- [ ] Plan 6.2: Task Delegation & Icon/Avatar Selection
+- [ ] Plan 6.3: Dream Board (Quadro dos Sonhos)
+
+---
+
 ## Progress Summary
 
 | Phase | Status | Plans | Complete |
@@ -90,6 +102,7 @@ updated: 2026-06-15T19:48:00Z
 | 3 | ✅ | 3/3 | 2026-06-15 |
 | 4 | ✅ | 2/2 | 2026-06-15 |
 | 5 | ✅ | 2/2 | 2026-06-15 |
+| 6 | 🚧 | 0/3 | |
 
 ---
 
@@ -102,3 +115,5 @@ updated: 2026-06-15T19:48:00Z
 | 3 | 2026-06-15 | 2026-06-15 | 5m |
 | 4 | 2026-06-15 | 2026-06-15 | 15m |
 | 5 | 2026-06-15 | 2026-06-15 | 10m |
+| 6 | 2026-06-15 | | |
+
