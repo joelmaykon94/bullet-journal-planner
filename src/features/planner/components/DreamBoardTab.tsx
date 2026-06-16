@@ -7,7 +7,8 @@ export const DreamBoardTab = () => {
     dreams,
     handleAddDream,
     handleToggleDreamConquered,
-    handleDeleteDream
+    handleDeleteDream,
+    askConfirmation
   } = useBujo();
 
   // Local Form state
@@ -342,9 +343,16 @@ export const DreamBoardTab = () => {
 
                       <button
                         onClick={() => {
-                          if (confirm('Deseja excluir este sonho?')) {
-                            handleDeleteDream(dream.id);
-                          }
+                          askConfirmation({
+                            title: 'Remover Sonho?',
+                            message: `Deseja realmente remover o sonho "${dream.title}" do seu Quadro dos Sonhos?`,
+                            confirmText: 'Remover',
+                            cancelText: 'Cancelar',
+                            isDanger: true,
+                            onConfirm: () => {
+                              handleDeleteDream(dream.id);
+                            }
+                          });
                         }}
                         className="p-1.5 rounded-lg text-zinc-500 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                         title="Remover sonho"

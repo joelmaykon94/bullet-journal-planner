@@ -1,7 +1,7 @@
 import { createContext, useContext, ReactNode, useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { BujoItem, BujoSettings, AISubtaskSuggestions, Collection, DreamItem } from '../types';
+import { BujoItem, BujoSettings, AISubtaskSuggestions, Collection, DreamItem, ConfirmationModalConfig } from '../types';
 import { useBujoItems } from '../hooks/useBujoItems';
 import { useBujoSettings } from '../hooks/useBujoSettings';
 import { useCollections } from '../hooks/useCollections';
@@ -157,6 +157,11 @@ export interface BujoContextType {
   setFocoActive: React.Dispatch<React.SetStateAction<boolean>>;
   selectedHourToSchedule: number | null;
   setSelectedHourToSchedule: React.Dispatch<React.SetStateAction<number | null>>;
+
+  // Custom Confirmation Modal
+  confirmModal: ConfirmationModalConfig | null;
+  setConfirmModal: React.Dispatch<React.SetStateAction<ConfirmationModalConfig | null>>;
+  askConfirmation: (config: ConfirmationModalConfig) => void;
 
   // Local AI states
   aiEngine: 'local_llm' | 'local';
@@ -316,6 +321,13 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const [showOverloadReliefModal, setShowOverloadReliefModal] = useState<boolean>(false);
   const [focoActive, setFocoActive] = useState<boolean>(false);
   const [selectedHourToSchedule, setSelectedHourToSchedule] = useState<number | null>(null);
+
+  // Custom Confirmation Modal state & helpers
+  const [confirmModal, setConfirmModal] = useState<ConfirmationModalConfig | null>(null);
+
+  const askConfirmation = (config: ConfirmationModalConfig) => {
+    setConfirmModal(config);
+  };
 
   // Sync effects
   useEffect(() => {
@@ -565,6 +577,22 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const itemsData = useBujoItems(setUserXp, setCollections, showToast);
   const { items, setItems, itemsRef } = itemsData;
 
+  const handleDeleteItemWithConfirm = (id: string) => {
+    const itemToDelete = items.find(item => item.id === id) || itemsData.somedayItems.find(item => item.id === id);
+    if (!itemToDelete) return;
+    
+    askConfirmation({
+      title: 'Mover para a Lixeira?',
+      message: `Deseja realmente mover o item "${itemToDelete.content}" para a lixeira? Você poderá restaurá-lo depois se precisar.`,
+      confirmText: 'Mover para Lixeira',
+      cancelText: 'Cancelar',
+      isDanger: true,
+      onConfirm: () => {
+        itemsData.handleDeleteItem(id);
+      }
+    });
+  };
+
   const collectionsData = useCollections(
     setItems,
     showToast,
@@ -631,14 +659,23 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   };
 
   const handleDeleteCollection = (colId: string) => {
-    if (confirm('Deseja realmente excluir esta coleção e todos os seus itens?')) {
-      setCollections(prev => prev.filter(col => col.id !== colId));
-      if (selectedCollectionId === colId) {
-        setSelectedCollectionId(null);
-        setSelectedItemId(null);
+    const colToDelete = collections.find(col => col.id === colId);
+    const colName = colToDelete ? `"${colToDelete.name}"` : 'esta coleção';
+    askConfirmation({
+      title: 'Excluir Coleção?',
+      message: `Deseja realmente excluir ${colName} e todos os seus itens associados? Esta ação não poderá ser desfeita.`,
+      confirmText: 'Excluir Coleção',
+      cancelText: 'Cancelar',
+      isDanger: true,
+      onConfirm: () => {
+        setCollections(prev => prev.filter(col => col.id !== colId));
+        if (selectedCollectionId === colId) {
+          setSelectedCollectionId(null);
+          setSelectedItemId(null);
+        }
+        showToast('Coleção excluída.');
       }
-      showToast('Coleção excluída.');
-    }
+    });
   };
 
   const pomodoroData = usePomodoroTimer(setUserXp, showToast);
@@ -1379,6 +1416,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       // Items
       ...itemsData,
       assignItemToTime,
+      handleDeleteItem: handleDeleteItemWithConfirm,
 
       // Settings
       ...settingsData,
@@ -1417,6 +1455,11 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       setFocoActive,
       selectedHourToSchedule,
       setSelectedHourToSchedule,
+
+      // Confirmation Modal
+      confirmModal,
+      setConfirmModal,
+      askConfirmation,
 
       // AI States
       aiEngine,

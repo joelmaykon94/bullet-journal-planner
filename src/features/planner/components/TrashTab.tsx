@@ -7,7 +7,8 @@ export const TrashTab = () => {
     trashItems,
     handleRestoreItem,
     handleDeletePermanently,
-    handleEmptyTrash
+    handleEmptyTrash,
+    askConfirmation
   } = useBujo();
 
   return (
@@ -24,9 +25,16 @@ export const TrashTab = () => {
         {trashItems.length > 0 && (
           <button
             onClick={() => {
-              if (confirm('Deseja realmente esvaziar a lixeira? Todos os itens serão excluídos permanentemente.')) {
-                handleEmptyTrash();
-              }
+              askConfirmation({
+                title: 'Esvaziar Lixeira?',
+                message: 'Deseja realmente apagar permanentemente todos os itens da lixeira? Esta ação não poderá ser desfeita.',
+                confirmText: 'Esvaziar Tudo',
+                cancelText: 'Cancelar',
+                isDanger: true,
+                onConfirm: () => {
+                  handleEmptyTrash();
+                }
+              });
             }}
             className="px-4 py-2 text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all border border-red-500/25 flex items-center gap-1.5 cursor-pointer"
           >
@@ -90,9 +98,16 @@ export const TrashTab = () => {
                   </button>
                   <button
                     onClick={() => {
-                      if (confirm('Excluir este item permanentemente?')) {
-                        handleDeletePermanently(item.id);
-                      }
+                      askConfirmation({
+                        title: 'Excluir Item Definitivamente?',
+                        message: `Deseja realmente apagar permanentemente o item "${item.content}"? Esta ação não poderá ser desfeita e você não poderá recuperá-lo.`,
+                        confirmText: 'Excluir Definitivamente',
+                        cancelText: 'Cancelar',
+                        isDanger: true,
+                        onConfirm: () => {
+                          handleDeletePermanently(item.id);
+                        }
+                      });
                     }}
                     className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl border border-red-500/25 flex items-center justify-center transition-all cursor-pointer"
                     title="Excluir Permanentemente"

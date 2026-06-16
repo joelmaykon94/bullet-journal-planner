@@ -12,7 +12,9 @@ export const SettingsTab = () => {
     localLLMState,
     localLLMProgress,
     localLLMError,
-    initLocalLLMWorker
+    initLocalLLMWorker,
+    askConfirmation,
+    showToast
   } = useBujo();
 
   const { user, signOut, clearConfig } = useAuth();
@@ -151,10 +153,17 @@ export const SettingsTab = () => {
           <div className="pt-2 border-t border-zinc-200/30 dark:border-white/5 flex flex-col sm:flex-row gap-3 justify-between">
             <button
               onClick={() => {
-                if (confirm('Deseja realmente apagar todos os seus registros do Bullet Journal local? Esta ação não pode ser desfeita.')) {
-                  localStorage.clear();
-                  window.location.reload();
-                }
+                askConfirmation({
+                  title: 'Apagar Banco de Dados Local?',
+                  message: 'Deseja realmente apagar todos os seus registros do Bullet Journal local? Todos os dados salvos neste navegador serão limpos permanentemente. Esta ação NÃO pode ser desfeita.',
+                  confirmText: 'Apagar Tudo',
+                  cancelText: 'Cancelar',
+                  isDanger: true,
+                  onConfirm: () => {
+                    localStorage.clear();
+                    window.location.reload();
+                  }
+                });
               }}
               className="px-4 py-2 text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer border border-red-500/25"
             >
@@ -185,7 +194,20 @@ export const SettingsTab = () => {
           {/* Engine Selector Toggle */}
           <div className="bg-zinc-200/40 dark:bg-white/5 p-1 rounded-2xl border border-zinc-300/40 dark:border-white/10 flex">
             <button
-              onClick={() => setAiEngine('local')}
+              onClick={() => {
+                if (aiEngine === 'local_llm') {
+                  askConfirmation({
+                    title: 'Desativar IA Avançada?',
+                    message: 'Tem certeza que deseja mudar para o motor simples de regras? O modelo de linguagem local será desativado e você perderá a habilidade de quebrar tarefas de forma inteligente.',
+                    confirmText: 'Usar Motor Simples',
+                    cancelText: 'Manter IA Avançada',
+                    isDanger: false,
+                    onConfirm: () => setAiEngine('local')
+                  });
+                } else {
+                  setAiEngine('local');
+                }
+              }}
               className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 aiEngine === 'local' 
                   ? 'bg-bujo-highlight text-white shadow-md' 
@@ -306,23 +328,39 @@ export const SettingsTab = () => {
           <div className="flex gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => {
-                if (confirm('Deseja desconectar este projeto do Supabase? Suas credenciais salvas localmente serão limpas.')) {
-                  clearConfig();
-                  window.location.reload();
-                }
+                askConfirmation({
+                  title: 'Desconectar Banco de Dados?',
+                  message: 'Deseja realmente desconectar este projeto do Supabase? Suas credenciais salvas localmente serão limpas do navegador.',
+                  confirmText: 'Desconectar DB',
+                  cancelText: 'Cancelar',
+                  isDanger: true,
+                  onConfirm: () => {
+                    clearConfig();
+                    window.location.reload();
+                  }
+                });
               }}
               className="px-4 py-2 text-xs font-bold bg-zinc-200/40 dark:bg-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/20 text-bujo-text rounded-xl transition-all cursor-pointer border border-zinc-200/30 dark:border-white/10 flex-1 sm:flex-initial"
             >
               Desconectar DB
             </button>
             <button
-              onClick={async () => {
-                const { error } = await signOut();
-                if (error) {
-                  alert(`Erro ao deslogar: ${error.message}`);
-                } else {
-                  window.location.reload();
-                }
+              onClick={() => {
+                askConfirmation({
+                  title: 'Sair da Conta?',
+                  message: 'Tem certeza de que deseja desconectar e sair do aplicativo? Você precisará realizar o login novamente para sincronizar seus dados.',
+                  confirmText: 'Sair da Conta',
+                  cancelText: 'Cancelar',
+                  isDanger: true,
+                  onConfirm: async () => {
+                    const { error } = await signOut();
+                    if (error) {
+                      showToast(`Erro ao deslogar: ${error.message}`);
+                    } else {
+                      window.location.reload();
+                    }
+                  }
+                });
               }}
               className="px-4 py-2 text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer border border-red-500/25 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
             >

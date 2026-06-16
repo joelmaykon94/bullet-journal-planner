@@ -69,3 +69,12 @@ export interface DreamItem {
   conquered: boolean;
   conqueredAt?: string;
 }
+
+export interface ConfirmationModalConfig {
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => void;
+  isDanger?: boolean;
+}

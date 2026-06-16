@@ -22,6 +22,7 @@ import { AISuggestionsModal } from './features/planner/components/AISuggestionsM
 import { TrashTab } from './features/planner/components/TrashTab';
 import { SomedayMaybeTab } from './features/planner/components/SomedayMaybeTab';
 import { DreamBoardTab } from './features/planner/components/DreamBoardTab';
+import { ConfirmationModal } from './components/common/ConfirmationModal';
 
 function AppContent() {
   const {
@@ -208,6 +209,9 @@ function AppContent() {
           createRapidTaskWithSuggestions={createRapidTaskWithSuggestions}
         />
       )}
+
+      {/* GLOBAL CUSTOM CONFIRMATION DIALOG */}
+      <ConfirmationModal />
     </div>
   );
 }
