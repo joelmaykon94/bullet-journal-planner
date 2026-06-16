@@ -1,4 +1,4 @@
-import { CheckSquare, Sparkles, Download } from 'lucide-react';
+import { CheckSquare, Sparkles, Download, Trash2, Settings } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 export const Header = () => {
@@ -78,6 +78,26 @@ export const Header = () => {
               >
                 <Download className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Instalar App</span>
+              </button>
+
+              {/* Lixeira Button */}
+              <button
+                onClick={() => setActiveTab('trash')}
+                className="flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 hover:text-bujo-text transition-all cursor-pointer"
+                title="Ir para a Lixeira"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Lixeira</span>
+              </button>
+
+              {/* Settings/Configurações Button */}
+              <button
+                onClick={() => setActiveTab('settings')}
+                className="flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 hover:text-bujo-text transition-all cursor-pointer"
+                title="Ajustes / Configurações"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Ajustes</span>
               </button>
             </>
           )}
