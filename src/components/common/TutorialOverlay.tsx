@@ -216,7 +216,9 @@ export const TutorialOverlay = ({ showTutorial, onClose, setActiveTab }: Tutoria
           setTargetRect(rect);
           const computedStyle = window.getComputedStyle(element);
           setBorderRadius(computedStyle.borderRadius || '12px');
-          element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          if (element.closest('#bujo-export-area')) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
           return;
         }
       }
