@@ -94,6 +94,7 @@ export const DailyLogTab = () => {
   const [standardComplexity, setStandardComplexity] = useState<number>(1);
   const [standardExecutionTime, setStandardExecutionTime] = useState<string>('');
   const [iconSearch, setIconSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
   const handleClearInputs = () => {
     setStandardInput('');
@@ -128,6 +129,9 @@ export const DailyLogTab = () => {
     setStandardComplexity(1);
     setStandardExecutionTime('');
     setShowIconDropdown(false);
+    setSelectedDate(today);
+    setStandardDate(today);
+    setStandardTime('');
   };
 
   const dateItems = items.filter(i => i.date === selectedDate);
@@ -148,6 +152,13 @@ export const DailyLogTab = () => {
       if (!matchingEmojis.includes(item.icon)) {
         return false;
       }
+    }
+
+    // Status filter
+    if (statusFilter === 'pending') {
+      if (item.status === 'completed' || item.status === 'cancelled') return false;
+    } else if (statusFilter === 'completed') {
+      if (item.status !== 'completed') return false;
     }
 
     // Text search filter (checking content and subtasks content)
@@ -530,7 +541,7 @@ export const DailyLogTab = () => {
       <div className="bg-zinc-200/20 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 rounded-xl p-2 no-print shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
           {/* Col 1: Search & Sort & Reset (col-span-5) */}
-          <div className="md:col-span-5 flex items-center gap-1.5 w-full">
+          <div className="md:col-span-5 flex items-center gap-1.5 w-full flex-wrap">
             {/* Search Input */}
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-450 dark:text-zinc-500" />
@@ -564,14 +575,33 @@ export const DailyLogTab = () => {
               <option value="time" className="bg-zinc-950 text-white">⏳ Tempo</option>
             </select>
 
+            {/* Status Filter Segmented Control */}
+            <div className="flex bg-zinc-200/50 dark:bg-zinc-950/60 p-0.5 rounded border border-zinc-200/40 dark:border-white/5 shrink-0 select-none">
+              {(['all', 'pending', 'completed'] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStatusFilter(s)}
+                  className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold transition-all cursor-pointer ${
+                    statusFilter === s
+                      ? 'bg-bujo-highlight text-white'
+                      : 'text-zinc-500 hover:text-bujo-text'
+                  }`}
+                >
+                  {s === 'all' ? 'Todos' : s === 'pending' ? 'A realizar' : 'Realizadas'}
+                </button>
+              ))}
+            </div>
+
             {/* Clear All Filters Button */}
-            {(selectedContext !== null || selectedCategory !== null || searchText.trim() !== '') && (
+            {(selectedContext !== null || selectedCategory !== null || searchText.trim() !== '' || statusFilter !== 'all') && (
               <button
                 type="button"
                 onClick={() => {
                   setSelectedContext(null);
                   setSelectedCategory(null);
                   setSearchText('');
+                  setStatusFilter('all');
                 }}
                 className="text-bujo-highlight hover:text-red-500 transition-colors cursor-pointer shrink-0 p-0.5"
                 title="Limpar todos os filtros"

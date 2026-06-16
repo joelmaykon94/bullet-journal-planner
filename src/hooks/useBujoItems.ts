@@ -373,7 +373,9 @@ export function useBujoItems(
     editingItemContent: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number
+    executionTime?: number,
+    date?: string,
+    time?: string
   ) => {
     setItems(prev => prev.map(item => {
       if (item.id === id) {
@@ -387,7 +389,9 @@ export function useBujoItems(
           energy: item.type === 'task' ? (energy ?? item.energy) : undefined,
           complexity: item.type === 'task' ? (complexity ?? item.complexity) : undefined,
           executionTime: item.type === 'task' ? (executionTime ?? item.executionTime) : undefined,
-          delegatedTo: delegatedTo !== undefined ? delegatedTo : item.delegatedTo
+          delegatedTo: delegatedTo !== undefined ? delegatedTo : item.delegatedTo,
+          date: date ?? item.date,
+          time: time !== undefined ? time : item.time
         };
       }
       return item;

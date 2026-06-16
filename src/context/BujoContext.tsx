@@ -56,7 +56,9 @@ export interface BujoContextType {
     editingItemContent: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number
+    executionTime?: number,
+    date?: string,
+    time?: string
   ) => void;
   addSubtask: (
     taskId: string,
@@ -282,7 +284,7 @@ export interface BujoContextType {
   createStandardTaskWithSuggestions: (subtasks: string[]) => void;
   createRapidTaskWithSuggestions: (subtasks: string[]) => void;
   handleStartEditItem: (id: string, initialContent: string) => void;
-  handleSaveEditItemForm: (id: string, energy?: number, complexity?: number, executionTime?: number) => void;
+  handleSaveEditItemForm: (id: string, energy?: number, complexity?: number, executionTime?: number, date?: string, time?: string) => void;
   handleBrainDumpOrganize: () => void;
   addBrainDumpItemsToBujo: () => void;
   appendBrainDumpTrigger: (trigger: string) => void;
@@ -1383,7 +1385,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     id: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number
+    executionTime?: number,
+    date?: string,
+    time?: string
   ) => {
     if (!editingItemContent.trim()) {
       showToast('O conteúdo não pode estar vazio!');
@@ -1401,7 +1405,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           energy: item.type === 'task' ? (energy ?? item.energy) : undefined,
           complexity: item.type === 'task' ? (complexity ?? item.complexity) : undefined,
           executionTime: item.type === 'task' ? (executionTime ?? item.executionTime) : undefined,
-          delegatedTo: delegatedTo !== undefined ? delegatedTo : item.delegatedTo
+          delegatedTo: delegatedTo !== undefined ? delegatedTo : item.delegatedTo,
+          date: date ?? item.date,
+          time: time !== undefined ? time : item.time
         };
       }
       return item;

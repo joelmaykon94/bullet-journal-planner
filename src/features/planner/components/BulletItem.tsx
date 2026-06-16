@@ -9,7 +9,7 @@ interface BulletItemProps {
   editingItemId: string | null;
   editingItemContent: string;
   setEditingItemContent: (content: string) => void;
-  handleSaveEditItem: (id: string, energy?: number, complexity?: number, executionTime?: number) => void;
+  handleSaveEditItem: (id: string, energy?: number, complexity?: number, executionTime?: number, date?: string, time?: string) => void;
   setEditingItemId: (id: string | null) => void;
   handleStartEditItem: (id: string, content: string) => void;
   handleDeleteItem: (id: string) => void;
@@ -53,6 +53,8 @@ export const BulletItem = ({
   const [localEnergy, setLocalEnergy] = useState<number>(item.energy || 1);
   const [localComplexity, setLocalComplexity] = useState<number>(item.complexity || 1);
   const [localExecutionTime, setLocalExecutionTime] = useState<number | ''>(item.executionTime || '');
+  const [localDate, setLocalDate] = useState(item.date || '');
+  const [localTime, setLocalTime] = useState(item.time || '');
   const [subtaskIcon, setSubtaskIcon] = useState<string>('');
   const [showSubtaskIconDropdown, setShowSubtaskIconDropdown] = useState<boolean>(false);
   const [subtaskMinutes, setSubtaskMinutes] = useState<string>('');
@@ -64,6 +66,8 @@ export const BulletItem = ({
       setLocalEnergy(item.energy || 1);
       setLocalComplexity(item.complexity || 1);
       setLocalExecutionTime(item.executionTime || '');
+      setLocalDate(item.date || '');
+      setLocalTime(item.time || '');
     }
   }, [editingItemId, item.id]);
 
@@ -74,7 +78,9 @@ export const BulletItem = ({
       item.id,
       localEnergy,
       localComplexity,
-      localExecutionTime === '' ? undefined : Number(localExecutionTime)
+      localExecutionTime === '' ? undefined : Number(localExecutionTime),
+      localDate,
+      localTime
     );
   };
 
@@ -243,8 +249,26 @@ export const BulletItem = ({
                   </div>
                 )}
 
-                {/* Delegation Input */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                 {/* Date, Time, and Delegation Inputs */}
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <div className="flex-1 flex flex-col gap-1">
+                    <span className="text-[11px] text-zinc-400 font-bold">Data:</span>
+                    <input
+                      type="date"
+                      value={localDate}
+                      onChange={(e) => setLocalDate(e.target.value)}
+                      className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-350 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none"
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <span className="text-[11px] text-zinc-400 font-bold">Hora:</span>
+                    <input
+                      type="time"
+                      value={localTime}
+                      onChange={(e) => setLocalTime(e.target.value)}
+                      className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-355 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none"
+                    />
+                  </div>
                   <div className="flex-1 flex flex-col gap-1">
                     <span className="text-[11px] text-zinc-400 font-bold">Delegar para:</span>
                     <input
@@ -252,23 +276,25 @@ export const BulletItem = ({
                       placeholder="Nome do responsável..."
                       value={localDelegatedTo}
                       onChange={(e) => setLocalDelegatedTo(e.target.value)}
-                      className="bg-zinc-200/50 dark:bg-white/10 border border-zinc-300 dark:border-white/10 text-xs text-bujo-text px-3 py-1.5 rounded-xl outline-none"
+                      className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-350 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none"
                     />
                   </div>
-                  <div className="flex gap-2 self-end sm:self-auto mt-2 sm:mt-5">
-                    <button
-                      onClick={handleSaveEdit}
-                      className="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors cursor-pointer"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      onClick={() => setEditingItemId(null)}
-                      className="px-3 py-1.5 bg-zinc-300 dark:bg-white/10 text-bujo-text rounded-xl text-xs font-bold hover:bg-zinc-400 dark:hover:bg-white/20 transition-colors cursor-pointer"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
+                </div>
+
+                {/* Edit Form Actions */}
+                <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-zinc-200/40 dark:border-white/5">
+                  <button
+                    onClick={handleSaveEdit}
+                    className="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors cursor-pointer"
+                  >
+                    Salvar
+                  </button>
+                  <button
+                    onClick={() => setEditingItemId(null)}
+                    className="px-3 py-1.5 bg-zinc-350 dark:bg-white/10 text-bujo-text rounded-xl text-xs font-bold hover:bg-zinc-400 dark:hover:bg-white/20 transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
                 </div>
               </div>
             ) : (
