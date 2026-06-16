@@ -87,8 +87,8 @@ updated: 2026-06-15T19:48:00Z
 **Depends on**: Phase 5
 
 **Plans**:
-- [ ] Plan 6.1: Trash Bin (Lixeira) & Someday/Maybe (Algum Dia) Tab
-- [ ] Plan 6.2: Task Delegation & Icon/Avatar Selection
+- [x] Plan 6.1: Trash Bin (Lixeira) & Someday/Maybe (Algum Dia) Tab
+- [/] Plan 6.2: Task Delegation & Icon/Avatar Selection
 - [ ] Plan 6.3: Dream Board (Quadro dos Sonhos)
 
 ---
