@@ -256,7 +256,9 @@ export const DailyLogTab = () => {
         </div>
       </div>
 
-      <div className="relative bg-zinc-200/30 dark:bg-white/5 p-3 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
+      {/* Scrollable Panel for Quick Add and Filters */}
+      <div className="space-y-4 max-h-[280px] overflow-y-auto pr-1.5 scroll-smooth no-print border border-zinc-200/10 dark:border-white/5 p-2 rounded-2xl bg-zinc-200/5 dark:bg-white/[0.005]">
+        <div className="relative bg-zinc-200/30 dark:bg-white/5 p-3 rounded-2xl border border-zinc-200/40 dark:border-white/10 no-print">
         <form onSubmit={handleLocalSubmit} className="flex flex-col gap-3">
           {/* Row 1: Primary Inputs */}
           <div className="flex flex-col sm:flex-row gap-2.5 items-center w-full">
@@ -702,6 +704,7 @@ export const DailyLogTab = () => {
             })}
           </div>
         </div>
+      </div>
       </div>
 
       <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1.5 scroll-smooth">

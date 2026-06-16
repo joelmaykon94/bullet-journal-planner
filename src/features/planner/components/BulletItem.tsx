@@ -96,14 +96,14 @@ export const BulletItem = ({
     if (parts.length === 1) return content;
 
     const colors: { [key: string]: string } = {
-      '@computador': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@online': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@rua': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@casa': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@trabalhando': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@mestrado': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@programando': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@aguardando': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle'
+      '@computador': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@online': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@rua': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@casa': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@trabalhando': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@mestrado': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@programando': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@aguardando': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 ml-1.5 border align-middle'
     };
 
     const icons: { [key: string]: string } = {
@@ -132,39 +132,39 @@ export const BulletItem = ({
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/30 dark:border-white/5 flex flex-col gap-3 transition-colors hover:bg-zinc-200/20 dark:hover:bg-white/[0.04]">
+    <div className="p-2.5 sm:p-3 rounded-xl bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/30 dark:border-white/5 flex flex-col gap-2.5 transition-colors hover:bg-zinc-200/20 dark:hover:bg-white/[0.04]">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
+        <div className="flex items-start gap-2.5 flex-1 min-w-0">
           <button
             onClick={() => cycleStatus(item.id)}
-            className="w-8 h-8 rounded-full bg-zinc-200/30 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 hover:border-bujo-highlight flex items-center justify-center text-sm font-bold transition-colors flex-shrink-0 mt-0.5"
+            className="w-[26px] h-[26px] rounded-full bg-zinc-200/30 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 hover:border-bujo-highlight flex items-center justify-center text-xs font-bold transition-colors flex-shrink-0 mt-0.5"
             title="Mudar estado clássico"
           >
             {item.status === 'open' && (
               item.type === 'task' ? (
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-650 dark:bg-zinc-300" />
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-650 dark:bg-zinc-300" />
               ) : item.type === 'event' ? (
-                <span className="w-3.5 h-3.5 rounded-full border-2 border-bujo-accent shrink-0" />
+                <span className="w-2.5 h-2.5 rounded-full border-2 border-bujo-accent shrink-0" />
               ) : (
-                <span className="w-3 h-0.5 bg-zinc-500 dark:bg-zinc-400 shrink-0" />
+                <span className="w-2.5 h-0.5 bg-zinc-500 dark:bg-zinc-400 shrink-0" />
               )
             )}
             {item.status === 'completed' && (
-              <Check className="w-4 h-4 text-emerald-500 stroke-[3.5]" />
+              <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3.5]" />
             )}
             {item.status === 'migrated' && (
-              <ChevronRight className="w-4 h-4 text-bujo-highlight stroke-[3.5]" />
+              <ChevronRight className="w-3.5 h-3.5 text-bujo-highlight stroke-[3.5]" />
             )}
             {item.status === 'scheduled' && (
-              <ChevronLeft className="w-4 h-4 text-indigo-400 stroke-[3.5]" />
+              <ChevronLeft className="w-3.5 h-3.5 text-indigo-400 stroke-[3.5]" />
             )}
             {item.status === 'cancelled' && (
-              <X className="w-4 h-4 text-red-500 stroke-[3.5]" />
+              <X className="w-3.5 h-3.5 text-red-500 stroke-[3.5]" />
             )}
           </button>
 
           {item.icon && (
-            <span className="text-xl flex items-center justify-center shrink-0 mt-0.5 select-none" title="Ícone da tarefa">
+            <span className="text-lg flex items-center justify-center shrink-0 mt-0.5 select-none" title="Ícone da tarefa">
               {item.icon}
             </span>
           )}
@@ -274,20 +274,20 @@ export const BulletItem = ({
             ) : (
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center flex-wrap gap-2">
-                  <span className={`text-sm md:text-base break-words font-medium leading-relaxed ${
+                  <span className={`text-xs md:text-[13px] break-words font-medium leading-relaxed ${
                     item.status === 'completed' ? 'line-through opacity-50' : 
                     item.status === 'cancelled' ? 'line-through text-red-500/75 dark:text-red-400/70 opacity-60' : ''
                   }`}>
                     {item.priority && <span className="text-bujo-highlight font-bold mr-1.5">*</span>}
                     {renderContentWithTags(item.content)}
                     {item.type === 'task' && hasSubtasks && (
-                      <span className="text-[10px] text-bujo-accent font-semibold ml-2 font-mono">
+                      <span className="text-[9.5px] text-bujo-accent font-semibold ml-1.5 font-mono">
                         {getSubtaskCompletionString(item)}
                       </span>
                     )}
                   </span>
                   {item.delegatedTo && (
-                    <span className="bg-zinc-200/60 dark:bg-white/10 text-zinc-750 dark:text-zinc-350 px-2 py-0.5 rounded-full text-xs font-semibold inline-flex items-center gap-1 border border-zinc-350 dark:border-white/5 align-middle select-none">
+                    <span className="bg-zinc-200/60 dark:bg-white/10 text-zinc-750 dark:text-zinc-350 px-2 py-0.5 rounded-full text-[10px] font-semibold inline-flex items-center gap-1 border border-zinc-350 dark:border-white/5 align-middle select-none">
                       👥 Delegado: <strong className="text-bujo-highlight">{item.delegatedTo}</strong>
                     </span>
                   )}
@@ -319,7 +319,7 @@ export const BulletItem = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-auto no-print flex-shrink-0">
+        <div className="flex items-center gap-1.5 self-end sm:self-auto no-print flex-shrink-0">
           {editingItemId !== item.id && (
             <>
               {item.type === 'task' && (
@@ -327,7 +327,7 @@ export const BulletItem = ({
                   <button
                     onClick={() => handleAISplitTask(item.id, item.content)}
                     disabled={breakingTaskIds[item.id]}
-                    className="px-2.5 py-1 rounded-full bg-bujo-accent/15 text-bujo-accent text-[10px] font-bold hover:bg-bujo-accent/25 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    className="px-2 py-0.5 rounded-full bg-bujo-accent/15 text-bujo-accent text-[9px] font-bold hover:bg-bujo-accent/25 transition-colors flex items-center gap-0.5 disabled:opacity-50"
                     title="Dividir com inteligência artificial"
                   >
                     <span>❄️</span>
@@ -335,26 +335,26 @@ export const BulletItem = ({
                   </button>
                   <button
                     onClick={() => setExpandedTaskId(isExpanded ? null : item.id)}
-                    className="p-1 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors text-zinc-500"
+                    className="p-0.5 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors text-zinc-500"
                     title="Subtarefas"
                   >
-                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                   </button>
                 </>
               )}
               <button
                 onClick={() => handleStartEditItem(item.id, item.content)}
-                className="p-1 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors text-zinc-600"
+                className="p-0.5 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors text-zinc-600"
                 title="Editar"
               >
-                <Edit className="w-4 h-4" />
+                <Edit className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => handleDeleteItem(item.id)}
-                className="p-1 rounded-full hover:bg-red-500/10 hover:text-red-400 transition-colors text-zinc-600"
+                className="p-0.5 rounded-full hover:bg-red-500/10 hover:text-red-400 transition-colors text-zinc-600"
                 title="Excluir"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </>
           )}
@@ -362,26 +362,26 @@ export const BulletItem = ({
       </div>
 
       {item.type === 'task' && isExpanded && (
-        <div className="pl-11 pr-2 pb-2 border-l border-zinc-200/50 dark:border-white/5 mt-1 animate-fade-in flex flex-col gap-2.5">
+        <div className="pl-9 pr-1.5 pb-1.5 border-l border-zinc-200/50 dark:border-white/5 mt-1 animate-fade-in flex flex-col gap-2">
           {item.subtasks && item.subtasks.length > 0 && (
-            <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1 scroll-smooth">
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scroll-smooth">
               {item.subtasks.map(sub => (
-                <div key={sub.id} className="flex items-center justify-between gap-3 text-xs group/sub py-0.5 animate-fade-in">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div key={sub.id} className="flex items-center justify-between gap-3 text-[11px] group/sub py-0.5 animate-fade-in">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <button
                       type="button"
                       onClick={() => toggleSubtask(item.id, sub.id)}
-                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
+                      className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
                         sub.completed ? 'bg-bujo-accent border-bujo-accent text-white' : 'border-zinc-300 dark:border-white/20'
                       }`}
                     >
                       {sub.completed && <Check className="w-2.5 h-2.5 stroke-[4]" />}
                     </button>
                     <span className={`truncate flex items-center gap-1.5 ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
-                      {sub.icon && <span className="text-sm select-none" title="Ícone do micro-passo">{sub.icon}</span>}
+                      {sub.icon && <span className="text-xs select-none" title="Ícone do micro-passo">{sub.icon}</span>}
                       <span>{sub.content}</span>
                       {sub.executionTime && (
-                        <span className="text-[9.5px] bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-mono ml-1.5 inline-flex items-center gap-0.5 select-none" title="Tempo de execução do micro-passo">
+                        <span className="text-[9px] bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-mono ml-1.5 inline-flex items-center gap-0.5 select-none" title="Tempo de execução do micro-passo">
                           ⏱️ {sub.executionTime} min
                         </span>
                       )}
@@ -393,7 +393,7 @@ export const BulletItem = ({
                     className="text-zinc-400 hover:text-red-500 opacity-0 group-hover/sub:opacity-100 transition-opacity p-0.5 flex-shrink-0 cursor-pointer"
                     title="Remover micro-tarefa"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               ))}
