@@ -9,7 +9,7 @@ interface BulletItemProps {
   editingItemId: string | null;
   editingItemContent: string;
   setEditingItemContent: (content: string) => void;
-  handleSaveEditItem: (id: string) => void;
+  handleSaveEditItem: (id: string, energy?: number, complexity?: number, executionTime?: number) => void;
   setEditingItemId: (id: string | null) => void;
   handleStartEditItem: (id: string, content: string) => void;
   handleDeleteItem: (id: string) => void;
@@ -21,7 +21,7 @@ interface BulletItemProps {
   deleteSubtask: (taskId: string, subtaskId: string) => void;
   newSubtaskText: string;
   setNewSubtaskText: (text: string) => void;
-  addSubtask: (taskId: string, icon?: string) => void;
+  addSubtask: (taskId: string, icon?: string, executionTime?: number) => void;
   getSubtaskCompletionString: (item: BujoItem) => string;
 }
 
@@ -50,45 +50,70 @@ export const BulletItem = ({
 
   const [localDelegatedTo, setLocalDelegatedTo] = useState(item.delegatedTo || '');
   const [localIcon, setLocalIcon] = useState(item.icon || '');
+  const [localEnergy, setLocalEnergy] = useState<number>(item.energy || 1);
+  const [localComplexity, setLocalComplexity] = useState<number>(item.complexity || 1);
+  const [localExecutionTime, setLocalExecutionTime] = useState<number | ''>(item.executionTime || '');
   const [subtaskIcon, setSubtaskIcon] = useState<string>('');
   const [showSubtaskIconDropdown, setShowSubtaskIconDropdown] = useState<boolean>(false);
+  const [subtaskMinutes, setSubtaskMinutes] = useState<string>('');
 
   useEffect(() => {
     if (editingItemId === item.id) {
       setLocalDelegatedTo(item.delegatedTo || '');
       setLocalIcon(item.icon || '');
+      setLocalEnergy(item.energy || 1);
+      setLocalComplexity(item.complexity || 1);
+      setLocalExecutionTime(item.executionTime || '');
     }
   }, [editingItemId, item.id]);
 
   const handleSaveEdit = () => {
     handleUpdateItemDelegatedTo(item.id, localDelegatedTo);
     handleUpdateItemIcon(item.id, localIcon);
-    handleSaveEditItem(item.id);
+    handleSaveEditItem(
+      item.id,
+      localEnergy,
+      localComplexity,
+      localExecutionTime === '' ? undefined : Number(localExecutionTime)
+    );
+  };
+
+  const handleAddSubtaskLocal = () => {
+    if (!newSubtaskText.trim()) return;
+    const mins = subtaskMinutes ? Number(subtaskMinutes) : undefined;
+    addSubtask(item.id, subtaskIcon, mins);
+    setNewSubtaskText('');
+    setSubtaskIcon('');
+    setSubtaskMinutes('');
   };
 
   const hasSubtasks = item.subtasks && item.subtasks.length > 0;
   const isExpanded = expandedTaskId === item.id;
 
   const renderContentWithTags = (content: string) => {
-    const contextRegex = /(@computador|@celular|@rua|@casa|@trabalho|@aguardando)\b/gi;
+    const contextRegex = /(@computador|@online|@rua|@casa|@trabalhando|@mestrado|@programando|@aguardando)\b/gi;
     const parts = content.split(contextRegex);
     if (parts.length === 1) return content;
 
     const colors: { [key: string]: string } = {
       '@computador': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@celular': 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@online': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
       '@rua': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
       '@casa': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
-      '@trabalho': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@trabalhando': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@mestrado': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
+      '@programando': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle',
       '@aguardando': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-0.5 ml-1.5 border align-middle'
     };
 
     const icons: { [key: string]: string } = {
       '@computador': '💻 ',
-      '@celular': '📱 ',
+      '@online': '🌐 ',
       '@rua': '🚶 ',
       '@casa': '🏠 ',
-      '@trabalho': '💼 ',
+      '@trabalhando': '💼 ',
+      '@mestrado': '🎓 ',
+      '@programando': '⚡ ',
       '@aguardando': '⏳ '
     };
 
@@ -182,6 +207,42 @@ export const BulletItem = ({
                   </div>
                 </div>
 
+                {item.type === 'task' && (
+                  <div className="grid grid-cols-3 gap-2.5 bg-zinc-200/20 dark:bg-white/[0.02] p-3 rounded-2xl border border-zinc-300/40 dark:border-white/5">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9.5px] text-zinc-550 dark:text-zinc-400 font-bold uppercase tracking-wider">Energia (1-5) ⚡</span>
+                      <select
+                        value={localEnergy}
+                        onChange={(e) => setLocalEnergy(Number(e.target.value))}
+                        className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-bujo-text outline-none cursor-pointer"
+                      >
+                        {[1, 2, 3, 4, 5].map(v => <option key={v} value={v}>{v}</option>)}
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9.5px] text-zinc-550 dark:text-zinc-400 font-bold uppercase tracking-wider">Complexidade 🧠</span>
+                      <select
+                        value={localComplexity}
+                        onChange={(e) => setLocalComplexity(Number(e.target.value))}
+                        className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-bujo-text outline-none cursor-pointer"
+                      >
+                        {[1, 2, 3, 4, 5].map(v => <option key={v} value={v}>{v}</option>)}
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9.5px] text-zinc-550 dark:text-zinc-400 font-bold uppercase tracking-wider">Tempo (min) ⏱️</span>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Minutos"
+                        value={localExecutionTime}
+                        onChange={(e) => setLocalExecutionTime(e.target.value ? Number(e.target.value) : '')}
+                        className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-bujo-text outline-none font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Delegation Input */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <div className="flex-1 flex flex-col gap-1">
@@ -230,9 +291,27 @@ export const BulletItem = ({
                       👥 Delegado: <strong className="text-bujo-highlight">{item.delegatedTo}</strong>
                     </span>
                   )}
-                </div>
                 {item.time && (
                   <span className="text-[10px] text-zinc-500 font-mono mt-0.5">Agendado para: {item.time}</span>
+                )}
+                {item.type === 'task' && (item.executionTime || item.energy || item.complexity) && (
+                  <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[10px] text-zinc-500 font-sans select-none">
+                    {item.executionTime && (
+                      <span className="flex items-center gap-0.5 bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 px-1.5 py-0.5 rounded-lg text-bujo-highlight font-mono">
+                        ⏱️ {item.executionTime} min
+                      </span>
+                    )}
+                    {item.energy !== undefined && (
+                      <span className="flex items-center gap-0.5 bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 px-1.5 py-0.5 rounded-lg" title="Esforço / Energia">
+                        ⚡ {item.energy}/5
+                      </span>
+                    )}
+                    {item.complexity !== undefined && (
+                      <span className="flex items-center gap-0.5 bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 px-1.5 py-0.5 rounded-lg" title="Complexidade">
+                        🧠 {item.complexity}/5
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -282,48 +361,57 @@ export const BulletItem = ({
       </div>
 
       {item.type === 'task' && isExpanded && (
-        <div className="pl-11 pr-2 pb-2 space-y-3 border-l border-zinc-200/50 dark:border-white/5 mt-1 animate-fade-in">
-          {item.subtasks && item.subtasks.map(sub => (
-            <div key={sub.id} className="flex items-center justify-between gap-3 text-xs group/sub py-0.5">
-              <div className="flex items-center gap-3 min-w-0">
-                <button
-                  type="button"
-                  onClick={() => toggleSubtask(item.id, sub.id)}
-                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
-                    sub.completed ? 'bg-bujo-accent border-bujo-accent text-white' : 'border-zinc-300 dark:border-white/20'
-                  }`}
-                >
-                  {sub.completed && <Check className="w-2.5 h-2.5 stroke-[4]" />}
-                </button>
-                <span className={`truncate flex items-center gap-1.5 ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
-                  {sub.icon && <span className="text-sm select-none" title="Ícone do micro-passo">{sub.icon}</span>}
-                  <span>{sub.content}</span>
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => deleteSubtask(item.id, sub.id)}
-                className="text-zinc-400 hover:text-red-500 opacity-0 group-hover/sub:opacity-100 transition-opacity p-0.5 flex-shrink-0"
-                title="Remover micro-tarefa"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+        <div className="pl-11 pr-2 pb-2 border-l border-zinc-200/50 dark:border-white/5 mt-1 animate-fade-in flex flex-col gap-2.5">
+          {item.subtasks && item.subtasks.length > 0 && (
+            <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1 scroll-smooth">
+              {item.subtasks.map(sub => (
+                <div key={sub.id} className="flex items-center justify-between gap-3 text-xs group/sub py-0.5 animate-fade-in">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleSubtask(item.id, sub.id)}
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
+                        sub.completed ? 'bg-bujo-accent border-bujo-accent text-white' : 'border-zinc-300 dark:border-white/20'
+                      }`}
+                    >
+                      {sub.completed && <Check className="w-2.5 h-2.5 stroke-[4]" />}
+                    </button>
+                    <span className={`truncate flex items-center gap-1.5 ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                      {sub.icon && <span className="text-sm select-none" title="Ícone do micro-passo">{sub.icon}</span>}
+                      <span>{sub.content}</span>
+                      {sub.executionTime && (
+                        <span className="text-[9.5px] bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-mono ml-1.5 inline-flex items-center gap-0.5 select-none" title="Tempo de execução do micro-passo">
+                          ⏱️ {sub.executionTime} min
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => deleteSubtask(item.id, sub.id)}
+                    className="text-zinc-400 hover:text-red-500 opacity-0 group-hover/sub:opacity-100 transition-opacity p-0.5 flex-shrink-0 cursor-pointer"
+                    title="Remover micro-tarefa"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
 
           {/* New Subtask Input Form with Icon Picker and Cancel Actions */}
-          <div className="flex items-center gap-2 pt-1 no-print relative">
+          <div className="flex items-center gap-2 pt-1.5 no-print relative">
             {/* Icon Picker for Subtask */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowSubtaskIconDropdown(!showSubtaskIconDropdown)}
-                className="w-6 h-6 rounded bg-zinc-200/50 dark:bg-white/5 border border-zinc-350 dark:border-white/10 flex items-center justify-center text-xs hover:border-bujo-highlight hover:bg-zinc-200/80 dark:hover:bg-white/10 transition-all cursor-pointer"
+                className="w-6 h-6 rounded bg-zinc-200/50 dark:bg-white/5 border border-zinc-300 dark:border-white/10 flex items-center justify-center text-xs hover:border-bujo-highlight hover:bg-zinc-200/80 dark:hover:bg-white/10 transition-all cursor-pointer"
                 title="Escolher Ícone para o micro-passo"
               >
                 {subtaskIcon || '🎨'}
               </button>
-
+ 
               {showSubtaskIconDropdown && (
                 <div className="absolute left-0 bottom-full mb-2 p-2 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-52 animate-scale-in">
                   <div className="flex justify-between items-center mb-1 pb-1 border-b border-zinc-200/40 dark:border-white/5">
@@ -371,7 +459,7 @@ export const BulletItem = ({
                 </div>
               )}
             </div>
-
+ 
             <div className="relative flex-1 flex items-center">
               <input
                 type="text"
@@ -381,20 +469,20 @@ export const BulletItem = ({
                 className="bg-transparent border-b border-zinc-200/80 dark:border-white/10 outline-none text-xs text-bujo-text placeholder:text-zinc-500 w-full py-1 pr-6"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    addSubtask(item.id, subtaskIcon);
-                    setSubtaskIcon('');
+                    handleAddSubtaskLocal();
                   }
                 }}
               />
-              {(newSubtaskText || subtaskIcon) && (
+              {(newSubtaskText || subtaskIcon || subtaskMinutes) && (
                 <button
                   type="button"
                   onClick={() => {
                     setNewSubtaskText('');
                     setSubtaskIcon('');
+                    setSubtaskMinutes('');
                     setShowSubtaskIconDropdown(false);
                   }}
-                  className="absolute right-1 p-0.5 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
+                  className="absolute right-1 p-0.5 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-405 hover:text-bujo-text transition-colors cursor-pointer"
                   title="Limpar"
                 >
                   <X className="w-3 h-3" />
@@ -402,26 +490,36 @@ export const BulletItem = ({
               )}
             </div>
 
-            <div className="flex gap-1">
-              {(newSubtaskText || subtaskIcon) && (
+            <div className="shrink-0 flex items-center gap-1">
+              <input
+                type="number"
+                min="0"
+                placeholder="min"
+                value={subtaskMinutes}
+                onChange={(e) => setSubtaskMinutes(e.target.value)}
+                className="w-12 bg-zinc-200/40 dark:bg-white/5 border border-zinc-300 dark:border-white/10 rounded px-1.5 py-0.5 text-xs text-bujo-text outline-none text-center font-mono placeholder:text-zinc-500"
+                title="Tempo estimado (minutos)"
+              />
+            </div>
+ 
+            <div className="flex gap-1 shrink-0">
+              {(newSubtaskText || subtaskIcon || subtaskMinutes) && (
                 <button
                   type="button"
                   onClick={() => {
                     setNewSubtaskText('');
                     setSubtaskIcon('');
+                    setSubtaskMinutes('');
                     setShowSubtaskIconDropdown(false);
                   }}
-                  className="px-2 py-1 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-350 dark:border-white/15 rounded text-[10px] font-bold hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
+                  className="px-2 py-1 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-300/40 dark:border-white/15 rounded text-[10px] font-bold hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
                 >
                   Cancelar
                 </button>
               )}
               <button
-                onClick={() => {
-                  addSubtask(item.id, subtaskIcon);
-                  setSubtaskIcon('');
-                }}
-                className="px-2.5 py-1 bg-zinc-300/40 dark:bg-white/10 text-[10px] font-bold rounded hover:bg-zinc-300/60 dark:hover:bg-white/20 transition-all cursor-pointer"
+                onClick={handleAddSubtaskLocal}
+                className="px-2.5 py-1 bg-zinc-300/40 dark:bg-white/10 text-[10px] font-bold rounded hover:bg-zinc-300/60 dark:hover:bg-white/20 transition-all cursor-pointer border border-zinc-300/20 dark:border-white/5"
               >
                 Adicionar
               </button>

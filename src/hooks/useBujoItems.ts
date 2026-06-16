@@ -66,11 +66,22 @@ export function useBujoItems(
     selectedDate: string,
     standardTime: string,
     setStandardTime: React.Dispatch<React.SetStateAction<string>>,
-    icon?: string
+    icon?: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
   ) => {
     if (!standardInput.trim()) return;
 
     const content = standardInput.trim();
+    
+    // Delegation regex extraction
+    let delegatedTo = undefined;
+    const delegationMatch = content.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
+    if (delegationMatch) {
+      delegatedTo = delegationMatch[1];
+    }
+
     const newItem: BujoItem = {
       id: Math.random().toString(),
       type: standardType,
@@ -79,7 +90,11 @@ export function useBujoItems(
       date: standardDate || selectedDate,
       time: standardTime || undefined,
       subtasks: standardType === 'task' ? [] : undefined,
-      icon: icon || undefined
+      icon: icon || undefined,
+      energy: standardType === 'task' ? (energy || 1) : undefined,
+      complexity: standardType === 'task' ? (complexity || 1) : undefined,
+      executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
+      delegatedTo: delegatedTo || undefined
     };
 
     // Check for collection sync: [Collection Name] some task
@@ -353,10 +368,27 @@ export function useBujoItems(
   };
 
   // Inline content edit save
-  const handleSaveEditItem = (id: string, editingItemContent: string) => {
+  const handleSaveEditItem = (
+    id: string,
+    editingItemContent: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
+  ) => {
     setItems(prev => prev.map(item => {
       if (item.id === id) {
-        return { ...item, content: editingItemContent };
+        // Delegation regex extraction
+        const delegationMatch = editingItemContent.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
+        const delegatedTo = delegationMatch ? delegationMatch[1] : undefined;
+
+        return {
+          ...item,
+          content: editingItemContent,
+          energy: item.type === 'task' ? (energy ?? item.energy) : undefined,
+          complexity: item.type === 'task' ? (complexity ?? item.complexity) : undefined,
+          executionTime: item.type === 'task' ? (executionTime ?? item.executionTime) : undefined,
+          delegatedTo: delegatedTo !== undefined ? delegatedTo : item.delegatedTo
+        };
       }
       return item;
     }));
@@ -368,7 +400,8 @@ export function useBujoItems(
     taskId: string,
     newSubtaskText: string,
     setNewSubtaskText: React.Dispatch<React.SetStateAction<string>>,
-    icon?: string
+    icon?: string,
+    executionTime?: number
   ) => {
     if (!newSubtaskText.trim()) return;
     setItems(prev => prev.map(item => {
@@ -376,7 +409,13 @@ export function useBujoItems(
         const sub = item.subtasks || [];
         return {
           ...item,
-          subtasks: [...sub, { id: Math.random().toString(), content: newSubtaskText.trim(), completed: false, icon }]
+          subtasks: [...sub, { 
+            id: Math.random().toString(), 
+            content: newSubtaskText.trim(), 
+            completed: false, 
+            icon,
+            executionTime
+          }]
         };
       }
       return item;

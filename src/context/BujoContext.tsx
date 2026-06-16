@@ -28,7 +28,10 @@ export interface BujoContextType {
     selectedDate: string,
     standardTime: string,
     setStandardTime: React.Dispatch<React.SetStateAction<string>>,
-    icon?: string
+    icon?: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
   ) => void;
   handleTimelineAddInput: (
     timelineInput: string,
@@ -48,12 +51,19 @@ export interface BujoContextType {
   ) => void;
   unassignItemFromTime: (itemId: string) => void;
   handleDeleteItem: (id: string) => void;
-  handleSaveEditItem: (id: string, editingItemContent: string) => void;
+  handleSaveEditItem: (
+    id: string,
+    editingItemContent: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
+  ) => void;
   addSubtask: (
     taskId: string,
     newSubtaskText: string,
     setNewSubtaskText: React.Dispatch<React.SetStateAction<string>>,
-    icon?: string
+    icon?: string,
+    executionTime?: number
   ) => void;
   toggleSubtask: (taskId: string, subtaskId: string) => void;
   deleteSubtask: (taskId: string, subtaskId: string) => void;
@@ -272,7 +282,7 @@ export interface BujoContextType {
   createStandardTaskWithSuggestions: (subtasks: string[]) => void;
   createRapidTaskWithSuggestions: (subtasks: string[]) => void;
   handleStartEditItem: (id: string, initialContent: string) => void;
-  handleSaveEditItemForm: (id: string) => void;
+  handleSaveEditItemForm: (id: string, energy?: number, complexity?: number, executionTime?: number) => void;
   handleBrainDumpOrganize: () => void;
   addBrainDumpItemsToBujo: () => void;
   appendBrainDumpTrigger: (trigger: string) => void;
@@ -1303,29 +1313,29 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     if (!sug || inputType !== 'task') return null;
 
     return (
-      <div className="mt-2 p-3.5 rounded-xl border border-bujo-accent/20 bg-bujo-accent/[0.03] dark:bg-bujo-accent/[0.05] backdrop-blur-sm animate-fade-in text-xs space-y-2 text-bujo-text relative z-10 no-print shadow-md">
+      <div className="mt-1.5 p-2 rounded-xl border border-bujo-accent/20 bg-bujo-accent/[0.02] dark:bg-bujo-accent/[0.04] backdrop-blur-sm animate-fade-in text-[10.5px] space-y-1.5 text-bujo-text relative z-10 no-print shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-[9px] font-bold text-bujo-accent uppercase tracking-widest flex items-center gap-1">
-            <span>🧠</span> Copiloto TDAH (Sugerido: {sug.category})
+          <span className="text-[9.5px] font-bold text-bujo-accent uppercase tracking-widest flex items-center gap-1">
+            <span>🧠</span> Copiloto TDAH ({sug.category})
           </span>
-          <span className="text-[9px] text-zinc-500 font-mono">Micro-passos prontos</span>
+          <span className="text-[9px] text-zinc-500 font-mono">Micro-passos sugeridos</span>
         </div>
 
-        <div className="space-y-1 pl-1">
+        <div className="flex flex-wrap gap-1.5 pl-0.5 text-[9.5px]">
           {sug.subtasks.map((step: string, index: number) => (
-            <div key={index} className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-300">
+            <span key={index} className="inline-flex items-center gap-1 bg-zinc-200/40 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-zinc-200/50 dark:border-white/5 text-zinc-600 dark:text-zinc-350">
               <span className="text-bujo-accent font-bold">•</span>
               <span>{step}</span>
-            </div>
+            </span>
           ))}
         </div>
 
         <button
           type="button"
           onClick={() => onSelectSuggestion(sug.subtasks)}
-          className="w-full py-1.5 bg-bujo-accent/15 hover:bg-bujo-accent/25 text-bujo-accent text-[10px] font-bold rounded-lg transition-colors flex items-center justify-center gap-1 text-white"
+          className="w-full py-1 bg-bujo-accent/10 hover:bg-bujo-accent/20 text-bujo-accent text-[9.5px] font-bold rounded-lg transition-colors flex items-center justify-center gap-1 border border-bujo-accent/20 cursor-pointer"
         >
-          <span>✨</span> Criar tarefa com estes micro-passos acoplados
+          <span>✨</span> Criar tarefa com estes {sug.subtasks.length} micro-passos
         </button>
       </div>
     );
@@ -1369,14 +1379,30 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     setEditingItemContent(initialContent);
   };
 
-  const handleSaveEditItemForm = (id: string) => {
+  const handleSaveEditItemForm = (
+    id: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
+  ) => {
     if (!editingItemContent.trim()) {
       showToast('O conteúdo não pode estar vazio!');
       return;
     }
     setItems(prev => prev.map(item => {
       if (item.id === id) {
-        return { ...item, content: editingItemContent.trim() };
+        // Delegation regex extraction
+        const delegationMatch = editingItemContent.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
+        const delegatedTo = delegationMatch ? delegationMatch[1] : undefined;
+
+        return {
+          ...item,
+          content: editingItemContent.trim(),
+          energy: item.type === 'task' ? (energy ?? item.energy) : undefined,
+          complexity: item.type === 'task' ? (complexity ?? item.complexity) : undefined,
+          executionTime: item.type === 'task' ? (executionTime ?? item.executionTime) : undefined,
+          delegatedTo: delegatedTo !== undefined ? delegatedTo : item.delegatedTo
+        };
       }
       return item;
     }));

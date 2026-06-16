@@ -5,10 +5,13 @@ export interface BujoItem {
   content: string;
   date: string; // YYYY-MM-DD
   time?: string; // HH:MM
-  subtasks?: { id: string; content: string; completed: boolean; icon?: string }[];
+  subtasks?: { id: string; content: string; completed: boolean; icon?: string; executionTime?: number }[];
   priority?: boolean;
   delegatedTo?: string;
   icon?: string;
+  energy?: number; // 1-5
+  complexity?: number; // 1-5
+  executionTime?: number; // in minutes
 }
 
 export interface BujoSettings {
@@ -60,6 +63,7 @@ export interface Subtask {
   content: string;
   completed: boolean;
   icon?: string;
+  executionTime?: number;
 }
 
 export interface DreamItem {
