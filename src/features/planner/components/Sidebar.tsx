@@ -148,42 +148,6 @@ export const Sidebar = () => {
         <Cloud className="w-4 h-4" />
         <span>Algum Dia</span>
       </button>
-      <button
-        id="sidebar-tab-trash"
-        onClick={() => setActiveTab('trash')}
-        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
-          activeTab === 'trash' 
-            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
-            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
-        }`}
-      >
-        <Trash2 className="w-4 h-4" />
-        <span>Lixeira</span>
-      </button>
-      <button
-        id="sidebar-tab-settings"
-        onClick={() => setActiveTab('settings')}
-        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
-          activeTab === 'settings' 
-            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
-            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
-        }`}
-      >
-        <Settings className="w-4 h-4" />
-        <span>Ajustes</span>
-      </button>
-      <button
-        id="sidebar-tab-landing_page"
-        onClick={() => setActiveTab('landing_page')}
-        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
-          activeTab === 'landing_page' 
-            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
-            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
-        }`}
-      >
-        <Sparkles className="w-4 h-4 text-pink-500" />
-        <span>Apresentação 🚀</span>
-      </button>
     </aside>
   );
 };

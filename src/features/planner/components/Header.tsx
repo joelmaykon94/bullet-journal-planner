@@ -29,9 +29,6 @@ export const Header = () => {
     { id: 'collections', label: 'Coleções', icon: FolderOpen },
     { id: 'dream_board', label: 'Quadro dos Sonhos', icon: Sparkles },
     { id: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
-    { id: 'trash', label: 'Lixeira', icon: Trash2 },
-    { id: 'settings', label: 'Ajustes', icon: Settings },
-    { id: 'landing_page', label: 'Apresentação 🚀', icon: Sparkles },
   ];
 
   const triggerPWAInstall = () => {
