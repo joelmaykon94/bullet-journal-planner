@@ -283,51 +283,7 @@ export const IndexTab = () => {
         </div>
       </div>
 
-      {/* 2. Ritmo Energético (Full width) */}
-      <div id="tutorial-energy-chart" className="w-full">
-        <EnergyChart 
-          items={items}
-          getHarmonyScore={getHarmonyScore}
-          getHarmonyRecommendation={getHarmonyRecommendation}
-          showEnergyGuide={showEnergyGuide}
-          setShowEnergyGuide={setShowEnergyGuide}
-          selectedDate={selectedDate}
-        />
-      </div>
-
-      {/* 3. Rastreador de Hábitos (Full width) */}
-      <div id="tutorial-habit-tracker" className="w-full">
-        <HabitTracker />
-      </div>
-
-      {/* 4. Guia de Foco (Full width) */}
-      <div className="w-full">
-        <UserPersonaCard
-          userXp={userXp}
-          setUserXp={setUserXp}
-          currentEnergy={currentEnergy}
-          anxietyLevel={anxietyLevel}
-          showToast={showToast}
-          items={items}
-          soundType={soundType}
-          setSoundType={setSoundType}
-          toggleAmbientAudio={toggleAmbientAudio}
-          ambientPlaying={ambientPlaying}
-          ambientVolume={ambientVolume}
-          setAmbientVolume={setAmbientVolume}
-          aiEngine={aiEngine}
-          aiWorkerRef={aiWorkerRef}
-          localLLMState={localLLMState}
-          getCognitiveLoad={getCognitiveLoad}
-        />
-      </div>
-
-      {/* 5. Knowledge Evolution Chart (Full width) */}
-      <div id="tutorial-knowledge-chart" className="w-full">
-        <KnowledgeEvolutionChart />
-      </div>
-
-      {/* 6. Menu de Acesso Rápido (Full width) */}
+      {/* 2. Menu de Acesso Rápido (Full width) - Moved to top */}
       <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 w-full">
         <h4 className="text-[10px] font-bold text-zinc-555 uppercase tracking-widest flex items-center gap-1.5 border-b border-zinc-200/20 dark:border-white/5 pb-2 mb-3">
           <Target className="w-3.5 h-3.5 text-bujo-highlight" />
@@ -359,6 +315,50 @@ export const IndexTab = () => {
             );
           })}
         </div>
+      </div>
+
+      {/* 3. Knowledge Evolution Chart (Full width) - Moved up */}
+      <div id="tutorial-knowledge-chart" className="w-full">
+        <KnowledgeEvolutionChart />
+      </div>
+
+      {/* 4. Ritmo Energético (Full width) */}
+      <div id="tutorial-energy-chart" className="w-full">
+        <EnergyChart 
+          items={items}
+          getHarmonyScore={getHarmonyScore}
+          getHarmonyRecommendation={getHarmonyRecommendation}
+          showEnergyGuide={showEnergyGuide}
+          setShowEnergyGuide={setShowEnergyGuide}
+          selectedDate={selectedDate}
+        />
+      </div>
+
+      {/* 5. Rastreador de Hábitos (Full width) */}
+      <div id="tutorial-habit-tracker" className="w-full">
+        <HabitTracker />
+      </div>
+
+      {/* 6. Guia de Foco (Full width) */}
+      <div className="w-full">
+        <UserPersonaCard
+          userXp={userXp}
+          setUserXp={setUserXp}
+          currentEnergy={currentEnergy}
+          anxietyLevel={anxietyLevel}
+          showToast={showToast}
+          items={items}
+          soundType={soundType}
+          setSoundType={setSoundType}
+          toggleAmbientAudio={toggleAmbientAudio}
+          ambientPlaying={ambientPlaying}
+          ambientVolume={ambientVolume}
+          setAmbientVolume={setAmbientVolume}
+          aiEngine={aiEngine}
+          aiWorkerRef={aiWorkerRef}
+          localLLMState={localLLMState}
+          getCognitiveLoad={getCognitiveLoad}
+        />
       </div>
 
     </div>
