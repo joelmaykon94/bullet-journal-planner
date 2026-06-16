@@ -1,13 +1,13 @@
 ---
 milestone: v2.0
 version: 2.0.0
-updated: 2026-06-16T10:40:00Z
+updated: 2026-06-16T11:05:00Z
 ---
 
 # Roadmap
 
-> **Current Phase:** 9 - Quality of Life, Advanced Modals & Core Enhancements
-> **Status:** ⏳ In Progress
+> **Current Phase:** 10 - Mobile Optimization & UX Polish
+> **Status:** ✅ Complete
 
 ## Must-Haves (from SPEC)
 
@@ -17,6 +17,7 @@ updated: 2026-06-16T10:40:00Z
 - [x] Refactor bullet journal states (items, collections, settings) to custom hooks and connect them through a React Context.
 - [x] Shrink `src/App.tsx` to under 400 lines while maintaining 100% feature parity.
 - [x] Ensure the project builds cleanly without TypeScript or lint errors.
+- [x] Ensure critical UI overlays (Tutorial) are responsive on mobile.
 
 ---
 
@@ -55,7 +56,7 @@ updated: 2026-06-16T10:40:00Z
 **Objective**: Integrate Local LLM (Web Worker) for task decomposition and cognitive relief suggestions.
 
 ### Phase 9: Quality of Life, Advanced Modals & Core Enhancements
-**Status**: ⏳ In Progress
+**Status**: ✅ Complete
 **Objective**: Implement detailed view modals, core UI refinements, and improved task management workflows.
 
 **Plans**:
@@ -65,6 +66,13 @@ updated: 2026-06-16T10:40:00Z
 - [x] Plan 9.4: Global Data Management & Technical Debt Removal.
 - [x] Plan 9.5: Global Search & Omnibox.
 - [x] Plan 9.6: PWA Install & Offline Awareness.
+
+### Phase 10: Mobile Optimization & UX Polish
+**Status**: ✅ Complete
+**Objective**: Finalize mobile-specific UI fixes and ensure a seamless experience across devices.
+
+**Plans**:
+- [x] Plan 10.1: Tutorial Mobile Responsiveness & UX Polish.
 
 ---
 
@@ -81,6 +89,7 @@ updated: 2026-06-16T10:40:00Z
 | 7 | ✅ | 1/1 | 2026-06-16 |
 | 8 | ✅ | 2/2 | 2026-06-16 |
 | 9 | ✅ | 6/6 | 2026-06-16 |
+| 10 | ✅ | 1/1 | 2026-06-16 |
 
 ---
 
@@ -89,4 +98,4 @@ updated: 2026-06-16T10:40:00Z
 | Phase | Started | Completed | Duration |
 |-------|---------|-----------|----------|
 | 1-5 | 2026-06-15 | 2026-06-15 | 1 day |
-| 6-9 | 2026-06-16 | | |
+| 6-10 | 2026-06-16 | 2026-06-16 | 1 day |
