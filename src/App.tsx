@@ -77,8 +77,26 @@ function AppContent() {
     handleConfirmAIDownload,
     handleDeclineAIDownload,
     setDeferredPrompt,
-    setIsOnline
+    setIsOnline,
+    viewedFeatureHelp,
+    setViewedFeatureHelp,
+    setShowFeatureHelpModal
   } = useBujo();
+
+  // Auto-trigger Feature Help on first visit
+  useEffect(() => {
+    if (!activeTab || activeTab === 'landing_page') return;
+    
+    // Check if the current tab has been viewed
+    if (!viewedFeatureHelp[activeTab]) {
+      // Small delay to allow tab transition animation
+      const timer = setTimeout(() => {
+        setShowFeatureHelpModal(true);
+        setViewedFeatureHelp((prev: Record<string, boolean>) => ({ ...prev, [activeTab]: true }));
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, viewedFeatureHelp, setViewedFeatureHelp, setShowFeatureHelpModal]);
 
   // PWA Install Prompt Listener
   useEffect(() => {
@@ -129,6 +147,10 @@ function AppContent() {
         }}
         setActiveTab={setActiveTab}
       />
+
+      {/* CONTEXTUAL FEATURE HELP */}
+      <FeatureHelpModal />
+      <FloatingHelpButton />
 
       {/* HEADER NAVBAR */}
       <Header />
