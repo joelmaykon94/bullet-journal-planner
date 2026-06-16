@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { BujoItem, DreamItem } from '../types';
 import { getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
+import { parseSmartTask } from '../utils/smartParser';
 
 export function useBujoItems(
   setUserXp: React.Dispatch<React.SetStateAction<number>>,
@@ -141,8 +142,10 @@ export function useBujoItems(
   ) => {
     if (!standardInput.trim()) return;
 
-    const content = standardInput.trim();
-    
+    // Apply Smart NLP Parsing
+    const parsed = parseSmartTask(standardInput.trim(), standardDate || selectedDate);
+    const content = parsed.cleanContent;
+
     // Delegation regex extraction
     let delegatedTo = undefined;
     const delegationMatch = content.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
@@ -150,7 +153,12 @@ export function useBujoItems(
       delegatedTo = delegationMatch[1];
     }
 
-    const targetDate = standardDate || selectedDate;
+    const targetDate = parsed.date || standardDate || selectedDate;
+    const finalTime = parsed.time || standardTime || undefined;
+    const finalEnergy = parsed.energy || energy || 1;
+    const finalComplexity = parsed.complexity || complexity || 1;
+    const isPriority = parsed.priority !== undefined ? parsed.priority : undefined;
+
     const isRecurring = standardType === 'task' && content.toLowerCase().includes('todos os dias');
     
     let itemsToCreate: BujoItem[] = [];
@@ -165,13 +173,14 @@ export function useBujoItems(
           status: 'open',
           content: content,
           date: wDate,
-          time: standardTime || undefined,
+          time: finalTime,
           subtasks: [],
           icon: icon || undefined,
-          energy: energy || 1,
-          complexity: complexity || 1,
+          energy: finalEnergy,
+          complexity: finalComplexity,
           executionTime: executionTime || undefined,
           delegatedTo: delegatedTo || undefined,
+          priority: isPriority,
           createdAt: new Date().toISOString()
         };
         itemsToCreate.push(item);
@@ -183,13 +192,14 @@ export function useBujoItems(
         status: 'open',
         content: content,
         date: targetDate,
-        time: standardTime || undefined,
+        time: finalTime,
         subtasks: standardType === 'task' ? [] : undefined,
         icon: icon || undefined,
-        energy: standardType === 'task' ? (energy || 1) : undefined,
-        complexity: standardType === 'task' ? (complexity || 1) : undefined,
+        energy: standardType === 'task' ? finalEnergy : undefined,
+        complexity: standardType === 'task' ? finalComplexity : undefined,
         executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
         delegatedTo: delegatedTo || undefined,
+        priority: standardType === 'task' ? isPriority : undefined,
         createdAt: new Date().toISOString()
       };
       itemsToCreate.push(newItem);
