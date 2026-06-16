@@ -59,3 +59,13 @@ export interface Subtask {
   content: string;
   completed: boolean;
 }
+
+export interface DreamItem {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  icon?: string;
+  conquered: boolean;
+  conqueredAt?: string;
+}

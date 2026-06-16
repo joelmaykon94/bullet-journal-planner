@@ -21,6 +21,7 @@ import { FocusMode } from './features/focus/components/FocusMode';
 import { AISuggestionsModal } from './features/planner/components/AISuggestionsModal';
 import { TrashTab } from './features/planner/components/TrashTab';
 import { SomedayMaybeTab } from './features/planner/components/SomedayMaybeTab';
+import { DreamBoardTab } from './features/planner/components/DreamBoardTab';
 
 function AppContent() {
   const {
@@ -116,6 +117,7 @@ function AppContent() {
               {activeTab === 'collections' && <CollectionsLibrary />}
               {activeTab === 'trash' && <TrashTab />}
               {activeTab === 'someday_maybe' && <SomedayMaybeTab />}
+              {activeTab === 'dream_board' && <DreamBoardTab />}
             </main>
           </div>
         )}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { BujoItem } from '../types';
+import { BujoItem, DreamItem } from '../types';
 
 export function useBujoItems(
   setUserXp: React.Dispatch<React.SetStateAction<number>>,
@@ -248,6 +248,20 @@ export function useBujoItems(
     localStorage.setItem('bujo_focus_someday_items', JSON.stringify(somedayItems));
   }, [somedayItems]);
 
+  // Dream Board (Quadro dos Sonhos) state
+  const [dreams, setDreams] = useState<DreamItem[]>(() => {
+    const saved = localStorage.getItem('bujo_focus_dreams');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'dream-1', title: 'Viajar para o Japão 🌸', description: 'Visitar Tóquio, Quioto e ver o Monte Fuji', category: 'Viagem', icon: '✈️', conquered: false },
+      { id: 'dream-2', title: 'Aprender React Native', description: 'Criar meu primeiro aplicativo móvel', category: 'Carreira', icon: '💻', conquered: false }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bujo_focus_dreams', JSON.stringify(dreams));
+  }, [dreams]);
+
   // Delete item entirely (send to trash)
   const handleDeleteItem = (id: string) => {
     const itemToDelete = items.find(item => item.id === id);
@@ -444,6 +458,51 @@ export function useBujoItems(
     showToast('Ícone do item atualizado');
   };
 
+  // Dream Board (Quadro dos Sonhos) helpers
+  const handleAddDream = (title: string, category: string, icon?: string, description?: string) => {
+    if (!title.trim()) return;
+    const newDream: DreamItem = {
+      id: 'dream-' + Date.now(),
+      title: title.trim(),
+      category,
+      icon: icon || undefined,
+      description: description?.trim() || undefined,
+      conquered: false
+    };
+    setDreams(prev => [newDream, ...prev]);
+    showToast('Sonho adicionado ao seu Quadro! ✨');
+  };
+
+  const handleToggleDreamConquered = (id: string) => {
+    setDreams(prev => prev.map(dream => {
+      if (dream.id === id) {
+        const nextConquered = !dream.conquered;
+        if (nextConquered) {
+          setUserXp(prevXp => prevXp + 50);
+          showToast('Parabéns! Sonho Conquistado! 🏆 (+50 XP)');
+          return {
+            ...dream,
+            conquered: nextConquered,
+            conqueredAt: new Date().toISOString().split('T')[0]
+          };
+        } else {
+          showToast('Status do sonho redefinido');
+          return {
+            ...dream,
+            conquered: nextConquered,
+            conqueredAt: undefined
+          };
+        }
+      }
+      return dream;
+    }));
+  };
+
+  const handleDeleteDream = (id: string) => {
+    setDreams(prev => prev.filter(dream => dream.id !== id));
+    showToast('Sonho removido');
+  };
+
   return {
     items,
     setItems,
@@ -471,6 +530,11 @@ export function useBujoItems(
     handleToggleSomedayItem,
     // Delegation & Icon
     handleUpdateItemDelegatedTo,
-    handleUpdateItemIcon
+    handleUpdateItemIcon,
+    // Dream Board
+    dreams,
+    handleAddDream,
+    handleToggleDreamConquered,
+    handleDeleteDream
   };
 }

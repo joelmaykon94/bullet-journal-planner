@@ -1,7 +1,7 @@
 import { createContext, useContext, ReactNode, useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { BujoItem, BujoSettings, AISubtaskSuggestions, Collection } from '../types';
+import { BujoItem, BujoSettings, AISubtaskSuggestions, Collection, DreamItem } from '../types';
 import { useBujoItems } from '../hooks/useBujoItems';
 import { useBujoSettings } from '../hooks/useBujoSettings';
 import { useCollections } from '../hooks/useCollections';
@@ -62,6 +62,12 @@ export interface BujoContextType {
   handleToggleSomedayItem: (id: string) => void;
   handleUpdateItemDelegatedTo: (id: string, delegatedTo: string) => void;
   handleUpdateItemIcon: (id: string, icon: string) => void;
+
+  // Dream Board
+  dreams: DreamItem[];
+  handleAddDream: (title: string, category: string, icon?: string, description?: string) => void;
+  handleToggleDreamConquered: (id: string) => void;
+  handleDeleteDream: (id: string) => void;
 
   // Settings
   settings: BujoSettings;
@@ -138,8 +144,8 @@ export interface BujoContextType {
   setAnxietyLevel: React.Dispatch<React.SetStateAction<number>>;
   currentEnergy: 'high' | 'low' | 'exhausted';
   setCurrentEnergy: React.Dispatch<React.SetStateAction<'high' | 'low' | 'exhausted'>>;
-  activeTab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe';
-  setActiveTab: React.Dispatch<React.SetStateAction<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe'>>;
+  activeTab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board';
+  setActiveTab: React.Dispatch<React.SetStateAction<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board'>>;
   selectedDate: string;
   setSelectedDate: React.Dispatch<React.SetStateAction<string>>;
   showOverloadReliefModal: boolean;
@@ -305,7 +311,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     return (saved as any) || 'high';
   });
 
-  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe'>('indice');
+  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board'>('indice');
   const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [showOverloadReliefModal, setShowOverloadReliefModal] = useState<boolean>(false);
   const [focoActive, setFocoActive] = useState<boolean>(false);

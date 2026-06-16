@@ -1,4 +1,4 @@
-import { Sliders, CheckSquare, Calendar, BookOpen, Brain, FolderOpen, Settings, LayoutGrid, CalendarDays, Trash2, Cloud } from 'lucide-react';
+import { Sliders, CheckSquare, Calendar, BookOpen, Brain, FolderOpen, Settings, LayoutGrid, CalendarDays, Trash2, Cloud, Sparkles } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 export const Sidebar = () => {
@@ -104,6 +104,17 @@ export const Sidebar = () => {
       >
         <FolderOpen className="w-4 h-4" />
         <span>Coleções</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('dream_board')}
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
+          activeTab === 'dream_board' 
+            ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+            : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <Sparkles className="w-4 h-4" />
+        <span>Quadro dos Sonhos</span>
       </button>
       <button
         onClick={() => setActiveTab('someday_maybe')}
