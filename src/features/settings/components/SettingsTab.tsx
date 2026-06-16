@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ChevronRight, Sparkles, LogOut, Database, User, ShieldAlert } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -20,6 +21,10 @@ export const SettingsTab = () => {
   } = useBujo();
 
   const { user, signOut, clearConfig } = useAuth();
+
+  const [activeCompanionId, setActiveCompanionId] = useState(() => {
+    return localStorage.getItem('bujo_persona_archetype') || 'zari';
+  });
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -71,8 +76,35 @@ export const SettingsTab = () => {
 
           {/* Color palette selector */}
           <div className="space-y-3.5">
-            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">Esquema de Cores de Hiperfoco</label>
+            <label className="text-xs font-bold text-zinc-550 dark:text-zinc-400 uppercase tracking-wider block">Esquema de Cores de Hiperfoco</label>
             
+            {/* Hashira Theme Premium Card */}
+            <button
+              onClick={() => {
+                setSettings(prev => ({ ...prev, highlightColor: '#EF4444', accentColor: '#3B82F6' }));
+                showToast('Tema Sincronia Hashira ativado! 🔥🌊');
+              }}
+              className={`w-full p-4 rounded-3xl border text-left flex items-center justify-between gap-4 transition-all bg-gradient-to-r from-red-950/20 via-[#0A0514] to-blue-950/20 ${
+                settings.highlightColor === '#EF4444' && settings.accentColor === '#3B82F6'
+                  ? 'border-red-500/50 shadow-lg shadow-red-500/5 ring-1 ring-red-500/20'
+                  : 'border-zinc-200/40 dark:border-white/10 hover:border-red-500/30'
+              }`}
+            >
+              <div className="space-y-1 flex-1">
+                <span className="text-[10px] font-bold text-red-400 uppercase tracking-widest block font-mono">🎨 TEMA HASHIRA ATIVO</span>
+                <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                  🔥 Sincronia Hashira (Demon Slayer) 🌊
+                </h4>
+                <p className="text-[9.5px] text-zinc-450 leading-relaxed">
+                  Lâminas do caçador: Vermelho Fogo (Rengoku) e Azul Ondas (Giyu). Ativa fundo dinâmico de Sakura e cortes no escuro.
+                </p>
+              </div>
+              <div className="flex gap-1.5 bg-zinc-950/50 p-2 rounded-2xl border border-white/5 shrink-0">
+                <span className="w-6 h-6 rounded-full bg-[#EF4444] shadow-md shadow-red-500/20 flex items-center justify-center text-[10px]" title="Chamas">🔥</span>
+                <span className="w-6 h-6 rounded-full bg-[#3B82F6] shadow-md shadow-blue-500/20 flex items-center justify-center text-[10px]" title="Água">🌊</span>
+              </div>
+            </button>
+
             <div className="grid grid-cols-2 gap-3">
               {/* Ocre & Verde Sálvia */}
               <button
@@ -149,6 +181,47 @@ export const SettingsTab = () => {
                   <span className="text-[9px] text-zinc-550 block">Calmante Antiestresse</span>
                 </div>
               </button>
+            </div>
+          </div>
+
+          {/* Demon Slayer Companion Selector */}
+          <div className="space-y-3.5 pt-4 border-t border-zinc-200/30 dark:border-white/5">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-pink-400" />
+              <label className="text-xs font-bold text-zinc-550 dark:text-zinc-400 uppercase tracking-wider block">Selecione seu Guia de Foco Hashira</label>
+            </div>
+            <p className="text-[9.5px] text-zinc-450 leading-relaxed">
+              O BuJo Focus vem com guias inspirados no anime Demon Slayer: Kimetsu No Yaiba. Cada personagem reage à sua carga mental de forma diferente e dá orientações interativas com IA!
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { id: 'zari', name: 'Nezuko 🌸', role: 'Oni Aliada', icon: '🌸', color: 'border-pink-500/25 bg-pink-500/5 hover:bg-pink-500/10 text-pink-300' },
+                { id: 'lily', name: 'Shinobu 🦋', role: 'Hashira Inseto', icon: '🦋', color: 'border-purple-500/25 bg-purple-500/5 hover:bg-purple-500/10 text-purple-300' },
+                { id: 'eddy', name: 'Rengoku 🔥', role: 'Hashira Chamas', icon: '🔥', color: 'border-red-500/25 bg-red-500/5 hover:bg-red-500/10 text-red-300' },
+                { id: 'oscar', name: 'Giyu 🌊', role: 'Hashira Água', icon: '🌊', color: 'border-blue-500/25 bg-blue-500/5 hover:bg-blue-500/10 text-blue-300' }
+              ].map(arch => (
+                <button
+                  key={arch.id}
+                  onClick={() => {
+                    localStorage.setItem('bujo_persona_archetype', arch.id);
+                    localStorage.setItem('bujo_persona_name', arch.name);
+                    setActiveCompanionId(arch.id);
+                    showToast(`Guia alterado para ${arch.name}! Verifique no Índice. ✨`);
+                  }}
+                  className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition-all ${
+                    activeCompanionId === arch.id 
+                      ? 'border-bujo-highlight bg-bujo-highlight/15 shadow-md ring-1 ring-bujo-highlight/20 scale-[1.02]' 
+                      : `${arch.color}`
+                  }`}
+                >
+                  <span className="text-2xl shrink-0">{arch.icon}</span>
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold block truncate text-white">{arch.name}</span>
+                    <span className="text-[8.5px] opacity-60 block truncate">{arch.role}</span>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
 
