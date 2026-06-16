@@ -28,6 +28,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+let globalSupabaseClient: SupabaseClient | null = null;
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -52,13 +54,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const initSupabase = (url: string, key: string) => {
     setConfigError(null);
     try {
-      const client = createClient(url, key, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+      if (!globalSupabaseClient) {
+        globalSupabaseClient = createClient(url, key, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+          }
+        });
+      }
+      
+      const client = globalSupabaseClient;
       setSupabase(client);
       setNeedsConfig(false);
 

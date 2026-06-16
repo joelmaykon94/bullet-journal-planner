@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useBujo, BujoProvider } from './context/BujoContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthScreen } from './features/auth/components/AuthScreen';
