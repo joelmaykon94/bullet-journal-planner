@@ -1,73 +1,77 @@
-pnpm ru# React + TypeScript + Vite
+# BuJo Focus 🧠⚡
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+O **BuJo Focus** é um planejador cognitivo minimalista e gamificado, estruturado especificamente para pessoas com TDAH e para organização pessoal através da metodologia GTD (*Getting Things Done*). O sistema combina micro-tarefas assistidas por Inteligência Artificial local (Transformers/LLM), monitoramento de energia biológica e gamificação científica para reduzir a carga mental e evitar a paralisia por sobrecarga.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Principais Funcionalidades
 
-## React Compiler
+- **Daily Log (Diário de Borda):** Registro rápido de tarefas, eventos e notas com suporte a categorias por emojis, estimativa de tempo e autocompletar inteligente de contextos com `@`.
+- **Ritmo Energético (ADHD Energy Chart):** Gráfico de flutuação dopaminérgica diária que sugere os melhores horários para atacar tarefas complexas (Pico de Foco) ou descansar (Vale de Crash).
+- **Rastreador de Hábitos (Habit Tracker):** Painel de hábitos para consolidação de rotinas com pontuação visual de consistência.
+- **Quadro Someday/Maybe (Algum Dia/Talvez):** Painel interativo estilo *Sticky Notes* para descarregar ideias e projetos futuros divididos em categorias.
+- **Central de Foco & User Persona:** Acompanhamento de Nível de Experiência (XP), Nível de Ansiedade e indicador de Carga Cognitiva em tempo real.
+- **Tema Premium Hashira (Demon Slayer):** Customização visual inspirada no anime Demon Slayer com trilha sonora de ambiente e companheiro de foco selecionável.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Pré-requisitos
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Para rodar o projeto localmente, certifique-se de ter instalado em sua máquina:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. **Node.js** (versão 18.0.0 ou superior recomendada)
+2. **Gerenciador de Pacotes:** `pnpm` (recomendado) ou `npm`
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🚀 Como Executar Localmente
+
+### Passo 1: Clonar o Repositório e Instalar Dependências
+No seu terminal, clone o projeto e acesse a pasta raiz:
+```bash
+git clone <url-do-repositorio>
+cd bullet-journal-planner
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Instale as dependências usando o `pnpm` (ou `npm`):
+```bash
+pnpm install
+# ou caso use npm:
+npm install
 ```
+
+### Passo 2: Configurar Variáveis de Ambiente
+1. Copie o arquivo de exemplo [.env.example](file:///home/joelmaykon/bullet-journal-planner/.env.example):
+   ```bash
+   cp .env.example .env
+   ```
+2. Abra o arquivo [.env](file:///home/joelmaykon/bullet-journal-planner/.env) gerado e configure suas chaves do Supabase:
+   - `VITE_SUPABASE_URL`: URL do seu projeto Supabase.
+   - `VITE_SUPABASE_ANON_KEY`: Chave pública anônima do seu projeto.
+
+### Passo 3: Iniciar o Servidor de Desenvolvimento
+Inicie o servidor local:
+```bash
+pnpm run dev
+# ou caso use npm:
+npm run dev
+```
+
+Abra o seu navegador no endereço indicado (geralmente [http://localhost:5173](http://localhost:5173)) para começar a usar a plataforma.
+
+---
+
+## 💾 Integração com Supabase (Banco de Dados)
+
+O BuJo Focus utiliza o **Supabase** como backend para persistência segura dos logs, hábitos, coleções e progresso do usuário. Se as chaves do Supabase não forem fornecidas no `.env`, o aplicativo executará no **Modo Offline** utilizando o `localStorage` do navegador como fallback automático.
+
+### Estrutura do Banco de Dados
+Para habilitar a persistência em nuvem, você deve ter as tabelas mapeadas no Supabase de acordo com o esquema definido no contexto do aplicativo (veja [BujoContext.tsx](file:///home/joelmaykon/bullet-journal-planner/src/context/BujoContext.tsx)).
+
+---
+
+## 🌐 Deploy em Produção (Netlify)
+
+Para hospedar e publicar o projeto de forma contínua a partir de commits no GitHub, consulte o nosso guia detalhado de deploy:
+
+- [Manual de Deploy no Netlify](file:///home/joelmaykon/bullet-journal-planner/docs/deploy-netlify.md)
