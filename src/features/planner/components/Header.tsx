@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckSquare, Sparkles, Download, Trash2, Settings, Cloud, CloudOff, Menu, X, Sliders, Calendar, BookOpen, Brain, FolderOpen, LayoutGrid, CalendarDays, LogOut, User } from 'lucide-react';
+import { CheckSquare, Sparkles, Download, Trash2, Settings, Cloud, CloudOff, Menu, X, Sliders, Calendar, BookOpen, Brain, FolderOpen, LayoutGrid, CalendarDays, LogOut, User, Search } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { useAuth } from '../../../context/AuthContext';
 

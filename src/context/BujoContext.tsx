@@ -6,7 +6,7 @@ import { useBujoItems } from '../hooks/useBujoItems';
 import { useBujoSettings } from '../hooks/useBujoSettings';
 import { useCollections } from '../hooks/useCollections';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
-import { useAmbientAudio } from '../hooks/useAmbientAudio';
+import { useAmbientAudio, SoundType } from '../hooks/useAmbientAudio';
 import { useHabits, HabitLog } from '../hooks/useHabits';
 import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
 
@@ -152,7 +152,9 @@ export interface BujoContextType {
 
   // Habits
   habits: string[];
+  setHabits: React.Dispatch<React.SetStateAction<string[]>>;
   habitLogs: HabitLog;
+  setHabitLogs: React.Dispatch<React.SetStateAction<HabitLog>>;
   toggleHabitDate: (habit: string, dateStr: string) => void;
   handleAddHabit: (name: string) => void;
   handleDeleteHabit: (habit: string) => void;
@@ -173,8 +175,8 @@ export interface BujoContextType {
   setCompletedPomodoros: React.Dispatch<React.SetStateAction<number>>;
 
   // Ambient Audio
-  soundType: 'chuva_lareira' | 'lofi_jazz' | 'foco_marrom' | 'vento_floresta';
-  setSoundType: React.Dispatch<React.SetStateAction<'chuva_lareira' | 'lofi_jazz' | 'foco_marrom' | 'vento_floresta'>>;
+  soundType: SoundType;
+  setSoundType: React.Dispatch<React.SetStateAction<SoundType>>;
   ambientPlaying: boolean;
   setAmbientPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   ambientVolume: number;

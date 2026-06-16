@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Shield, Sparkles, Smile, RefreshCw, Edit2, Check, Brain, Flame, Activity, Volume2, Play, Pause, Clock } from 'lucide-react';
 import { BujoItem } from '../../../types';
 import { useBujo } from '../../../context/BujoContext';
+import { SoundType } from '../../../hooks/useAmbientAudio';
 
 interface UserPersonaCardProps {
   userXp: number;
@@ -11,8 +12,8 @@ interface UserPersonaCardProps {
   showToast: (msg: string) => void;
   items: BujoItem[];
   // Focus audio controls
-  soundType: 'chuva_lareira' | 'lofi_jazz' | 'foco_marrom' | 'vento_floresta';
-  setSoundType: (type: 'chuva_lareira' | 'lofi_jazz' | 'foco_marrom' | 'vento_floresta') => void;
+  soundType: SoundType;
+  setSoundType: (type: SoundType) => void;
   toggleAmbientAudio: () => void;
   ambientPlaying: boolean;
   ambientVolume: number;
@@ -718,6 +719,9 @@ Escreva um conselho ou comentário no seu tom de voz em no máximo 2 frases. Sej
                   <option value="lofi_jazz">Respiração da Névoa (Jazz Lofi) 🌫️</option>
                   <option value="vento_floresta">Respiração do Inseto (Floresta de Glicínias) 🦋</option>
                   <option value="foco_marrom">Respiração das Chamas (Foco Ardente) 🔥</option>
+                  <option value="gurenge_theme">Gurenge Theme (Demon Slayer OP 1) ⚔️</option>
+                  <option value="tanjiro_theme">Tanjiro Theme (Kamado Tanjiro no Uta) 🌊</option>
+                  <option value="homura_theme">Homura Theme (Mugen Train) 🔥</option>
                 </select>
               </div>
 

@@ -263,6 +263,86 @@ export function useAmbientAudio(showToast: (msg: string) => void) {
         rainGain.connect(mainGain);
         rainSource.start();
         audioSourcesRef.current.push(rainSource);
+      } else if (soundType === 'gurenge_theme' || soundType === 'tanjiro_theme' || soundType === 'homura_theme') {
+        // Play synthesized anime theme using oscillators
+        let noteIndex = 0;
+        let nextNoteTime = ctx.currentTime;
+        const noteLength = 0.4; // duration of each step in seconds
+        
+        let notes: string[] = [];
+        if (soundType === 'gurenge_theme') {
+          // E4, G4, A4, B4, A4, G4, E4, D4, E4, G4, A4, B4, D5, B4, A4, G4
+          notes = ['E4', 'G4', 'A4', 'B4', 'A4', 'G4', 'E4', 'D4', 'E4', 'G4', 'A4', 'B4', 'D5', 'B4', 'A4', ''];
+        } else if (soundType === 'tanjiro_theme') {
+          // A3, C4, E4, D4, C4, D4, E4, C4, A3, C4, D4, E4, G4, F4, E4, D4
+          notes = ['A3', 'C4', 'E4', 'D4', 'C4', 'D4', 'E4', 'C4', 'A3', 'C4', 'D4', 'E4', 'G4', 'F4', 'E4', ''];
+        } else if (soundType === 'homura_theme') {
+          // C4, Eb4, G4, F4, Eb4, F4, G4, Eb4, C4, D4, Eb4, G4, C5, Bb4, G4, F4
+          notes = ['C4', 'Eb4', 'G4', 'F4', 'Eb4', 'F4', 'G4', 'Eb4', 'C4', 'D4', 'Eb4', 'G4', 'C5', 'Bb4', 'G4', ''];
+        }
+
+        const playNoteStep = (c: AudioContext, time: number, nIdx: number, targetGain: GainNode) => {
+          const noteName = notes[nIdx % notes.length];
+          if (!noteName || !NOTE_FREQS[noteName]) return;
+          
+          const freq = NOTE_FREQS[noteName];
+          
+          // Melody oscillator (Sine/Triangle mix)
+          const osc1 = c.createOscillator();
+          const osc2 = c.createOscillator();
+          const noteGain = c.createGain();
+          
+          osc1.type = 'triangle';
+          osc1.frequency.setValueAtTime(freq, time);
+          
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(freq * 2, time); // 1 octave up for shine
+          
+          noteGain.gain.setValueAtTime(0.0, time);
+          noteGain.gain.linearRampToValueAtTime(0.08, time + 0.05); // attack
+          noteGain.gain.exponentialRampToValueAtTime(0.001, time + noteLength * 0.9); // decay
+          
+          // Filter to make it warmer
+          const filter = c.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(800, time);
+          
+          osc1.connect(filter);
+          osc2.connect(filter);
+          filter.connect(noteGain);
+          noteGain.connect(targetGain);
+          
+          osc1.start(time);
+          osc1.stop(time + noteLength);
+          osc2.start(time);
+          osc2.stop(time + noteLength);
+        };
+
+        const intervalId = setInterval(() => {
+          while (nextNoteTime < ctx.currentTime + 0.1) {
+            playNoteStep(ctx, nextNoteTime, noteIndex, mainGain);
+            nextNoteTime += noteLength;
+            noteIndex++;
+          }
+        }, 50);
+
+        audioSourcesRef.current.push({ stop: () => clearInterval(intervalId), disconnect: () => {} });
+
+        // Add soft brown noise background for atmosphere
+        const brownSource = ctx.createBufferSource();
+        brownSource.buffer = noiseBuffer;
+        brownSource.loop = true;
+        const brownFilter = ctx.createBiquadFilter();
+        brownFilter.type = 'lowpass';
+        brownFilter.frequency.setValueAtTime(350, ctx.currentTime);
+        const brownGain = ctx.createGain();
+        brownGain.gain.setValueAtTime(0.2, ctx.currentTime);
+
+        brownSource.connect(brownFilter);
+        brownFilter.connect(brownGain);
+        brownGain.connect(mainGain);
+        brownSource.start();
+        audioSourcesRef.current.push(brownSource);
       }
     } catch (e) {
       console.error('Falha ao iniciar som:', e);
@@ -301,11 +381,14 @@ export function useAmbientAudio(showToast: (msg: string) => void) {
     } else {
       startAmbientAudio();
       setAmbientPlaying(true);
-      const soundLabels = {
+      const soundLabels: Record<SoundType, string> = {
         chuva_lareira: 'Respiração da Água (Chuva Calmante) 🌊',
         lofi_jazz: 'Respiração da Névoa (Jazz Lofi) 🌫️',
         vento_floresta: 'Respiração do Inseto (Floresta de Glicínias) 🦋',
-        foco_marrom: 'Respiração das Chamas (Foco Ardente) 🔥'
+        foco_marrom: 'Respiração das Chamas (Foco Ardente) 🔥',
+        gurenge_theme: 'Gurenge Theme (Demon Slayer OP 1) ⚔️',
+        tanjiro_theme: 'Tanjiro Theme (Kamado Tanjiro no Uta) 🌊',
+        homura_theme: 'Homura Theme (Mugen Train) 🔥'
       };
       showToast(`Som ambiente ativado: ${soundLabels[soundType]}`);
     }
