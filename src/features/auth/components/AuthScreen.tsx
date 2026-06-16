@@ -14,16 +14,16 @@ const GoogleIcon = () => (
 
 export const AuthScreen = () => {
   const {
-    user,
     needsConfig,
     config,
+    configError,
     saveConfig,
-    clearConfig,
     signIn,
     signUp,
     resetPassword,
     updatePassword,
-    signInWithGoogle
+    signInWithGoogle,
+    setOfflineMode
   } = useAuth();
 
   const { showToast } = useBujo();
@@ -246,6 +246,15 @@ export const AuthScreen = () => {
               </div>
             </div>
 
+            {configError && (
+              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-650 dark:text-red-400 text-[11px] leading-relaxed flex gap-2.5 items-start">
+                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                <div>
+                  <strong>Erro de Conexão:</strong> {configError}
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-1.5">
               <label className="text-[10.5px] font-bold text-zinc-500 uppercase pl-1">Supabase URL</label>
               <div className="relative">
@@ -280,6 +289,17 @@ export const AuthScreen = () => {
             >
               <Sparkles className="w-3.5 h-3.5" />
               Salvar e Inicializar
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setOfflineMode(true);
+                showToast('📴 Modo offline ativado localmente!');
+              }}
+              className="w-full py-3 bg-zinc-200/40 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 text-xs font-bold rounded-2xl hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              Usar Modo Offline (Sem Nuvem)
             </button>
 
             {!needsConfig && (
@@ -367,6 +387,17 @@ export const AuthScreen = () => {
             >
               <GoogleIcon />
               Entrar com Google
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setOfflineMode(true);
+                showToast('📴 Modo offline ativado localmente!');
+              }}
+              className="w-full py-3 bg-zinc-200/40 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 text-xs font-bold rounded-2xl hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              Usar Modo Offline (Sem Nuvem)
             </button>
 
             {/* Change tab footer */}

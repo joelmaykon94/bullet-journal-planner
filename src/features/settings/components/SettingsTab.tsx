@@ -20,7 +20,7 @@ export const SettingsTab = () => {
     handleRetrySync
   } = useBujo();
 
-  const { user, signOut, clearConfig } = useAuth();
+  const { user, signOut, clearConfig, setOfflineMode } = useAuth();
 
   const [activeCompanionId, setActiveCompanionId] = useState(() => {
     return localStorage.getItem('bujo_persona_archetype') || 'zari';
@@ -397,71 +397,85 @@ export const SettingsTab = () => {
             </div>
             <div>
               <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wider">Usuário Logado</span>
-              <span className="text-sm font-semibold text-bujo-text font-sans">{user?.email}</span>
+              <span className="text-sm font-semibold text-bujo-text font-sans">{user?.email || 'Nenhum (Modo Offline Local)'}</span>
               <div className="flex items-center gap-1.5 mt-1">
                 <span className={`w-2 h-2 rounded-full ${
-                  syncStatus === 'synced' ? 'bg-emerald-500' :
-                  syncStatus === 'syncing' ? 'bg-amber-500 animate-pulse' :
-                  syncStatus === 'error' ? 'bg-red-500' : 'bg-zinc-400'
+                  user && syncStatus === 'synced' ? 'bg-emerald-500' :
+                  user && syncStatus === 'syncing' ? 'bg-amber-500 animate-pulse' :
+                  user && syncStatus === 'error' ? 'bg-red-500' : 'bg-zinc-400'
                 }`} />
                 <span className="text-[10.5px] text-zinc-400 font-mono">
-                  {syncStatus === 'synced' ? 'Backup na nuvem ativo e sincronizado ☁️' :
-                   syncStatus === 'syncing' ? 'Sincronizando dados com nuvem...' :
-                   syncStatus === 'error' ? 'Erro ao conectar à nuvem' : 'Modo offline (salvando localmente)'}
+                  {user && syncStatus === 'synced' ? 'Backup na nuvem ativo e sincronizado ☁️' :
+                   user && syncStatus === 'syncing' ? 'Sincronizando dados com nuvem...' :
+                   user && syncStatus === 'error' ? 'Erro ao conectar à nuvem' : 'Modo offline (salvando localmente)'}
                 </span>
               </div>
             </div>
           </div>
           <div className="flex gap-2 w-full sm:w-auto shrink-0">
-            {syncStatus === 'error' && (
+            {!user ? (
               <button
-                onClick={handleRetrySync}
-                className="px-4 py-2 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 border border-amber-500/30 rounded-xl transition-all cursor-pointer flex-1 sm:flex-initial"
+                onClick={() => {
+                  setOfflineMode(false);
+                  window.location.reload();
+                }}
+                className="px-4 py-2 text-xs font-bold bg-bujo-highlight hover:opacity-95 text-white rounded-xl transition-all cursor-pointer shadow-md shadow-bujo-highlight/10 flex-1 sm:flex-initial"
               >
-                Re-tentar Sincronização
+                Conectar Supabase (Login)
               </button>
+            ) : (
+              <>
+                {syncStatus === 'error' && (
+                  <button
+                    onClick={handleRetrySync}
+                    className="px-4 py-2 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 border border-amber-500/30 rounded-xl transition-all cursor-pointer flex-1 sm:flex-initial"
+                  >
+                    Re-tentar Sincronização
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    askConfirmation({
+                      title: 'Desconectar Banco de Dados?',
+                      message: 'Deseja realmente desconectar este projeto do Supabase? Suas credenciais salvas localmente serão limpas do navegador.',
+                      confirmText: 'Desconectar DB',
+                      cancelText: 'Cancelar',
+                      isDanger: true,
+                      onConfirm: () => {
+                        clearConfig();
+                        window.location.reload();
+                      }
+                    });
+                  }}
+                  className="px-4 py-2 text-xs font-bold bg-zinc-200/40 dark:bg-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/20 text-bujo-text rounded-xl transition-all cursor-pointer border border-zinc-200/30 dark:border-white/10 flex-1 sm:flex-initial"
+                >
+                  Desconectar DB
+                </button>
+                <button
+                  onClick={() => {
+                    askConfirmation({
+                      title: 'Sair da Conta?',
+                      message: 'Tem certeza de que deseja desconectar e sair do aplicativo? Você precisará realizar o login novamente para sincronizar seus dados.',
+                      confirmText: 'Sair da Conta',
+                      cancelText: 'Cancelar',
+                      isDanger: true,
+                      onConfirm: async () => {
+                        const { error } = await signOut();
+                        if (error) {
+                          showToast(`Erro ao deslogar: ${error.message}`);
+                        } else {
+                          window.location.reload();
+                        }
+                      }
+                    });
+                  }}
+                  className="px-4 py-2 text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer border border-red-500/25 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Sair da Conta
+                </button>
+              </>
             )}
-            <button
-              onClick={() => {
-                askConfirmation({
-                  title: 'Desconectar Banco de Dados?',
-                  message: 'Deseja realmente desconectar este projeto do Supabase? Suas credenciais salvas localmente serão limpas do navegador.',
-                  confirmText: 'Desconectar DB',
-                  cancelText: 'Cancelar',
-                  isDanger: true,
-                  onConfirm: () => {
-                    clearConfig();
-                    window.location.reload();
-                  }
-                });
-              }}
-              className="px-4 py-2 text-xs font-bold bg-zinc-200/40 dark:bg-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/20 text-bujo-text rounded-xl transition-all cursor-pointer border border-zinc-200/30 dark:border-white/10 flex-1 sm:flex-initial"
-            >
-              Desconectar DB
-            </button>
-            <button
-              onClick={() => {
-                askConfirmation({
-                  title: 'Sair da Conta?',
-                  message: 'Tem certeza de que deseja desconectar e sair do aplicativo? Você precisará realizar o login novamente para sincronizar seus dados.',
-                  confirmText: 'Sair da Conta',
-                  cancelText: 'Cancelar',
-                  isDanger: true,
-                  onConfirm: async () => {
-                    const { error } = await signOut();
-                    if (error) {
-                      showToast(`Erro ao deslogar: ${error.message}`);
-                    } else {
-                      window.location.reload();
-                    }
-                  }
-                });
-              }}
-              className="px-4 py-2 text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer border border-red-500/25 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Sair da Conta
-            </button>
           </div>
         </div>
         {syncStatus === 'error' && (

@@ -280,7 +280,7 @@ function AppContent() {
 }
 
 function AppContentWithAuth() {
-  const { user, loading } = useAuth();
+  const { user, loading, offlineMode } = useAuth();
 
   if (loading) {
     return (
@@ -293,7 +293,7 @@ function AppContentWithAuth() {
     );
   }
 
-  if (!user) {
+  if (!user && !offlineMode) {
     return <AuthScreen />;
   }
 

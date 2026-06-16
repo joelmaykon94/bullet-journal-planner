@@ -13,6 +13,7 @@ interface AuthContextType {
   loading: boolean;
   needsConfig: boolean;
   config: SupabaseConfig | null;
+  configError: string | null;
   signUp: (email: string, password: string, redirectTo?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -21,6 +22,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: any }>;
   saveConfig: (url: string, key: string) => void;
   clearConfig: () => void;
+  offlineMode: boolean;
+  setOfflineMode: (val: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +35,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [needsConfig, setNeedsConfig] = useState(true);
   const [config, setConfig] = useState<SupabaseConfig | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
+  const [offlineMode, setOfflineModeState] = useState<boolean>(() => {
+    return localStorage.getItem('bujo_offline_mode') === 'true';
+  });
+
+  const setOfflineMode = (val: boolean) => {
+    setOfflineModeState(val);
+    if (val) {
+      localStorage.setItem('bujo_offline_mode', 'true');
+    } else {
+      localStorage.removeItem('bujo_offline_mode');
+    }
+  };
+
+  const initSupabase = (url: string, key: string) => {
+    setConfigError(null);
+    try {
+      const client = createClient(url, key, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+      setSupabase(client);
+      setNeedsConfig(false);
+
+      // Get initial session
+      client.auth.getSession()
+        .then(({ data: { session: initialSession } }) => {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error('Failed to get Supabase session:', err);
+          setConfigError(err?.message || String(err));
+          localStorage.removeItem('bujo_supabase_config');
+          setConfig(null);
+          setSupabase(null);
+          setNeedsConfig(true);
+          setLoading(false);
+        });
+
+      // Listen to auth changes
+      const { data: { subscription } } = client.auth.onAuthStateChange((_event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setLoading(false);
+      });
+
+      return () => subscription.unsubscribe();
+    } catch (error: any) {
+      console.error('Failed to initialize Supabase client:', error);
+      setConfigError(error?.message || String(error));
+      localStorage.removeItem('bujo_supabase_config');
+      setConfig(null);
+      setSupabase(null);
+      setNeedsConfig(true);
+      setLoading(false);
+    }
+  };
 
   // Load configuration from env or localStorage
   useEffect(() => {
@@ -58,41 +123,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       setNeedsConfig(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const initSupabase = (url: string, key: string) => {
-    try {
-      const client = createClient(url, key, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
-      setSupabase(client);
-      setNeedsConfig(false);
-
-      // Get initial session
-      client.auth.getSession().then(({ data: { session: initialSession } }) => {
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-        setLoading(false);
-      });
-
-      // Listen to auth changes
-      const { data: { subscription } } = client.auth.onAuthStateChange((_event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setLoading(false);
-      });
-
-      return () => subscription.unsubscribe();
-    } catch (error) {
-      console.error('Failed to initialize Supabase client:', error);
-      setLoading(false);
-      setNeedsConfig(true);
-    }
-  };
 
   const saveConfig = (url: string, key: string) => {
     if (!url || !key) return;
@@ -173,6 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         needsConfig,
         config,
+        configError,
         signUp,
         signIn,
         signOut,
@@ -180,7 +213,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updatePassword,
         signInWithGoogle,
         saveConfig,
-        clearConfig
+        clearConfig,
+        offlineMode,
+        setOfflineMode
       }}
     >
       {children}
