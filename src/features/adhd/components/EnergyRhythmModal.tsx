@@ -123,24 +123,24 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 md:p-4 no-print">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300"
+        className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-2xl bg-zinc-950 border border-white/10 rounded-[32px] shadow-3xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
+      <div className="relative w-full max-w-2xl bg-zinc-950 border border-white/10 rounded-[20px] md:rounded-[28px] shadow-3xl overflow-hidden flex flex-col max-h-[85vh] animate-scale-in">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-zinc-900/40">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-bujo-highlight/15 text-bujo-highlight border border-bujo-highlight/30">
-              <Zap className="w-5 h-5 animate-pulse" />
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-zinc-900/40">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-bujo-highlight/15 text-bujo-highlight border border-bujo-highlight/30">
+              <Zap className="w-4 h-4 animate-pulse" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-white tracking-tight">Personalizar Ritmo Energético TDAH</h3>
-              <p className="text-[10px] text-zinc-400 font-mono">Sincronize suas atividades com suas flutuações hormonais e de dopamina</p>
+              <h3 className="text-sm font-extrabold text-white tracking-tight">Personalizar Ritmo Energético</h3>
+              <p className="text-[9px] text-zinc-400 font-mono hidden sm:block">Sincronize atividades com suas flutuações de dopamina</p>
             </div>
           </div>
           <button 
@@ -152,23 +152,20 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
         </div>
 
         {/* Scrollable Form Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-left">
+        <div className="p-3 md:p-4 overflow-y-auto space-y-3 flex-1 text-left">
           
           {/* Intro Tip */}
-          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex gap-3 text-xs leading-relaxed text-zinc-350">
-            <Sparkles className="w-5 h-5 text-bujo-highlight shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold text-white block">💡 O que é isso?</span>
-              <span>
-                Pessoas com TDAH experimentam variações abruptas de foco e energia física/mental ao longo do dia. Em vez de lutar contra elas, o segredo é o <strong>planejamento adaptativo</strong>: agendar tarefas difíceis para seus Picos de Foco e reservar os Vales de Crash para descanso ou tarefas fáceis.
-              </span>
-            </div>
+          <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex gap-2 text-[10px] md:text-xs leading-relaxed text-zinc-350">
+            <Sparkles className="w-4 h-4 text-bujo-highlight shrink-0 mt-0.5" />
+            <span>
+              <strong className="text-white">💡</strong> Agende tarefas difíceis nos <strong>Picos de Foco</strong> e reserve os <strong>Vales de Crash</strong> para descanso.
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
             
             {/* 1. Dia Começa */}
-            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
               <div className="flex items-center gap-2">
                 <Sun className="w-4 h-4 text-amber-400" />
                 <label className="text-xs font-bold text-white uppercase tracking-wider">Início do Dia</label>
@@ -177,7 +174,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
                 type="time"
                 value={dayStart}
                 onChange={e => setDayStart(e.target.value)}
-                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
+                className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
               />
               <p className="text-[9.5px] text-zinc-500 leading-normal">
                 Quando você costuma acordar e iniciar as atividades.
@@ -185,7 +182,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
             </div>
 
             {/* 5. Dia Termina */}
-            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
               <div className="flex items-center gap-2">
                 <Moon className="w-4 h-4 text-purple-400" />
                 <label className="text-xs font-bold text-white uppercase tracking-wider">Fim do Dia (Dormir)</label>
@@ -194,7 +191,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
                 type="time"
                 value={dayEnd}
                 onChange={e => setDayEnd(e.target.value)}
-                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
+                className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
               />
               <p className="text-[9.5px] text-zinc-500 leading-normal">
                 Seu horário sugerido para dormir e desaceleração do cérebro.
@@ -202,7 +199,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
             </div>
 
             {/* 2. Pico de Foco */}
-            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3 md:col-span-2">
+            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 md:col-span-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-emerald-400" />
@@ -217,7 +214,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
                     type="time"
                     value={energyPeakStart}
                     onChange={e => setEnergyPeakStart(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
                   />
                 </div>
                 <div className="space-y-1">
@@ -226,7 +223,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
                     type="time"
                     value={energyPeakEnd}
                     onChange={e => setEnergyPeakEnd(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
                   />
                 </div>
               </div>
@@ -236,7 +233,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
             </div>
 
             {/* 3. Vale de Crash */}
-            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3 md:col-span-2">
+            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 md:col-span-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Coffee className="w-4 h-4 text-red-400" />
@@ -251,7 +248,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
                     type="time"
                     value={restStart}
                     onChange={e => setRestStart(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
                   />
                 </div>
                 <div className="space-y-1">
@@ -260,7 +257,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
                     type="time"
                     value={restEnd}
                     onChange={e => setRestEnd(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
                   />
                 </div>
               </div>
@@ -270,7 +267,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
             </div>
 
             {/* 4. Segundo Fôlego */}
-            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3 md:col-span-2">
+            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 md:col-span-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-indigo-400" />
@@ -285,7 +282,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
                     type="time"
                     value={secondWindStart}
                     onChange={e => setSecondWindStart(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
                   />
                 </div>
                 <div className="space-y-1">
@@ -294,7 +291,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
                     type="time"
                     value={secondWindEnd}
                     onChange={e => setSecondWindEnd(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-bujo-highlight transition-colors"
                   />
                 </div>
               </div>
@@ -307,7 +304,7 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-white/5 bg-zinc-900/40 flex items-center justify-between shrink-0">
+        <div className="px-3 md:px-4 py-2.5 border-t border-white/5 bg-zinc-900/40 flex items-center justify-between shrink-0">
           {/* Restore Defaults — left side */}
           <button
             onClick={handleRestoreDefaults}
