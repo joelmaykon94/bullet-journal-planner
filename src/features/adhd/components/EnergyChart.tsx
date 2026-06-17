@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Info, Sparkles, CheckCircle2, AlertTriangle, Lightbulb, Clock, Sliders } from 'lucide-react';
 import { BujoItem } from '../../../types';
 import { getEnergyX, getEnergyY } from '../../../utils/plannerUtils';
@@ -26,6 +26,14 @@ export const EnergyChart = ({
   const [hoveredItem, setHoveredItem] = useState<BujoItem | null>(null);
   const [isRhythmModalOpen, setIsRhythmModalOpen] = useState(false);
   const [showNowTooltip, setShowNowTooltip] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to the chart when the rhythm modal opens
+  useEffect(() => {
+    if (isRhythmModalOpen && chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [isRhythmModalOpen]);
   
   const score = getHarmonyScore();
   const currentHour = new Date().getHours();
@@ -115,7 +123,7 @@ export const EnergyChart = ({
   const activeTips = getPersonalizedTips();
 
   return (
-    <div className="lg:col-span-2 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-6 flex flex-col gap-6">
+    <div ref={chartRef} className="lg:col-span-2 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-6 flex flex-col gap-6">
       <div>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="text-sm font-bold text-zinc-800 dark:text-white flex items-center gap-2">
