@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Info, Sparkles, CheckCircle2, AlertTriangle, Lightbulb, Clock, Sliders } from 'lucide-react';
 import { BujoItem } from '../../../types';
 import { getEnergyX, getEnergyY } from '../../../utils/plannerUtils';
@@ -28,12 +28,18 @@ export const EnergyChart = ({
   const [showNowTooltip, setShowNowTooltip] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to the chart when the rhythm modal opens
-  useEffect(() => {
-    if (isRhythmModalOpen && chartRef.current) {
-      chartRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Scroll to the chart first, then open the modal after scroll completes
+  const handleOpenRhythmModal = useCallback(() => {
+    if (chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Wait for the smooth scroll to finish before showing the modal overlay
+      setTimeout(() => {
+        setIsRhythmModalOpen(true);
+      }, 400);
+    } else {
+      setIsRhythmModalOpen(true);
     }
-  }, [isRhythmModalOpen]);
+  }, []);
   
   const score = getHarmonyScore();
   const currentHour = new Date().getHours();
@@ -158,7 +164,7 @@ export const EnergyChart = ({
           <div className="flex gap-3 shrink-0">
             <button
               type="button"
-              onClick={() => setIsRhythmModalOpen(true)}
+              onClick={handleOpenRhythmModal}
               className="flex items-center gap-1 text-[10px] font-bold text-bujo-highlight hover:opacity-85 transition-opacity"
             >
               <Sliders className="w-3.5 h-3.5" />
