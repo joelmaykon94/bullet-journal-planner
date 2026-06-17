@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Info, Sparkles, CheckCircle2, AlertTriangle, Lightbulb, Clock, Sliders } from 'lucide-react';
 import { BujoItem } from '../../../types';
 import { getEnergyX, getEnergyY } from '../../../utils/plannerUtils';
@@ -26,20 +26,6 @@ export const EnergyChart = ({
   const [hoveredItem, setHoveredItem] = useState<BujoItem | null>(null);
   const [isRhythmModalOpen, setIsRhythmModalOpen] = useState(false);
   const [showNowTooltip, setShowNowTooltip] = useState(false);
-  const chartRef = useRef<HTMLDivElement>(null);
-
-  // Scroll to the chart first, then open the modal after scroll completes
-  const handleOpenRhythmModal = useCallback(() => {
-    if (chartRef.current) {
-      chartRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Wait for the smooth scroll to finish before showing the modal overlay
-      setTimeout(() => {
-        setIsRhythmModalOpen(true);
-      }, 400);
-    } else {
-      setIsRhythmModalOpen(true);
-    }
-  }, []);
   
   const score = getHarmonyScore();
   const currentHour = new Date().getHours();
@@ -129,7 +115,7 @@ export const EnergyChart = ({
   const activeTips = getPersonalizedTips();
 
   return (
-    <div ref={chartRef} className="lg:col-span-2 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-6 flex flex-col gap-6">
+    <div className="lg:col-span-2 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-6 flex flex-col gap-6">
       <div>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="text-sm font-bold text-zinc-800 dark:text-white flex items-center gap-2">
@@ -164,7 +150,7 @@ export const EnergyChart = ({
           <div className="flex gap-3 shrink-0">
             <button
               type="button"
-              onClick={handleOpenRhythmModal}
+              onClick={() => setIsRhythmModalOpen(true)}
               className="flex items-center gap-1 text-[10px] font-bold text-bujo-highlight hover:opacity-85 transition-opacity"
             >
               <Sliders className="w-3.5 h-3.5" />

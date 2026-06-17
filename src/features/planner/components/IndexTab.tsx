@@ -1,10 +1,11 @@
-import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2, X, GraduationCap, Zap, Activity, Shield } from 'lucide-react';
 import { EnergyChart } from '../../adhd/components/EnergyChart';
 import { HabitTracker } from './HabitTracker';
 import { UserPersonaCard } from './UserPersonaCard';
 import { KnowledgeEvolutionChart } from '../../education/components/KnowledgeEvolutionChart';
 import { useBujo } from '../../../context/BujoContext';
-import { BUJO_ICONS } from './DailyLogTab';
+import { BUJO_ICONS } from '../../../utils/constants';
 import { getLocalDateString } from '../../../utils/plannerUtils';
 
 export const IndexTab = () => {
@@ -37,6 +38,9 @@ export const IndexTab = () => {
     ambientVolume,
     setAmbientVolume
   } = useBujo();
+
+  // Modal states for dashboard cards
+  const [activeModal, setActiveModal] = useState<'knowledge' | 'energy' | 'habits' | 'focus' | null>(null);
 
   const level = Math.floor(userXp / 100) + 1;
   const currentLevelXp = userXp % 100;
@@ -317,49 +321,146 @@ export const IndexTab = () => {
         </div>
       </div>
 
-      {/* 3. Knowledge Evolution Chart (Full width) - Moved up */}
-      <div id="tutorial-knowledge-chart" className="w-full">
-        <KnowledgeEvolutionChart />
+      {/* 3. Dashboard Cards Grid — replaces full-width scrollable sections */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 w-full">
+        {/* Card: Evolução Acadêmica */}
+        <button
+          id="tutorial-knowledge-chart"
+          onClick={() => setActiveModal('knowledge')}
+          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
+        >
+          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-110 transition-transform">
+            <GraduationCap className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-zinc-100 block">Evolução Acadêmica</span>
+            <span className="text-[9px] text-zinc-500 block mt-0.5">Progresso de estudos e XP</span>
+          </div>
+        </button>
+
+        {/* Card: Ritmo Energético */}
+        <button
+          id="tutorial-energy-chart"
+          onClick={() => setActiveModal('energy')}
+          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
+        >
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+            <Zap className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-zinc-100 block">Ritmo Energético</span>
+            <span className="text-[9px] text-zinc-500 block mt-0.5">Curva de foco TDAH</span>
+          </div>
+        </button>
+
+        {/* Card: Rastreador de Hábitos */}
+        <button
+          id="tutorial-habit-tracker"
+          onClick={() => setActiveModal('habits')}
+          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-amber-500/40 hover:bg-amber-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
+        >
+          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
+            <Activity className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-zinc-100 block">Rastreador de Hábitos</span>
+            <span className="text-[9px] text-zinc-500 block mt-0.5">Streak e consistência</span>
+          </div>
+        </button>
+
+        {/* Card: Guia de Foco */}
+        <button
+          onClick={() => setActiveModal('focus')}
+          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-red-500/40 hover:bg-red-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
+        >
+          <div className="p-2.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 group-hover:scale-110 transition-transform">
+            <Shield className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-zinc-100 block">Guia de Foco</span>
+            <span className="text-[9px] text-zinc-500 block mt-0.5">Persona, áudio e IA</span>
+          </div>
+        </button>
       </div>
 
-      {/* 4. Ritmo Energético (Full width) */}
-      <div id="tutorial-energy-chart" className="w-full">
-        <EnergyChart 
-          items={items}
-          getHarmonyScore={getHarmonyScore}
-          getHarmonyRecommendation={getHarmonyRecommendation}
-          showEnergyGuide={showEnergyGuide}
-          setShowEnergyGuide={setShowEnergyGuide}
-          selectedDate={selectedDate}
-        />
-      </div>
+      {/* Full-screen Modals for each card */}
+      {activeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 no-print">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300"
+            onClick={() => setActiveModal(null)}
+          />
 
-      {/* 5. Rastreador de Hábitos (Full width) */}
-      <div id="tutorial-habit-tracker" className="w-full">
-        <HabitTracker />
-      </div>
+          {/* Modal Container */}
+          <div className="relative w-full max-w-5xl bg-zinc-950 border border-white/10 rounded-[28px] shadow-3xl overflow-hidden flex flex-col max-h-[92vh] animate-scale-in">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5 bg-zinc-900/40 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className={`p-1.5 rounded-lg border ${
+                  activeModal === 'knowledge' ? 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30' :
+                  activeModal === 'energy' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' :
+                  activeModal === 'habits' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
+                  'bg-red-500/15 text-red-400 border-red-500/30'
+                }`}>
+                  {activeModal === 'knowledge' && <GraduationCap className="w-4 h-4" />}
+                  {activeModal === 'energy' && <Zap className="w-4 h-4" />}
+                  {activeModal === 'habits' && <Activity className="w-4 h-4" />}
+                  {activeModal === 'focus' && <Shield className="w-4 h-4" />}
+                </div>
+                <h3 className="text-sm font-extrabold text-white tracking-tight">
+                  {activeModal === 'knowledge' && 'Evolução Acadêmica'}
+                  {activeModal === 'energy' && 'Ritmo Energético TDAH'}
+                  {activeModal === 'habits' && 'Rastreador de Hábitos'}
+                  {activeModal === 'focus' && 'Guia de Foco & Persona'}
+                </h3>
+              </div>
+              <button
+                onClick={() => setActiveModal(null)}
+                className="p-1.5 rounded-xl border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-      {/* 6. Guia de Foco (Full width) */}
-      <div className="w-full">
-        <UserPersonaCard
-          userXp={userXp}
-          setUserXp={setUserXp}
-          currentEnergy={currentEnergy}
-          anxietyLevel={anxietyLevel}
-          showToast={showToast}
-          items={items}
-          soundType={soundType}
-          setSoundType={setSoundType}
-          toggleAmbientAudio={toggleAmbientAudio}
-          ambientPlaying={ambientPlaying}
-          ambientVolume={ambientVolume}
-          setAmbientVolume={setAmbientVolume}
-          aiEngine={aiEngine}
-          aiWorkerRef={aiWorkerRef}
-          localLLMState={localLLMState}
-          getCognitiveLoad={getCognitiveLoad}
-        />
-      </div>
+            {/* Modal Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
+              {activeModal === 'knowledge' && <KnowledgeEvolutionChart />}
+              {activeModal === 'energy' && (
+                <EnergyChart
+                  items={items}
+                  getHarmonyScore={getHarmonyScore}
+                  getHarmonyRecommendation={getHarmonyRecommendation}
+                  showEnergyGuide={showEnergyGuide}
+                  setShowEnergyGuide={setShowEnergyGuide}
+                  selectedDate={selectedDate}
+                />
+              )}
+              {activeModal === 'habits' && <HabitTracker />}
+              {activeModal === 'focus' && (
+                <UserPersonaCard
+                  userXp={userXp}
+                  setUserXp={setUserXp}
+                  currentEnergy={currentEnergy}
+                  anxietyLevel={anxietyLevel}
+                  showToast={showToast}
+                  items={items}
+                  soundType={soundType}
+                  setSoundType={setSoundType}
+                  toggleAmbientAudio={toggleAmbientAudio}
+                  ambientPlaying={ambientPlaying}
+                  ambientVolume={ambientVolume}
+                  setAmbientVolume={setAmbientVolume}
+                  aiEngine={aiEngine}
+                  aiWorkerRef={aiWorkerRef}
+                  localLLMState={localLLMState}
+                  getCognitiveLoad={getCognitiveLoad}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
