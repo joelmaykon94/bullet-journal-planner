@@ -215,7 +215,7 @@ export const HabitTracker = () => {
   const activeStreaksCount = habitStats.filter(h => h.streak > 0).length;
 
   return (
-    <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-5 flex flex-col gap-4 shadow-xl backdrop-blur-md">
+    <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-3 md:p-4 flex flex-col gap-2.5 shadow-xl backdrop-blur-md">
       {/* 1. Header (Title, AI Suggestion) */}
       <div className="flex items-center justify-between flex-wrap gap-2 border-b border-zinc-200/20 dark:border-white/5 pb-3">
         <div className="flex items-center gap-2">
@@ -328,15 +328,15 @@ export const HabitTracker = () => {
       </div>
 
       {/* 4. Dashboard de Comportamento dos Hábitos */}
-      <div className="mt-3 border-t border-zinc-200/10 dark:border-white/5 pt-4">
+      <div className="mt-2 border-t border-zinc-200/10 dark:border-white/5 pt-2.5">
         <h4 className="text-[10px] font-bold text-zinc-550 uppercase tracking-widest flex items-center gap-1.5 mb-3.5">
           <TrendingUp className="w-3.5 h-3.5 text-bujo-highlight" />
           Dashboard de Comportamento dos Hábitos
         </h4>
         
         {/* KPI Summary Cards */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="p-3 rounded-2xl bg-zinc-200/10 dark:bg-white/3 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center text-center justify-center">
+        <div className="grid grid-cols-3 gap-2 mb-2.5">
+          <div className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/3 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center text-center justify-center">
             <span className="text-[7.5px] font-bold text-zinc-500 uppercase tracking-wider">Adesão Geral</span>
             <span className="text-sm font-black text-bujo-highlight font-mono mt-0.5">{adherenceRate}%</span>
             <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1 rounded-full mt-1.5 overflow-hidden">
@@ -344,7 +344,7 @@ export const HabitTracker = () => {
             </div>
           </div>
           
-          <div className="p-3 rounded-2xl bg-zinc-200/10 dark:bg-white/3 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center text-center justify-center">
+          <div className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/3 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center text-center justify-center">
             <span className="text-[7.5px] font-bold text-zinc-500 uppercase tracking-wider">Mais Consistente</span>
             <span className="text-[10px] font-bold text-zinc-150 truncate w-full mt-0.5 text-ellipsis overflow-hidden" title={bestHabit?.name || 'Nenhum'}>
               {bestHabit && bestHabit.completedCount > 0 ? bestHabit.name : 'Nenhum'}
@@ -354,7 +354,7 @@ export const HabitTracker = () => {
             </span>
           </div>
 
-          <div className="p-3 rounded-2xl bg-zinc-200/10 dark:bg-white/3 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center text-center justify-center">
+          <div className="p-2 rounded-2xl bg-zinc-200/10 dark:bg-white/3 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center text-center justify-center">
             <span className="text-[7.5px] font-bold text-zinc-500 uppercase tracking-wider">Sequências Ativas</span>
             <span className="text-sm font-black text-emerald-500 flex items-center gap-1 mt-0.5">
               <Flame className="w-3.5 h-3.5 fill-amber-500/20 text-amber-500 stroke-[2]" />
@@ -372,7 +372,7 @@ export const HabitTracker = () => {
             </div>
           ) : (
             habitStats.map(stat => (
-              <div key={stat.name} className="flex flex-col gap-1.5 p-2.5 rounded-2xl bg-zinc-200/5 dark:bg-white/2 border border-zinc-200/20 dark:border-white/2">
+              <div key={stat.name} className="flex flex-col gap-1.5 p-1.5 rounded-2xl bg-zinc-200/5 dark:bg-white/2 border border-zinc-200/20 dark:border-white/2">
                 <div className="flex items-center justify-between text-[10.5px]">
                   <span className="font-semibold text-zinc-100 truncate w-2/3">{stat.name}</span>
                   <div className="flex items-center gap-2 shrink-0">

@@ -115,7 +115,7 @@ export const EnergyChart = ({
   const activeTips = getPersonalizedTips();
 
   return (
-    <div className="lg:col-span-2 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-6 flex flex-col gap-6">
+    <div className="lg:col-span-2 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-3 md:p-4 flex flex-col gap-3">
       <div>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="text-sm font-bold text-zinc-800 dark:text-white flex items-center gap-2">
@@ -198,15 +198,15 @@ export const EnergyChart = ({
       )}
 
       {/* SVG Energy Chart Graph */}
-      <div className="relative w-full h-[250px] bg-zinc-300/10 dark:bg-zinc-950/20 rounded-2xl border border-zinc-200/20 dark:border-white/5">
+      <div className="relative w-full h-[180px] bg-zinc-300/10 dark:bg-zinc-950/20 rounded-2xl border border-zinc-200/20 dark:border-white/5">
         {/* Horizontal Energy grid helper lines (Y-axis scale) */}
-        <div className="absolute inset-x-0 top-[52px] border-b border-dashed border-zinc-300/5 dark:border-white/[0.03] pointer-events-none z-0">
+        <div className="absolute inset-x-0 top-[35px] border-b border-dashed border-zinc-300/5 dark:border-white/[0.03] pointer-events-none z-0">
           <span className="absolute left-2.5 -translate-y-1/2 text-[7px] font-mono text-zinc-500 uppercase tracking-widest">Alta (Pico)</span>
         </div>
-        <div className="absolute inset-x-0 top-[137px] border-b border-dashed border-zinc-300/5 dark:border-white/[0.03] pointer-events-none z-0">
+        <div className="absolute inset-x-0 top-[95px] border-b border-dashed border-zinc-300/5 dark:border-white/[0.03] pointer-events-none z-0">
           <span className="absolute left-2.5 -translate-y-1/2 text-[7px] font-mono text-zinc-500 uppercase tracking-widest">Média</span>
         </div>
-        <div className="absolute inset-x-0 top-[222px] border-b border-dashed border-zinc-300/5 dark:border-white/[0.03] pointer-events-none z-0">
+        <div className="absolute inset-x-0 top-[155px] border-b border-dashed border-zinc-300/5 dark:border-white/[0.03] pointer-events-none z-0">
           <span className="absolute left-2.5 -translate-y-1/2 text-[7px] font-mono text-zinc-500 uppercase tracking-widest">Baixa (Crash)</span>
         </div>
 
@@ -228,7 +228,7 @@ export const EnergyChart = ({
               return (
                 <div 
                   key={idx} 
-                  className="absolute top-0 bottom-7 border-r border-dashed border-zinc-300/10 dark:border-white/[0.04]"
+                  className="absolute top-0 bottom-5 border-r border-dashed border-zinc-300/10 dark:border-white/[0.04]"
                   style={{ left: `${pct}%` }}
                 >
                   <span className="absolute bottom-1 translate-x-[-50%] text-[8px] font-mono text-zinc-500 dark:text-zinc-600 font-medium">
@@ -241,7 +241,7 @@ export const EnergyChart = ({
         </div>
 
         {/* Energy Line Chart Curve */}
-        <svg className="w-full h-[170px] absolute inset-x-0 bottom-7 px-1 z-10" viewBox="0 0 500 100" preserveAspectRatio="none">
+        <svg className="w-full h-[120px] absolute inset-x-0 bottom-5 px-1 z-10" viewBox="0 0 500 100" preserveAspectRatio="none">
           <defs>
             <linearGradient id="chartGlow" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="var(--bujo-highlight)" stopOpacity="0.2" />
@@ -615,7 +615,7 @@ export const EnergyChart = ({
       </div>
 
       {/* Real-time ADHD Cognitive Recommendations panel */}
-      <div className="rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 p-4 space-y-3">
+      <div className="rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 p-2.5 space-y-2">
         <h4 className="text-xs font-bold uppercase tracking-wider text-bujo-highlight flex items-center gap-1.5 font-mono">
           <Sparkles className="w-3.5 h-3.5" /> Recomendações de Ritmo e Energia
         </h4>
@@ -639,7 +639,7 @@ export const EnergyChart = ({
               : 'text-bujo-accent';
 
             return (
-              <div key={idx} className="flex gap-2.5 items-start p-2.5 rounded-xl bg-zinc-250/20 dark:bg-zinc-950/20 border border-zinc-250/30 dark:border-white/5 text-[11px] leading-relaxed">
+              <div key={idx} className="flex gap-2.5 items-start p-2 rounded-xl bg-zinc-250/20 dark:bg-zinc-950/20 border border-zinc-250/30 dark:border-white/5 text-[10px] leading-relaxed">
                 <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${textColor}`} />
                 <span className="text-zinc-700 dark:text-zinc-300">{tip.text}</span>
               </div>

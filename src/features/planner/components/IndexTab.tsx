@@ -385,7 +385,7 @@ export const IndexTab = () => {
 
       {/* Full-screen Modals for each card */}
       {activeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 no-print">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 no-print">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300"
@@ -393,9 +393,9 @@ export const IndexTab = () => {
           />
 
           {/* Modal Container */}
-          <div className="relative w-full max-w-5xl bg-zinc-950 border border-white/10 rounded-[28px] shadow-3xl overflow-hidden flex flex-col max-h-[92vh] animate-scale-in">
+          <div className="relative w-full max-w-4xl bg-zinc-950 border border-white/10 rounded-[20px] md:rounded-[28px] shadow-3xl overflow-hidden flex flex-col max-h-[88vh] animate-scale-in">
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5 bg-zinc-900/40 shrink-0">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-zinc-900/40 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className={`p-1.5 rounded-lg border ${
                   activeModal === 'knowledge' ? 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30' :
@@ -424,7 +424,7 @@ export const IndexTab = () => {
             </div>
 
             {/* Modal Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="flex-1 overflow-y-auto p-2.5 md:p-4">
               {activeModal === 'knowledge' && <KnowledgeEvolutionChart />}
               {activeModal === 'energy' && (
                 <EnergyChart
