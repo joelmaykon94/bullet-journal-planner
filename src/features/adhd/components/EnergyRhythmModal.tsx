@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Zap, Coffee, Moon, Sun, Sparkles, BookOpen } from 'lucide-react';
+import { X, Clock, Zap, Coffee, Moon, Sun, Sparkles, BookOpen, RotateCcw } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 interface EnergyRhythmModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+/** Original default energy rhythm values — used by the "Restore Defaults" button */
+const DEFAULT_RHYTHM = {
+  dayStart: '06:00',
+  energyPeakStart: '09:30',
+  energyPeakEnd: '12:30',
+  restStart: '13:30',
+  restEnd: '16:00',
+  secondWindStart: '16:30',
+  secondWindEnd: '20:00',
+  dayEnd: '23:00',
+} as const;
 
 export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) => {
   const { settings, setSettings, showToast } = useBujo();
@@ -96,6 +108,18 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
 
     showToast('⚡ Ritmo Energético personalizado com sucesso!');
     onClose();
+  };
+
+  const handleRestoreDefaults = () => {
+    setDayStart(DEFAULT_RHYTHM.dayStart);
+    setEnergyPeakStart(DEFAULT_RHYTHM.energyPeakStart);
+    setEnergyPeakEnd(DEFAULT_RHYTHM.energyPeakEnd);
+    setRestStart(DEFAULT_RHYTHM.restStart);
+    setRestEnd(DEFAULT_RHYTHM.restEnd);
+    setSecondWindStart(DEFAULT_RHYTHM.secondWindStart);
+    setSecondWindEnd(DEFAULT_RHYTHM.secondWindEnd);
+    setDayEnd(DEFAULT_RHYTHM.dayEnd);
+    showToast('🔄 Valores padrão restaurados. Clique em "Salvar" para aplicar.');
   };
 
   return (
@@ -283,20 +307,32 @@ export const EnergyRhythmModal = ({ isOpen, onClose }: EnergyRhythmModalProps) =
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-white/5 bg-zinc-900/40 flex items-center justify-end gap-3 shrink-0">
+        <div className="px-6 py-4 border-t border-white/5 bg-zinc-900/40 flex items-center justify-between shrink-0">
+          {/* Restore Defaults — left side */}
           <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold text-white transition-all cursor-pointer"
+            onClick={handleRestoreDefaults}
+            className="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-xs font-bold text-amber-400 transition-all cursor-pointer flex items-center gap-1.5"
+            title="Restaurar os valores originais do ritmo energético"
           >
-            Cancelar
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Restaurar Padrão</span>
           </button>
-          <button
-            onClick={handleSave}
-            className="px-6 py-2 bg-bujo-highlight hover:opacity-95 text-white text-xs font-bold rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-1.5"
-          >
-            <span>Salvar Preferências</span>
-            <Zap className="w-3.5 h-3.5" />
-          </button>
+          {/* Cancel + Save — right side */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold text-white transition-all cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 bg-bujo-highlight hover:opacity-95 text-white text-xs font-bold rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Salvar Preferências</span>
+              <Zap className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

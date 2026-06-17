@@ -25,6 +25,7 @@ export const EnergyChart = ({
   const { settings } = useBujo();
   const [hoveredItem, setHoveredItem] = useState<BujoItem | null>(null);
   const [isRhythmModalOpen, setIsRhythmModalOpen] = useState(false);
+  const [showNowTooltip, setShowNowTooltip] = useState(false);
   
   const score = getHarmonyScore();
   const currentHour = new Date().getHours();
@@ -323,19 +324,62 @@ export const EnergyChart = ({
             strokeLinecap="round"
           />
           
-          {/* Dot representing current hour position */}
+          {/* Dot representing current hour position with time label */}
           {(() => {
             const startH = parseTimeToHour(settings?.dayStart, 6.0);
             const endH = parseTimeToHour(settings?.dayEnd, 23.0);
             if (exactHour >= startH && exactHour <= endH) {
+              const cx = getEnergyX(exactHour, settings);
+              const cy = getEnergyY(exactHour, settings);
+              const timeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
               return (
-                <circle 
-                  cx={getEnergyX(exactHour, settings)} 
-                  cy={getEnergyY(exactHour, settings)} 
-                  r="6" 
-                  fill="var(--bujo-highlight)" 
-                  className="animate-pulse shadow-glow" 
-                />
+                <>
+                  {/* Pulsating glow ring */}
+                  <circle 
+                    cx={cx} 
+                    cy={cy} 
+                    r="12" 
+                    fill="var(--bujo-highlight)" 
+                    fillOpacity="0.15"
+                    className="animate-pulse" 
+                  />
+                  {/* Core dot */}
+                  <circle 
+                    cx={cx} 
+                    cy={cy} 
+                    r="6" 
+                    fill="var(--bujo-highlight)" 
+                    className="animate-pulse shadow-glow" 
+                  />
+                  {/* Inner white accent */}
+                  <circle 
+                    cx={cx} 
+                    cy={cy} 
+                    r="2.5" 
+                    fill="white" 
+                    fillOpacity="0.7"
+                  />
+                  {/* Time label above the dot */}
+                  <text
+                    x={cx}
+                    y={cy - 16}
+                    textAnchor="middle"
+                    className="text-[7px] font-mono font-extrabold fill-bujo-highlight select-none pointer-events-none"
+                    style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))' }}
+                  >
+                    {timeStr}
+                  </text>
+                  {/* Invisible hover target for tooltip */}
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r="18"
+                    fill="transparent"
+                    className="cursor-help energy-now-dot"
+                    onMouseEnter={() => setShowNowTooltip(true)}
+                    onMouseLeave={() => setShowNowTooltip(false)}
+                  />
+                </>
               );
             }
             return null;
@@ -478,6 +522,76 @@ export const EnergyChart = ({
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Tooltip for the "now" energy dot */}
+        {showNowTooltip && (() => {
+          const startH = parseTimeToHour(settings?.dayStart, 6.0);
+          const endH = parseTimeToHour(settings?.dayEnd, 23.0);
+          if (exactHour < startH || exactHour > endH) return null;
+          const xPctNow = (getEnergyX(exactHour, settings) / 500) * 100;
+          const yValNow = getEnergyY(exactHour, settings);
+          const timeStrFull = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+
+          const peakStart = parseTimeToHour(settings?.energyPeakStart, 9.5);
+          const peakEnd = parseTimeToHour(settings?.energyPeakEnd, 12.5);
+          const restStartH = parseTimeToHour(settings?.restStart, 13.5);
+          const restEndH = parseTimeToHour(settings?.restEnd, 16.0);
+          const windStart = parseTimeToHour(settings?.secondWindStart, 16.5);
+          const windEnd = parseTimeToHour(settings?.secondWindEnd, 20.0);
+
+          let zoneName = 'Transição';
+          let zoneEmoji = '⚖️';
+          let zoneBadgeClass = 'bg-zinc-500/10 text-zinc-400';
+          if (exactHour >= peakStart && exactHour <= peakEnd) {
+            zoneName = 'Pico de Foco';
+            zoneEmoji = '⚡';
+            zoneBadgeClass = 'bg-emerald-500/10 text-emerald-400';
+          } else if (exactHour >= restStartH && exactHour <= restEndH) {
+            zoneName = 'Vale de Crash';
+            zoneEmoji = '💤';
+            zoneBadgeClass = 'bg-red-500/10 text-red-400';
+          } else if (exactHour >= windStart && exactHour <= windEnd) {
+            zoneName = 'Segundo Fôlego';
+            zoneEmoji = '🌅';
+            zoneBadgeClass = 'bg-indigo-500/10 text-indigo-400';
+          }
+
+          let tooltipStyle: React.CSSProperties = {
+            bottom: `${(1 - yValNow / 100) * 170 + 36}px`
+          };
+          if (xPctNow < 25) {
+            tooltipStyle.left = `calc(${xPctNow}% + 16px)`;
+          } else if (xPctNow > 75) {
+            tooltipStyle.left = `calc(${xPctNow}% - 256px)`;
+          } else {
+            tooltipStyle.left = `calc(${xPctNow}% - 120px)`;
+          }
+
+          return (
+            <div
+              className="absolute z-50 bg-[#FCFAF7] dark:bg-[#1E1B18] border border-[#E4DBC5] dark:border-zinc-800 p-3.5 rounded-2xl shadow-xl w-60 pointer-events-none animate-scale-in text-bujo-text"
+              style={tooltipStyle}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-500 font-mono flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> {timeStrFull}
+                </span>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${zoneBadgeClass}`}>
+                  {zoneEmoji} {zoneName}
+                </span>
+              </div>
+              <h5 className="text-xs font-bold mb-1.5 leading-tight">📍 Sua Energia Agora</h5>
+              <div className="space-y-1.5 text-[10px] text-zinc-500 dark:text-zinc-400 border-t border-zinc-200/50 dark:border-white/5 pt-2">
+                <p>
+                  Este ponto pulsante indica <strong>sua posição atual no ciclo energético TDAH</strong>. Ele mostra em tempo real em qual fase do seu ritmo biológico de dopamina e foco você se encontra.
+                </p>
+                <p className="text-[9px] text-zinc-400 dark:text-zinc-500 italic">
+                  Use esta referência para decidir quais tarefas abordar agora.
+                </p>
               </div>
             </div>
           );
