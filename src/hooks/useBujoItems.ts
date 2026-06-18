@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { arrayMove } from '@dnd-kit/sortable';
 import { BujoItem, DreamItem } from '../types';
 import { getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
 import { parseSmartTask } from '../utils/smartParser';
@@ -508,13 +509,15 @@ export function useBujoItems(
     complexity?: number,
     executionTime?: number,
     date?: string,
-    time?: string
+    time?: string,
+    delegatedTo?: string,
+    icon?: string
   ) => {
     setItems(prev => prev.map(item => {
       if (item.id === id) {
-        // Delegation regex extraction
+        // Delegation regex extraction from content if not explicitly provided
         const delegationMatch = editingItemContent.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
-        const delegatedTo = delegationMatch ? delegationMatch[1] : undefined;
+        const autoDelegatedTo = delegationMatch ? delegationMatch[1] : undefined;
 
         return {
           ...item,
@@ -522,9 +525,10 @@ export function useBujoItems(
           energy: item.type === 'task' ? (energy ?? item.energy) : undefined,
           complexity: item.type === 'task' ? (complexity ?? item.complexity) : undefined,
           executionTime: item.type === 'task' ? (executionTime ?? item.executionTime) : undefined,
-          delegatedTo: delegatedTo !== undefined ? delegatedTo : item.delegatedTo,
+          delegatedTo: delegatedTo !== undefined ? delegatedTo : (autoDelegatedTo !== undefined ? autoDelegatedTo : item.delegatedTo),
           date: date ?? item.date,
-          time: time !== undefined ? time : item.time
+          time: time !== undefined ? time : item.time,
+          icon: icon ?? item.icon
         };
       }
       return item;
@@ -727,6 +731,28 @@ export function useBujoItems(
     showToast(`${targetItems.length} tarefas migradas para amanhã (${nextDayStr.split('-').reverse().slice(0, 2).join('/')})!`);
   };
 
+  const handleReorderItems = (activeId: string, overId: string) => {
+    setItems(prev => {
+      const oldIndex = prev.findIndex(i => i.id === activeId);
+      const newIndex = prev.findIndex(i => i.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
+  const handleReorderSubtasks = (taskId: string, activeId: string, overId: string) => {
+    setItems(prev => prev.map(item => {
+      if (item.id !== taskId || !item.subtasks) return item;
+      const oldIndex = item.subtasks.findIndex(s => s.id === activeId);
+      const newIndex = item.subtasks.findIndex(s => s.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return item;
+      return {
+        ...item,
+        subtasks: arrayMove(item.subtasks, oldIndex, newIndex)
+      };
+    }));
+  };
+
   return {
     items,
     setItems,
@@ -739,6 +765,8 @@ export function useBujoItems(
     unassignItemFromTime,
     handleDeleteItem,
     handleSaveEditItem,
+    handleReorderItems,
+    handleReorderSubtasks,
     addSubtask,
     toggleSubtask,
     deleteSubtask,

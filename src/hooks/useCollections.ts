@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { arrayMove } from '@dnd-kit/sortable';
 import { BujoItem } from '../types';
 
 export function useCollections(
@@ -26,6 +27,47 @@ export function useCollections(
   const [newColItemTitle, setNewColItemTitle] = useState('');
   const [newColItemNotes, setNewColItemNotes] = useState('');
   const [decomposingCollectionItemIds, setDecomposingCollectionItemIds] = useState<{ [key: string]: boolean }>({});
+
+  const handleReorderCollections = (activeId: string, overId: string) => {
+    setCollections(prev => {
+      const oldIndex = prev.findIndex(c => c.id === activeId);
+      const newIndex = prev.findIndex(c => c.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
+  const handleReorderCollectionItems = (colId: string, activeId: string, overId: string) => {
+    setCollections(prev => prev.map(col => {
+      if (col.id !== colId) return col;
+      const oldIndex = col.items.findIndex((i: any) => i.id === activeId);
+      const newIndex = col.items.findIndex((i: any) => i.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return col;
+      return {
+        ...col,
+        items: arrayMove(col.items, oldIndex, newIndex)
+      };
+    }));
+  };
+
+  const handleReorderCollectionSubtasks = (colId: string, itemId: string, activeId: string, overId: string) => {
+    setCollections(prev => prev.map(col => {
+      if (col.id !== colId) return col;
+      return {
+        ...col,
+        items: col.items.map((it: any) => {
+          if (it.id !== itemId || !it.subtasks) return it;
+          const oldIndex = it.subtasks.findIndex((s: any) => s.id === activeId);
+          const newIndex = it.subtasks.findIndex((s: any) => s.id === overId);
+          if (oldIndex === -1 || newIndex === -1) return it;
+          return {
+            ...it,
+            subtasks: arrayMove(it.subtasks, oldIndex, newIndex)
+          };
+        })
+      };
+    }));
+  };
 
   const handleCreateCollection = (e: React.FormEvent) => {
     e.preventDefault();
@@ -397,6 +439,9 @@ export function useCollections(
     handleAddCollectionItemMediaLink,
     handleDeleteCollectionItemMedia,
     migrateCollectionItemToDailyLog,
-    handleAICollectionItemDecompose
+    handleAICollectionItemDecompose,
+    handleReorderCollections,
+    handleReorderCollectionItems,
+    handleReorderCollectionSubtasks
   };
 }

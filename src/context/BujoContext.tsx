@@ -8,7 +8,9 @@ import { useCollections } from '../hooks/useCollections';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useAmbientAudio, SoundType } from '../hooks/useAmbientAudio';
 import { useHabits, HabitLog } from '../hooks/useHabits';
+import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
+import { HOURS, MONTHS, BRAIN_DUMP_KEYWORDS } from '../utils/constants';
 
 import { useAuth } from './AuthContext';
 
@@ -64,8 +66,12 @@ export interface BujoContextType {
     complexity?: number,
     executionTime?: number,
     date?: string,
-    time?: string
+    time?: string,
+    delegatedTo?: string,
+    icon?: string
   ) => void;
+  handleReorderItems: (activeId: string, overId: string) => void;
+  handleReorderSubtasks: (taskId: string, activeId: string, overId: string) => void;
   addSubtask: (
     taskId: string,
     newSubtaskText: string,
@@ -145,6 +151,9 @@ export interface BujoContextType {
   handleDeleteCollectionItemMedia: (colId: string, itemId: string, mediaId: string) => void;
   migrateCollectionItemToDailyLog: (item: any, collectionName: string) => void;
   handleAICollectionItemDecompose: (collectionId: string, itemId: string, content: string) => Promise<void>;
+  handleReorderCollections: (activeId: string, overId: string) => void;
+  handleReorderCollectionItems: (colId: string, activeId: string, overId: string) => void;
+  handleReorderCollectionSubtasks: (colId: string, itemId: string, activeId: string, overId: string) => void;
 
   // Pomodoro
   pomodoroTime: number;
@@ -338,7 +347,15 @@ export interface BujoContextType {
   months: string[];
   futureLogEventContent: string;
   setFutureLogEventContent: React.Dispatch<React.SetStateAction<string>>;
-  handleAddFutureEvent: (e: React.FormEvent) => void;
+  handleAddFutureEvent: (
+    e: React.FormEvent,
+    content: string,
+    setContent: (v: string) => void,
+    icon?: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
+  ) => void;
 
   // Media & Prints
   exportToPDF: () => void;
@@ -772,9 +789,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
             
             let emotion = 'Mente processada com sucesso pela IA Local.';
             const textLower = brainDumpTextRef.current.toLowerCase();
-            const anxietyKeywords = ['ansioso', 'preocupado', 'medo', 'pânico', 'desespero', 'correndo', 'atrasado', 'prazos', 'estresse'];
-            const fatigueKeywords = ['cansado', 'exausto', 'sono', 'sem energia', 'desanimado', 'fadiga', 'preguiça'];
-            const positiveKeywords = ['feliz', 'animado', 'ótimo', 'produtivo', 'consegui', 'legal', 'aliviado'];
+            const anxietyKeywords = BRAIN_DUMP_KEYWORDS.anxiety;
+            const fatigueKeywords = BRAIN_DUMP_KEYWORDS.fatigue;
+            const positiveKeywords = BRAIN_DUMP_KEYWORDS.positive;
 
             if (anxietyKeywords.some(w => textLower.includes(w))) {
               emotion = '⚠️ Identificamos ansiedade relacionada a prazos ou volume de tarefas.';
@@ -1093,6 +1110,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const audioData = useAmbientAudio(showToast);
   const habitData = useHabits();
 
+  // Task Notifications Hook
+  useTaskNotifications(items);
+
   // Data Management Implementations
   const exportFullDataJSON = () => {
     const data = {
@@ -1256,19 +1276,12 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   // Timeline States
   const [timelineMobileView, setTimelineMobileView] = useState<'timeline' | 'unscheduled'>('timeline');
-  const hours = [
-    '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
-    '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
-    '20:00', '21:00', '22:00', '23:00'
-  ];
+  const hours = HOURS;
   const openTasksUnscheduled = items.filter(i => i.date === selectedDate && i.type === 'task' && i.status === 'open' && !i.time);
 
   // Future Log States
   const [selectedMonth, setSelectedMonth] = useState<number>(() => new Date().getMonth());
-  const months = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
+  const months = MONTHS;
   const [futureLogEventContent, setFutureLogEventContent] = useState<string>('');
 
   const [showGlobalSearch, setShowGlobalSearch] = useState<boolean>(false);
@@ -1609,9 +1622,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       let emotion = 'Estado neutro com tendência à reflexão';
       const textLower = text.toLowerCase();
       
-      const anxietyKeywords = ['ansioso', 'preocupado', 'medo', 'pânico', 'desespero', 'correndo', 'atrasado', 'prazos', 'estresse'];
-      const fatigueKeywords = ['cansado', 'exausto', 'sono', 'sem energia', 'desanimado', 'fadiga', 'preguiça'];
-      const positiveKeywords = ['feliz', 'animado', 'ótimo', 'produtivo', 'consegui', 'legal', 'aliviado'];
+      const anxietyKeywords = BRAIN_DUMP_KEYWORDS.anxiety;
+      const fatigueKeywords = BRAIN_DUMP_KEYWORDS.fatigue;
+      const positiveKeywords = BRAIN_DUMP_KEYWORDS.positive;
 
       if (anxietyKeywords.some(w => textLower.includes(w))) {
         emotion = '⚠️ Identificamos ansiedade relacionada a prazos ou volume de tarefas.';
@@ -1626,7 +1639,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         const lowerCleaned = cleaned.toLowerCase();
         
         const timeMatch = sentence.match(/(\d{1,2})h(\d{2})?|(\d{1,2}):(\d{2})/i);
-        const isEvent = ['reunião', 'encontro', 'médico', 'consulta', 'aula', 'festa', 'evento', 'almoço', 'jantar', 'compromisso'].some(w => lowerCleaned.includes(w));
+        const isEvent = BRAIN_DUMP_KEYWORDS.events.some(w => lowerCleaned.includes(w));
         
         if (timeMatch || isEvent) {
           let time = '12:00';
@@ -1762,9 +1775,17 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   };
 
   // Future Log Add Event Form
-  const handleAddFutureEvent = (e: React.FormEvent) => {
+  const handleAddFutureEvent = (
+    e: React.FormEvent,
+    content: string,
+    setContent: (v: string) => void,
+    icon?: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
+  ) => {
     e.preventDefault();
-    if (!futureLogEventContent.trim()) return;
+    if (!content.trim()) return;
 
     const year = new Date().getFullYear();
     const dateStr = `${year}-${(selectedMonth + 1).toString().padStart(2, '0')}-01`;
@@ -1773,13 +1794,17 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: 'event',
       status: 'open',
-      content: futureLogEventContent.trim(),
+      content: content.trim(),
       date: dateStr,
-      subtasks: []
+      subtasks: [],
+      icon,
+      energy,
+      complexity,
+      executionTime
     };
 
     setItems(prev => [newEvent, ...prev]);
-    setFutureLogEventContent('');
+    setContent('');
     showToast('Evento agendado no Future Log!');
   };
 
@@ -2137,6 +2162,15 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
       // Items
       ...itemsData,
+      handleSaveEditItem: (...args: Parameters<typeof itemsData.handleSaveEditItem>) => {
+        itemsData.handleSaveEditItem(...args);
+        setEditingItemId(null);
+        setEditingItemContent('');
+      },
+      handleEditSomedayItemContent: (id: string, newContent: string) => {
+        itemsData.handleEditSomedayItemContent(id, newContent);
+        setEditingItemId(null);
+      },
       assignItemToTime,
       handleDeleteItem: handleDeleteItemWithConfirm,
 
@@ -2150,6 +2184,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       setCollections,
       migrateCollectionItemToDailyLog,
       handleDeleteCollection,
+      handleReorderCollections: collectionsData.handleReorderCollections,
+      handleReorderCollectionItems: collectionsData.handleReorderCollectionItems,
+      handleReorderCollectionSubtasks: collectionsData.handleReorderCollectionSubtasks,
 
       // Pomodoro
       ...pomodoroData,
