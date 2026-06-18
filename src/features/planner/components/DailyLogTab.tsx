@@ -1,43 +1,25 @@
 import { useState, useRef } from 'react';
-import { Download, Printer, ChevronLeft, ChevronRight, X, Search, ArrowDownAZ } from 'lucide-react';
+import { 
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { Download, Printer, ChevronLeft, ChevronRight, X, GripVertical } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
 import { getLocalDateString } from '../../../utils/plannerUtils';
+import { BUJO_ICONS, CTX_SUGGESTIONS } from '../../../utils/constants';
 import { DateInput } from '../../../components/common/DateInput';
-
-export const BUJO_ICONS = [
-  { emoji: '📝', name: 'nota', tooltip: 'Anotação / Nota' },
-  { emoji: '📅', name: 'data', tooltip: 'Compromisso / Data' },
-  { emoji: '🎯', name: 'objetivo', tooltip: 'Objetivo / Foco' },
-  { emoji: '🚀', name: 'projeto', tooltip: 'Lançamento / Progresso' },
-  { emoji: '💡', name: 'ideia', tooltip: 'Ideia / Insight' },
-  { emoji: '💼', name: 'trabalho', tooltip: 'Trabalho / Negócios' },
-  { emoji: '📚', name: 'estudo', tooltip: 'Estudo / Leitura' },
-  { emoji: '🏃‍♂️', name: 'esporte', tooltip: 'Exercício / Corrida' },
-  { emoji: '🍎', name: 'saude', tooltip: 'Alimentação / Saúde' },
-  { emoji: '✈️', name: 'viagem', tooltip: 'Viagem / Lazer' },
-  { emoji: '🛒', name: 'compras', tooltip: 'Compras / Mercado' },
-  { emoji: '🎨', name: 'arte', tooltip: 'Arte / Design' },
-  { emoji: '🎵', name: 'musica', tooltip: 'Música / Som' },
-  { emoji: '🍿', name: 'lazer', tooltip: 'Filme / Lazer' },
-  { emoji: '🏠', name: 'casa', tooltip: 'Casa / Lar' },
-  { emoji: '👨‍👩‍👧‍👦', name: 'familia', tooltip: 'Família / Relacionamento' },
-  { emoji: '🔑', name: 'chave', tooltip: 'Acesso / Chave' },
-  { emoji: '💬', name: 'ideia', tooltip: 'Mensagem / Ideia' },
-  { emoji: '⚠️', name: 'alerta', tooltip: 'Alerta / Urgente' },
-  { emoji: '🛠️', name: 'ferramenta', tooltip: 'Ferramenta / Ajuste' },
-  { emoji: '💰', name: 'dinheiro', tooltip: 'Dinheiro / Finanças' },
-  { emoji: '🏆', name: 'conquista', tooltip: 'Prêmio / Conquista' },
-  { emoji: '🧘‍♂️', name: 'mente', tooltip: 'Meditação / Foco' },
-  { emoji: '🩺', name: 'saude', tooltip: 'Médico / Saúde' },
-  { emoji: '🍕', name: 'comida', tooltip: 'Comida / Lanche' },
-  { emoji: '🚗', name: 'viagem', tooltip: 'Carro / Viagem' },
-  { emoji: '⭐', name: 'favorito', tooltip: 'Estrela / Destaque' },
-  { emoji: '❤️', name: 'amor', tooltip: 'Coração / Amor' },
-  { emoji: '🔥', name: 'fogo', tooltip: 'Prioridade / Fogo' },
-  { emoji: '🔋', name: 'energia', tooltip: 'Bateria / Energia' },
-  { emoji: '💤', name: 'descanso', tooltip: 'Sono / Descanso' }
-];
+import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 
 export const DailyLogTab = () => {
   const {
@@ -57,105 +39,32 @@ export const DailyLogTab = () => {
     setStandardInput,
     handleStandardInputChange,
     handleStandardInputKeyDown,
-    showAutocomplete,
-    collections,
-    autocompleteIndex,
-    selectCollectionAutocomplete,
-    renderRealTimeSuggestions,
-    createStandardTaskWithSuggestions,
-    cycleStatus,
-    editingItemId,
-    editingItemContent,
-    setEditingItemContent,
-    handleSaveEditItemForm,
-    setEditingItemId,
-    handleStartEditItem,
-    handleDeleteItem,
-    handleAISplitTask,
-    breakingTaskIds,
-    expandedTaskId,
-    setExpandedTaskId,
-    toggleSubtask,
-    deleteSubtask,
-    newSubtaskText,
-    setNewSubtaskText,
-    addSubtask,
-    getSubtaskCompletionString,
-    migrateUncompletedTasksToNextDay
+    migrateUncompletedTasksToNextDay,
+    handleReorderItems
   } = useBujo();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const today = getLocalDateString();
-  const [selectedContext, setSelectedContext] = useState<string | null>(null);
   const [standardIcon, setStandardIcon] = useState<string>('');
   const [showIconDropdown, setShowIconDropdown] = useState<boolean>(false);
-
-  // New states for search, sorting, and metadata inputs
-  const [searchText, setSearchText] = useState('');
-  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'energy' | 'complexity' | 'time'>('recent');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [standardEnergy, setStandardEnergy] = useState<number>(1);
   const [standardComplexity, setStandardComplexity] = useState<number>(1);
   const [standardExecutionTime, setStandardExecutionTime] = useState<string>('');
   const [iconSearch, setIconSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
   const [showCtxAutocomplete, setShowCtxAutocomplete] = useState(false);
   const [ctxSearch, setCtxSearch] = useState('');
   const [ctxIndex, setCtxIndex] = useState(0);
   const createInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Dynamically calculate top 5 themes with the highest quantity of tasks globally
-  const top5Categories = (() => {
-    const uniqueCategories = Array.from(new Set(BUJO_ICONS.map(i => i.name)));
-    const counts = uniqueCategories.map(cat => {
-      const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat).map(i => i.emoji);
-      const count = items.filter(item => item.type === 'task' && item.icon && matchingEmojis.includes(item.icon)).length;
-      return { cat, count };
-    });
-    return counts.sort((a, b) => b.count - a.count).slice(0, 5).map(item => item.cat);
-  })();
-
-  const categoryLabels: { [key: string]: string } = {
-    dinheiro: '💰 Finanças',
-    familia: '👨‍👩‍👧‍👦 Família',
-    saude: '🩺 Saúde',
-    arte: '🎨 Arte',
-    ideia: '💡 Ideia',
-    nota: '📝 Notas',
-    data: '📅 Datas',
-    objetivo: '🎯 Foco',
-    projeto: '🚀 Projetos',
-    trabalho: '💼 Trabalho',
-    estudo: '📚 Estudos',
-    esporte: '🏃‍♂️ Esportes',
-    viagem: '✈️ Viagens',
-    compras: '🛒 Compras',
-    musica: '🎵 Música',
-    lazer: '🍿 Lazer',
-    casa: '🏠 Casa',
-    chave: '🔑 Chaves',
-    alerta: '⚠️ Alertas',
-    ferramenta: '🛠️ Ajustes',
-    conquista: '🏆 Prêmios',
-    mente: '🧘‍♂️ Mente',
-    comida: '🍕 Comida',
-    favorito: '⭐ Favoritos',
-    amor: '❤️ Amor',
-    fogo: '🔥 Urgentes',
-    energia: '🔋 Energia',
-    descanso: '💤 Descanso'
-  };
-
-  const CTX_SUGGESTIONS = [
-    { tag: '@computador', icon: '💻', label: 'Computador' },
-    { tag: '@online', icon: '🌐', label: 'Online' },
-    { tag: '@rua', icon: '🚶', label: 'Rua / Fora' },
-    { tag: '@casa', icon: '🏠', label: 'Casa' },
-    { tag: '@trabalhando', icon: '💼', label: 'Trabalho' },
-    { tag: '@mestrado', icon: '🎓', label: 'Mestrado' },
-    { tag: '@programando', icon: '⚡', label: 'Programação' },
-    { tag: '@aguardando', icon: '⏳', label: 'Aguardando' }
-  ];
+  // ponytail: useSensors and useSensor are removed to avoid React 19 "Invalid hook call"
+  // DndContext will use default sensors (Pointer/Keyboard) which are safer for now.
 
   const getContextSearch = (value: string, cursorPosition: number | null) => {
     if (cursorPosition === null) return null;
@@ -264,90 +173,27 @@ export const DailyLogTab = () => {
     setStandardComplexity(1);
     setStandardExecutionTime('');
     setShowIconDropdown(false);
-    setSelectedDate(today);
-    setStandardDate(today);
+    // Keep standard date aligned with current selection
+    setStandardDate(selectedDate);
     setStandardTime('');
   };
 
   const dateItems = items.filter(i => i.date === selectedDate);
-
-  // Filter items based on search text, selected context, and selected icon category
-  const filteredDateItems = dateItems.filter(item => {
-    // Context filter
-    if (selectedContext) {
-      if (!item.content.toLowerCase().includes(selectedContext.toLowerCase())) {
-        return false;
-      }
-    }
-
-    // Category / Icon filter
-    if (selectedCategory) {
-      if (!item.icon) return false;
-      const matchingEmojis = BUJO_ICONS.filter(i => i.name === selectedCategory || i.tooltip.toLowerCase().includes(selectedCategory)).map(i => i.emoji);
-      if (!matchingEmojis.includes(item.icon)) {
-        return false;
-      }
-    }
-
-    // Status filter
-    if (statusFilter === 'pending') {
-      if (item.type !== 'task') return false;
-      if (item.status === 'completed' || item.status === 'cancelled') return false;
-    } else if (statusFilter === 'completed') {
-      if (item.type !== 'task') return false;
-      if (item.status !== 'completed') return false;
-    }
-
-    // Text search filter (checking content and subtasks content)
-    if (searchText.trim()) {
-      const query = searchText.toLowerCase();
-      const contentMatches = item.content.toLowerCase().includes(query);
-      const subtaskMatches = item.subtasks?.some(sub => sub.content.toLowerCase().includes(query)) || false;
-      if (!contentMatches && !subtaskMatches) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  // Sort items based on selected sorting
-  const sortedDateItems = [...filteredDateItems].sort((a, b) => {
-    if (sortBy === 'oldest') {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : Infinity;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : Infinity;
-      if (aTime !== bTime) {
-        return aTime - bTime;
-      }
-      return a.id.localeCompare(b.id);
-    }
-    if (sortBy === 'energy') {
-      const aVal = a.energy || 0;
-      const bVal = b.energy || 0;
-      return bVal - aVal;
-    }
-    if (sortBy === 'complexity') {
-      const aVal = a.complexity || 0;
-      const bVal = b.complexity || 0;
-      return bVal - aVal;
-    }
-    if (sortBy === 'time') {
-      const aVal = a.executionTime || 0;
-      const bVal = b.executionTime || 0;
-      return bVal - aVal;
-    }
-    // Default: 'recent'
+  
+  // Sort items: Most recent first (based on createdAt)
+  const sortedDateItems = [...dateItems].sort((a, b) => {
     const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    if (aTime !== bTime) {
-      return bTime - aTime;
-    }
+    if (aTime !== bTime) return bTime - aTime;
     return b.id.localeCompare(a.id);
   });
 
-  const filteredCollections = collections.filter((col: any) =>
-    col.name.toLowerCase().includes((standardInput.match(/\[(.*)/)?.[1] || '').toLowerCase())
-  );
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      handleReorderItems(active.id as string, over.id as string);
+    }
+  };
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 animate-fade-in">
@@ -362,7 +208,6 @@ export const DailyLogTab = () => {
         </div>
 
         <div className="flex items-center gap-2 no-print flex-wrap">
-          {/* Day Navigation */}
           <div className="flex items-center gap-1.5 bg-zinc-200/30 dark:bg-white/5 p-1 rounded-xl border border-zinc-200/40 dark:border-white/10">
             <button
               type="button"
@@ -435,9 +280,7 @@ export const DailyLogTab = () => {
 
       <div className="relative bg-zinc-200/30 dark:bg-white/5 p-2 rounded-xl border border-zinc-200/40 dark:border-white/10 no-print">
         <form onSubmit={handleLocalSubmit} className="flex flex-col gap-2">
-          {/* Row 1: Primary Inputs */}
           <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
-            {/* Type Selector (Segmented control) */}
             <div className="flex bg-zinc-200/50 dark:bg-zinc-950/60 p-0.5 rounded-lg border border-zinc-200/40 dark:border-white/5 shrink-0 w-full sm:w-auto justify-between sm:justify-start">
               {(['task', 'event', 'note'] as const).map((t) => (
                 <button
@@ -445,9 +288,7 @@ export const DailyLogTab = () => {
                   type="button"
                   onClick={() => setStandardType(t)}
                   className={`px-2.5 py-0.5 rounded-md text-xs font-semibold transition-all cursor-pointer flex-1 sm:flex-initial text-center ${
-                    standardType === t
-                      ? 'bg-bujo-highlight text-white shadow-sm'
-                      : 'text-zinc-500 hover:text-bujo-text'
+                    standardType === t ? 'bg-bujo-highlight text-white shadow-sm' : 'text-zinc-500 hover:text-bujo-text'
                   }`}
                 >
                   {t === 'task' ? '• Tarefa' : t === 'event' ? '○ Evento' : '- Nota'}
@@ -455,7 +296,6 @@ export const DailyLogTab = () => {
               ))}
             </div>
 
-            {/* Icon Picker Trigger */}
             <div className="relative shrink-0 w-full sm:w-auto">
               <button
                 type="button"
@@ -471,28 +311,9 @@ export const DailyLogTab = () => {
                 <div className="absolute left-0 top-full mt-1.5 p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-64 animate-scale-in">
                   <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-zinc-200/40 dark:border-white/5">
                     <span className="text-[9.5px] font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider">Escolha um Ícone</span>
-                    <div className="flex items-center gap-1.5">
-                      {standardIcon && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setStandardIcon('');
-                            setShowIconDropdown(false);
-                          }}
-                          className="text-[9px] text-red-500 hover:underline font-bold cursor-pointer"
-                        >
-                          Remover
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setShowIconDropdown(false)}
-                        className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer"
-                        title="Fechar"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
+                    <button type="button" onClick={() => setShowIconDropdown(false)} className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer">
+                      <X className="w-3 h-3" />
+                    </button>
                   </div>
                   <input
                     type="text"
@@ -509,14 +330,8 @@ export const DailyLogTab = () => {
                       <button
                         key={icon.emoji}
                         type="button"
-                        onClick={() => {
-                          setStandardIcon(icon.emoji);
-                          setShowIconDropdown(false);
-                          setIconSearch('');
-                        }}
-                        className={`w-7 h-7 flex items-center justify-center rounded text-base hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
-                          standardIcon === icon.emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
-                        }`}
+                        onClick={() => { setStandardIcon(icon.emoji); setShowIconDropdown(false); setIconSearch(''); }}
+                        className={`w-7 h-7 flex items-center justify-center rounded text-base hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${standardIcon === icon.emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''}`}
                         title={icon.tooltip}
                       >
                         {icon.emoji}
@@ -527,7 +342,6 @@ export const DailyLogTab = () => {
               )}
             </div>
 
-            {/* Text Input Container with Autocomplete inside */}
             <div className="relative flex-1 flex items-center bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-lg px-2.5 focus-within:border-bujo-highlight/60 focus-within:ring-1 focus-within:ring-bujo-highlight/30 transition-all w-full">
               <input
                 ref={createInputRef}
@@ -536,419 +350,117 @@ export const DailyLogTab = () => {
                 value={standardInput}
                 onChange={handleInputChange}
                 onKeyDown={handleInputKeyDown}
-                placeholder={standardType === 'task' ? "Ex: Revisar docs amanhã às 14h p1 #Time" : standardType === 'event' ? "Adicionar evento... Use @ para contextos" : "Adicionar nota..."}
+                placeholder={standardType === 'task' ? "Ex: Revisar docs amanhã às 14h p1 #Time" : standardType === 'event' ? "Adicionar evento..." : "Adicionar nota..."}
                 className="bg-transparent border-none outline-none w-full text-xs text-bujo-text placeholder:text-zinc-500 py-1.5 pr-8"
               />
               {(standardInput || standardTime || standardIcon) && (
-                <button
-                  type="button"
-                  onClick={handleClearInputs}
-                  className="absolute right-2 p-0.5 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
-                  title="Limpar formulário"
-                >
+                <button type="button" onClick={handleClearInputs} className="absolute right-2 p-0.5 rounded-full hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer">
                   <X className="w-3 h-3" />
                 </button>
               )}
 
-              {showAutocomplete && filteredCollections.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
-                  {filteredCollections.map((col: any, idx: number) => (
-                    <div
-                      key={col.id}
-                      onClick={() => selectCollectionAutocomplete(col.name)}
-                      className={`px-4 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2 ${
-                        idx === autocompleteIndex 
-                          ? 'bg-bujo-highlight/10 text-bujo-highlight font-bold' 
-                          : 'text-bujo-text hover:bg-zinc-100 dark:hover:bg-white/5'
-                      }`}
-                    >
-                      <span className="text-base">{col.icon}</span>
-                      <span>{col.name}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {showCtxAutocomplete && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-fade-in">
-                  {CTX_SUGGESTIONS.filter(ctx => 
-                    ctx.tag.toLowerCase().includes(ctxSearch.toLowerCase()) ||
-                    ctx.label.toLowerCase().includes(ctxSearch.toLowerCase())
-                  ).map((ctx, idx) => (
-                    <div
-                      key={ctx.tag}
-                      onClick={() => {
-                        selectContextSuggestion(ctx.tag, standardInput, setStandardInput, createInputRef.current);
-                        setShowCtxAutocomplete(false);
-                      }}
-                      className={`px-4 py-2 text-xs cursor-pointer transition-colors flex items-center justify-between ${
-                        idx === ctxIndex 
-                          ? 'bg-bujo-highlight/10 text-bujo-highlight font-bold' 
-                          : 'text-bujo-text hover:bg-zinc-150 dark:hover:bg-white/5'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span>{ctx.icon}</span>
-                        <span>{ctx.label}</span>
-                      </span>
-                      <span className="font-mono text-[10px] opacity-60">{ctx.tag}</span>
-                    </div>
-                  ))}
+                <div className="absolute left-0 bottom-full mb-2 w-full max-w-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-50 overflow-hidden animate-scale-in">
+                  <div className="p-2 border-b border-zinc-200/40 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02]">
+                    <span className="text-[9.5px] font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider">Contextos Sugeridos</span>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {CTX_SUGGESTIONS.filter(ctx => 
+                      ctx.tag.toLowerCase().includes(ctxSearch.toLowerCase()) ||
+                      ctx.label.toLowerCase().includes(ctxSearch.toLowerCase())
+                    ).map((ctx, idx) => (
+                      <button
+                        key={ctx.tag}
+                        type="button"
+                        onClick={() => {
+                          selectContextSuggestion(ctx.tag, standardInput, setStandardInput, createInputRef.current);
+                          setShowCtxAutocomplete(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-colors ${ctxIndex === idx ? 'bg-bujo-highlight/10 text-bujo-highlight border-l-2 border-bujo-highlight' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
+                      >
+                        <span className="font-mono font-bold">{ctx.tag}</span>
+                        <span className="text-[10px] opacity-60">{ctx.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Row 2: Metadata & Action Buttons */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2 pt-2 border-t border-zinc-200/30 dark:border-white/5 mt-1">
-            {/* Metadata Fields */}
             <div className="flex flex-wrap items-center gap-2">
-              {/* Task specific: Energy, Complexity, Duration */}
               {standardType === 'task' && (
                 <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-zinc-200/40 dark:border-white/5">
                   <div className="flex items-center gap-1">
                     <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Energia:</span>
-                    <select
-                      value={standardEnergy}
-                      onChange={(e) => setStandardEnergy(Number(e.target.value))}
-                      className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-semibold py-0"
-                      title="Esforço / Energia (1-5)"
-                    >
+                    <select value={standardEnergy} onChange={(e) => setStandardEnergy(Number(e.target.value))} className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-semibold py-0">
                       {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-zinc-950 text-white">⚡ {v}</option>)}
                     </select>
                   </div>
-                  
                   <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
-
                   <div className="flex items-center gap-1">
                     <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Complex:</span>
-                    <select
-                      value={standardComplexity}
-                      onChange={(e) => setStandardComplexity(Number(e.target.value))}
-                      className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-semibold py-0"
-                      title="Complexidade (1-5)"
-                    >
+                    <select value={standardComplexity} onChange={(e) => setStandardComplexity(Number(e.target.value))} className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-semibold py-0">
                       {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-zinc-950 text-white">🧠 {v}</option>)}
                     </select>
                   </div>
-
                   <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
-
                   <div className="flex items-center gap-1">
                     <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Tempo:</span>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="min"
-                      value={standardExecutionTime}
-                      onChange={(e) => setStandardExecutionTime(e.target.value)}
-                      className="bg-transparent border-none text-bujo-text outline-none w-10 font-mono text-xs text-center placeholder:text-zinc-500 font-semibold"
-                      title="Tempo estimado (minutos)"
-                    />
-                    <span className="text-[10px] text-zinc-500 select-none">min</span>
+                    <input type="number" min="0" placeholder="min" value={standardExecutionTime} onChange={(e) => setStandardExecutionTime(e.target.value)} className="bg-transparent border-none text-bujo-text outline-none w-10 font-mono text-xs text-center placeholder:text-zinc-500 font-semibold" />
                   </div>
                 </div>
               )}
-
-              {/* Date and Time selectors */}
               <div className="flex items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-zinc-200/40 dark:border-white/5">
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Data:</span>
-                  <DateInput
-                    value={standardDate}
-                    onChange={setStandardDate}
-                  />
+                  <DateInput value={standardDate} onChange={setStandardDate} />
                 </div>
-                
                 <div className="w-px h-3.5 bg-zinc-200/60 dark:bg-white/15" />
-
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-400 select-none text-[9.5px] uppercase font-mono tracking-wider">Hora:</span>
-                  <input
-                    type="time"
-                    value={standardTime}
-                    onChange={(e) => setStandardTime(e.target.value)}
-                    className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-mono py-0 w-28"
-                  />
+                  <input type="time" value={standardTime} onChange={(e) => setStandardTime(e.target.value)} className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-xs font-mono py-0 w-28" />
                 </div>
               </div>
             </div>
-
-            {/* Action Buttons */}
             <div className="flex items-center gap-2 ml-auto w-full lg:w-auto justify-end">
-              {(standardInput || standardTime || standardIcon) && (
-                <button
-                  type="button"
-                  onClick={handleClearInputs}
-                  className="px-2.5 py-1 bg-zinc-200/50 dark:bg-white/5 text-bujo-text border border-zinc-350 dark:border-white/15 rounded-lg text-xs font-medium hover:bg-zinc-300/50 dark:hover:bg-white/10 transition-all cursor-pointer"
-                >
-                  Limpar
-                </button>
-              )}
-              <button
-                type="submit"
-                className="px-3.5 py-1 bg-bujo-highlight text-white rounded-lg text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md shadow-bujo-highlight/10"
-              >
+              <button type="submit" className="px-3.5 py-1 bg-bujo-highlight text-white rounded-lg text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md shadow-bujo-highlight/10">
                 Cadastrar
               </button>
             </div>
           </div>
         </form>
-
-        {/* Quick Context Tag Appenders */}
-        <div className="flex items-center gap-1 flex-wrap mt-1.5 pt-1.5 border-t border-zinc-200/20 dark:border-white/5 pl-0.5">
-          <span className="text-[9.5px] text-zinc-400 font-mono tracking-wider">💡 Sugerir:</span>
-          {['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'].map(ctx => {
-            const icons: { [key: string]: string } = {
-              '@computador': '💻 ',
-              '@online': '🌐 ',
-              '@rua': '🚶 ',
-              '@casa': '🏠 ',
-              '@trabalhando': '💼 ',
-              '@mestrado': '🎓 ',
-              '@programando': '⚡ ',
-              '@aguardando': '⏳ '
-            };
-            return (
-              <button
-                key={ctx}
-                type="button"
-                onClick={() => {
-                  if (!standardInput.includes(ctx)) {
-                    const space = standardInput.length > 0 && !standardInput.endsWith(' ') ? ' ' : '';
-                    setStandardInput(standardInput + space + ctx);
-                  }
-                }}
-                className="px-1.5 py-0.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 border border-zinc-200/40 dark:border-white/5 rounded text-[9.5px] font-semibold text-zinc-550 dark:text-zinc-300 transition-all cursor-pointer"
-              >
-                {icons[ctx] || ''}{ctx.replace('@', '')}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
-      {renderRealTimeSuggestions(standardInput, 'task', createStandardTaskWithSuggestions)}
-
-      {/* Unified Filter & Search Dashboard (Optimized Grid Layout) */}
-      <div className="bg-zinc-200/20 dark:bg-white/[0.02] border border-zinc-200/40 dark:border-white/5 rounded-xl p-2 no-print shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
-          {/* Col 1: Search & Sort & Reset (col-span-5) */}
-          <div className="md:col-span-5 flex items-center gap-1.5 w-full flex-wrap">
-            {/* Search Input */}
-            <div className="relative flex-1 min-w-[160px] md:min-w-[200px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-450 dark:text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Pesquisar..."
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className="w-full pl-8 pr-7 py-1 text-xs rounded-md bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
-              />
-              {searchText && (
-                <button
-                  onClick={() => setSearchText('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-bujo-text cursor-pointer p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-
-            {/* Sort Select */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-md px-1.5 py-0.5 text-[10px] text-bujo-text outline-none cursor-pointer font-bold shrink-0"
-            >
-              <option value="recent" className="bg-zinc-950 text-white">⏱️ Recentes</option>
-              <option value="oldest" className="bg-zinc-950 text-white">⏳ Antigas</option>
-              <option value="energy" className="bg-zinc-950 text-white">⚡ Esforço</option>
-              <option value="complexity" className="bg-zinc-950 text-white">🧠 Complex</option>
-              <option value="time" className="bg-zinc-950 text-white">⏳ Tempo</option>
-            </select>
-
-            {/* Status Filter Segmented Control */}
-            <div className="flex bg-zinc-200/50 dark:bg-zinc-950/60 p-0.5 rounded border border-zinc-200/40 dark:border-white/5 shrink-0 select-none">
-              {(['all', 'pending', 'completed'] as const).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setStatusFilter(s)}
-                  className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold transition-all cursor-pointer ${
-                    statusFilter === s
-                      ? 'bg-bujo-highlight text-white'
-                      : 'text-zinc-500 hover:text-bujo-text'
-                  }`}
-                >
-                  {s === 'all' ? 'Todos' : s === 'pending' ? 'A realizar' : 'Realizadas'}
-                </button>
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1.5 scroll-smooth">
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext 
+            items={sortedDateItems.map(i => i.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-2">
+              {sortedDateItems.map(item => (
+                <div key={item.id} className="flex items-start gap-2 group/sort">
+                  <DragHandle id={item.id} className="mt-4 opacity-0 group-hover/sort:opacity-40 hover:!opacity-100 transition-opacity">
+                    <GripVertical className="w-4 h-4 text-zinc-400" />
+                  </DragHandle>
+                  <SortableItem id={item.id} className="flex-1">
+                    <BulletItem item={item} />
+                  </SortableItem>
+                </div>
               ))}
             </div>
-
-            {/* Clear All Filters Button */}
-            {(selectedContext !== null || selectedCategory !== null || searchText.trim() !== '' || statusFilter !== 'all') && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedContext(null);
-                  setSelectedCategory(null);
-                  setSearchText('');
-                  setStatusFilter('all');
-                }}
-                className="text-bujo-highlight hover:text-red-500 transition-colors cursor-pointer shrink-0 p-0.5"
-                title="Limpar todos os filtros"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Vertical Divider (Hidden on mobile) */}
-          <div className="hidden md:block md:col-span-1 h-6 w-px bg-zinc-200/40 dark:bg-white/5 mx-auto" />
-
-          {/* Col 2: Context and Theme Filters (col-span-6) */}
-          <div className="md:col-span-6 flex flex-col gap-1 w-full">
-            {/* Context Filters */}
-            <div className="flex items-center gap-1 flex-wrap">
-              <span className="text-[9px] text-zinc-400 font-mono tracking-wider uppercase shrink-0 min-w-[28px]">Ctx:</span>
-              <button
-                type="button"
-                onClick={() => setSelectedContext(null)}
-                className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-all cursor-pointer ${
-                  selectedContext === null 
-                    ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
-                    : 'bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
-                }`}
-              >
-                Todos ({dateItems.length})
-              </button>
-              {['@computador', '@online', '@rua', '@casa', '@trabalhando', '@mestrado', '@programando', '@aguardando'].map(ctx => {
-                const count = dateItems.filter(item => item.content.toLowerCase().includes(ctx)).length;
-                if (count === 0) return null;
-                
-                const isActive = selectedContext === ctx;
-                const colors: { [key: string]: string } = {
-                  '@computador': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-                  '@online': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
-                  '@rua': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-                  '@casa': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-                  '@trabalhando': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-                  '@mestrado': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-                  '@programando': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
-                  '@aguardando': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                };
-                const activeColors: { [key: string]: string } = {
-                  '@computador': 'bg-blue-500 text-white border-blue-500',
-                  '@online': 'bg-cyan-500 text-white border-cyan-500',
-                  '@rua': 'bg-amber-500 text-white border-amber-500',
-                  '@casa': 'bg-emerald-500 text-white border-emerald-500',
-                  '@trabalhando': 'bg-purple-500 text-white border-purple-500',
-                  '@mestrado': 'bg-indigo-500 text-white border-indigo-500',
-                  '@programando': 'bg-orange-500 text-white border-orange-500',
-                  '@aguardando': 'bg-rose-500 text-white border-rose-500'
-                };
-                
-                const icons: { [key: string]: string } = {
-                  '@computador': '💻 ',
-                  '@online': '🌐 ',
-                  '@rua': '🚶 ',
-                  '@casa': '🏠 ',
-                  '@trabalhando': '💼 ',
-                  '@mestrado': '🎓 ',
-                  '@programando': '⚡ ',
-                  '@aguardando': '⏳ '
-                };
-        
-                return (
-                  <button
-                    key={ctx}
-                    type="button"
-                    onClick={() => setSelectedContext(isActive ? null : ctx)}
-                    className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-all cursor-pointer ${
-                      isActive 
-                        ? activeColors[ctx] 
-                        : `${colors[ctx]} hover:opacity-85`
-                    }`}
-                  >
-                    {icons[ctx] || ''}
-                    {ctx.replace('@', '')} ({count})
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Theme Filters */}
-            <div className="flex items-center gap-1 flex-wrap">
-              <span className="text-[9px] text-zinc-400 font-mono tracking-wider uppercase shrink-0 min-w-[28px]">Tema:</span>
-              <button
-                type="button"
-                onClick={() => setSelectedCategory(null)}
-                className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-all cursor-pointer ${
-                  selectedCategory === null 
-                    ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white' 
-                    : 'bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
-                }`}
-              >
-                Todos
-              </button>
-              {top5Categories.map(cat => {
-                const matchingEmojis = BUJO_ICONS.filter(i => i.name === cat).map(i => i.emoji);
-                const count = dateItems.filter(item => item.icon && matchingEmojis.includes(item.icon)).length;
-                
-                const label = categoryLabels[cat] || `🏷️ ${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
-                const isActive = selectedCategory === cat;
-                return (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setSelectedCategory(isActive ? null : cat)}
-                    className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-all cursor-pointer ${
-                      isActive 
-                        ? 'bg-bujo-highlight text-white border-bujo-highlight' 
-                        : 'bg-zinc-150 dark:bg-white/5 text-zinc-500 hover:text-bujo-text border-zinc-200/30 dark:border-white/5'
-                    }`}
-                  >
-                    {label} ({count})
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1.5 scroll-smooth">
-        {sortedDateItems.map(item => (
-          <BulletItem
-            key={item.id}
-            item={item}
-            cycleStatus={cycleStatus}
-            editingItemId={editingItemId}
-            editingItemContent={editingItemContent}
-            setEditingItemContent={setEditingItemContent}
-            handleSaveEditItem={handleSaveEditItemForm}
-            setEditingItemId={setEditingItemId}
-            handleStartEditItem={handleStartEditItem}
-            handleDeleteItem={handleDeleteItem}
-            handleAISplitTask={handleAISplitTask}
-            breakingTaskIds={breakingTaskIds}
-            expandedTaskId={expandedTaskId}
-            setExpandedTaskId={setExpandedTaskId}
-            toggleSubtask={toggleSubtask}
-            deleteSubtask={deleteSubtask}
-            newSubtaskText={newSubtaskText}
-            setNewSubtaskText={setNewSubtaskText}
-            addSubtask={(taskId, icon, mins) => addSubtask(taskId, newSubtaskText, setNewSubtaskText, icon, mins)}
-            getSubtaskCompletionString={getSubtaskCompletionString}
-          />
-        ))}
+          </SortableContext>
+        </DndContext>
 
         {sortedDateItems.length === 0 && (
           <div className="p-8 rounded-2xl bg-zinc-200/10 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 text-center text-zinc-500 italic text-sm">
-            {selectedContext || selectedCategory || searchText
-              ? 'Nenhuma entrada correspondente aos filtros de busca.' 
-              : 'Nenhuma entrada para este dia. Adicione algo no formulário acima!'}
+            Nenhuma entrada para este dia. Adicione algo no formulário acima!
           </div>
         )}
       </div>

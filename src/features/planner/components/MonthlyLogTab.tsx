@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Sparkles, Calendar as CalendarIcon, CheckSqu
 import { useBujo } from '../../../context/BujoContext';
 import { DayTasksModal } from './DayTasksModal';
 import { BulletItem } from './BulletItem';
-import { BUJO_ICONS } from './DailyLogTab';
+import { BUJO_ICONS } from '../../../utils/constants';
 import { getLocalDateString } from '../../../utils/plannerUtils';
 import { DateInput } from '../../../components/common/DateInput';
 
@@ -487,28 +487,7 @@ export const MonthlyLogTab = () => {
 
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                 {activeDateItems.map(item => (
-                  <BulletItem
-                    key={item.id}
-                    item={item}
-                    cycleStatus={cycleStatus}
-                    editingItemId={editingItemId}
-                    editingItemContent={editingItemContent}
-                    setEditingItemContent={setEditingItemContent}
-                    handleSaveEditItem={handleSaveEditItemForm}
-                    setEditingItemId={setEditingItemId}
-                    handleStartEditItem={handleStartEditItem}
-                    handleDeleteItem={handleDeleteItem}
-                    handleAISplitTask={handleAISplitTask}
-                    breakingTaskIds={breakingTaskIds}
-                    expandedTaskId={expandedTaskId}
-                    setExpandedTaskId={setExpandedTaskId}
-                    toggleSubtask={toggleSubtask}
-                    deleteSubtask={deleteSubtask}
-                    newSubtaskText={newSubtaskText}
-                    setNewSubtaskText={setNewSubtaskText}
-                    addSubtask={(taskId, icon, mins) => addSubtask(taskId, newSubtaskText, setNewSubtaskText, icon, mins)}
-                    getSubtaskCompletionString={getSubtaskCompletionString}
-                  />
+                  <BulletItem key={item.id} item={item} />
                 ))}
 
                 {activeDateItems.length === 0 && (

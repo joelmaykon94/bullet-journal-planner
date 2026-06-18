@@ -1,8 +1,23 @@
 import { useState } from 'react';
-import { X, Search } from 'lucide-react';
+import { 
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { X, Search, GripVertical } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
-import { BUJO_ICONS } from './DailyLogTab';
+import { BUJO_ICONS } from '../../../utils/constants';
+import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 
 interface DayTasksModalProps {
   isOpen: boolean;
@@ -31,8 +46,23 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
     newSubtaskText,
     setNewSubtaskText,
     addSubtask,
-    getSubtaskCompletionString
+    getSubtaskCompletionString,
+    handleReorderItems
   } = useBujo();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      handleReorderItems(active.id as string, over.id as string);
+    }
+  };
 
   // Local form states
   const [inputText, setInputText] = useState('');
@@ -184,7 +214,7 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
                       placeholder="Pesquisar..."
                       value={iconSearch}
                       onChange={(e) => setIconSearch(e.target.value)}
-                      className="w-full px-2 py-0.5 mb-1.5 text-[9.5px] rounded bg-zinc-855 border border-white/10 text-white placeholder-zinc-500 outline-none"
+                      className="w-full px-2 py-0.5 mb-1.5 text-[9.5px] rounded bg-zinc-855 border border-white/10 text-white placeholder-zinc-550 outline-none"
                     />
                     <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
                       {BUJO_ICONS.filter(icon => 
@@ -301,31 +331,30 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
         </div>
 
         {/* Scrollable Tasks List */}
-        <div className="flex-1 overflow-y-auto pr-1 space-y-2">
-          {dateItems.map(item => (
-            <BulletItem
-              key={item.id}
-              item={item}
-              cycleStatus={cycleStatus}
-              editingItemId={editingItemId}
-              editingItemContent={editingItemContent}
-              setEditingItemContent={setEditingItemContent}
-              handleSaveEditItem={handleSaveEditItemForm}
-              setEditingItemId={setEditingItemId}
-              handleStartEditItem={handleStartEditItem}
-              handleDeleteItem={handleDeleteItem}
-              handleAISplitTask={handleAISplitTask}
-              breakingTaskIds={breakingTaskIds}
-              expandedTaskId={expandedTaskId}
-              setExpandedTaskId={setExpandedTaskId}
-              toggleSubtask={toggleSubtask}
-              deleteSubtask={deleteSubtask}
-              newSubtaskText={newSubtaskText}
-              setNewSubtaskText={setNewSubtaskText}
-              addSubtask={(taskId, icon, mins) => addSubtask(taskId, newSubtaskText, setNewSubtaskText, icon, mins)}
-              getSubtaskCompletionString={getSubtaskCompletionString}
-            />
-          ))}
+        <div className="flex-1 overflow-y-auto pr-1">
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext 
+              items={dateItems.map(i => i.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {dateItems.map(item => (
+                  <div key={item.id} className="flex items-start gap-2 group/sort">
+                    <DragHandle id={item.id} className="mt-4 opacity-0 group-hover/sort:opacity-40 hover:!opacity-100 transition-opacity">
+                      <GripVertical className="w-4 h-4 text-zinc-500" />
+                    </DragHandle>
+                    <SortableItem id={item.id} className="flex-1">
+                      <BulletItem item={item} />
+                    </SortableItem>
+                  </div>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
 
           {dateItems.length === 0 && (
             <div className="p-8 rounded-2xl bg-white/[0.01] border border-white/5 text-center text-zinc-550 italic text-xs">

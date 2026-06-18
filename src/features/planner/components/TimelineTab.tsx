@@ -100,14 +100,29 @@ export const TimelineTab = () => {
             const now = new Date();
             const h = now.getHours();
             const m = now.getMinutes();
+            // Start hour is 6, end hour is 23
             if (h >= 6 && h <= 23) {
-              const pct = ((h - 6) * 60 + m) / ((23 - 6 + 1) * 60) * 100;
+              const hourIndex = h - 6;
+              const totalHours = 23 - 6 + 1;
+              
+              // Each hour row has a certain height. We need to calculate the position 
+              // relative to the start of the hour row and move it down as minutes pass.
+              // Percentage within the current hour (0-100)
+              const minutePct = m / 60;
+              
+              // Base percentage: which hour we are in
+              const basePct = (hourIndex / totalHours) * 100;
+              // Added percentage: how far through the current hour we are
+              const addedPct = (minutePct / totalHours) * 100;
+              
+              const finalPct = basePct + addedPct;
+
               return (
                 <div 
                   className="absolute left-0 right-0 h-0.5 bg-bujo-highlight z-10 pointer-events-none opacity-80"
-                  style={{ top: `calc(${pct}% + 16px)` }}
+                  style={{ top: `calc(${finalPct}% + 16px)` }}
                 >
-                  <span className="absolute right-2 -top-2 bg-bujo-highlight text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono">
+                  <span className="absolute right-2 -top-2 bg-bujo-highlight text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
                     AGORA {h.toString().padStart(2, '0')}:{m.toString().padStart(2, '0')}
                   </span>
                 </div>
@@ -135,7 +150,7 @@ export const TimelineTab = () => {
                   assignItemToTime(id, `${hourNum.toString().padStart(2, '0')}:00`);
                 }}
                 onClick={() => setSelectedHourToSchedule(hourNum)}
-                className={`flex items-start gap-4 p-3 rounded-2xl border transition-all cursor-pointer ${
+                className={`flex items-start gap-4 p-3 rounded-2xl border transition-all cursor-pointer relative ${
                   isCurrentHour 
                     ? 'bg-bujo-highlight/10 border-bujo-highlight/30 shadow-[0_0_12px_rgba(224,142,69,0.08)]' 
                     : 'bg-transparent border-transparent hover:bg-zinc-200/20 dark:hover:bg-white/[0.02]'
@@ -151,7 +166,7 @@ export const TimelineTab = () => {
                       key={item.id}
                       draggable={editingItemId !== item.id}
                       onDragStart={(e) => e.dataTransfer.setData('text/plain', item.id)}
-                      className={`flex items-center justify-between p-2 rounded-xl border shadow-sm text-xs cursor-grab transition-all ${
+                      className={`flex items-center justify-between p-2 rounded-xl border shadow-sm text-xs cursor-grab transition-all relative group/item ${
                         item.status === 'completed'
                           ? 'bg-emerald-600/10 dark:bg-emerald-500/5 border-emerald-500/25 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-600/15 dark:hover:bg-emerald-500/10'
                           : item.status === 'cancelled'
@@ -188,7 +203,7 @@ export const TimelineTab = () => {
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-1 min-w-0 relative">
                             {item.type === 'task' && (
                               <button
                                 onClick={(e) => {
@@ -208,12 +223,29 @@ export const TimelineTab = () => {
                                 {item.status === 'cancelled' && <X className="w-2.5 h-2.5 stroke-[4]" />}
                               </button>
                             )}
-                            <span className={`truncate ${
+                            <span className={`truncate max-w-[200px] sm:max-w-none ${
                               item.status === 'completed' ? 'line-through opacity-40' : 
                               item.status === 'cancelled' ? 'line-through opacity-40 text-red-750/80 dark:text-red-400/80' : ''
                             }`}>
                               {item.content}
                             </span>
+
+                            {/* Tooltip (Balloon) on hover */}
+                            <div className="absolute bottom-full left-0 mb-2 hidden group-hover/item:block z-[100] animate-scale-in pointer-events-none">
+                              <div className="bg-zinc-900 dark:bg-zinc-800 text-white text-[11px] p-2 rounded-xl shadow-2xl border border-white/10 min-w-[150px] max-w-[250px] whitespace-normal leading-relaxed">
+                                <div className="font-bold border-b border-white/10 pb-1 mb-1 flex items-center gap-1.5">
+                                  {item.type === 'event' ? '○ Evento' : '• Tarefa'}
+                                  {item.time && <span className="text-zinc-400 font-mono ml-auto">@{item.time}</span>}
+                                </div>
+                                <div>{item.content}</div>
+                                {item.executionTime && (
+                                  <div className="mt-1 text-bujo-highlight font-bold flex items-center gap-1">
+                                    ⏱️ {item.executionTime} min
+                                  </div>
+                                )}
+                                <div className="absolute top-full left-4 w-2 h-2 bg-zinc-900 dark:bg-zinc-800 rotate-45 -translate-y-1 border-r border-b border-white/10"></div>
+                              </div>
+                            </div>
                           </div>
                           <span className={`text-[9px] font-bold uppercase shrink-0 select-none ml-2 ${
                             item.status === 'completed' ? 'text-emerald-600/70 dark:text-emerald-500/60' : 

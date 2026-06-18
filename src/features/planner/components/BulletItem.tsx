@@ -1,54 +1,67 @@
 import { useState, useEffect, useRef } from 'react';
-import { Edit, Trash2, ChevronUp, ChevronDown, Check, ChevronRight, ChevronLeft, X } from 'lucide-react';
+import { 
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { Edit, Trash2, ChevronUp, ChevronDown, Check, ChevronRight, ChevronLeft, X, GripVertical } from 'lucide-react';
 import { BujoItem } from '../../../types';
 import { useBujo } from '../../../context/BujoContext';
-import { BUJO_ICONS } from './DailyLogTab';
+import { BUJO_ICONS, CTX_SUGGESTIONS } from '../../../utils/constants';
 import { DateInput } from '../../../components/common/DateInput';
+import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 
 interface BulletItemProps {
   item: BujoItem;
-  cycleStatus: (id: string) => void;
-  editingItemId: string | null;
-  editingItemContent: string;
-  setEditingItemContent: (content: string) => void;
-  handleSaveEditItem: (id: string, energy?: number, complexity?: number, executionTime?: number, date?: string, time?: string) => void;
-  setEditingItemId: (id: string | null) => void;
-  handleStartEditItem: (id: string, content: string) => void;
-  handleDeleteItem: (id: string) => void;
-  handleAISplitTask: (id: string, content: string) => void;
-  breakingTaskIds: { [key: string]: boolean };
-  expandedTaskId: string | null;
-  setExpandedTaskId: (id: string | null) => void;
-  toggleSubtask: (taskId: string, subtaskId: string) => void;
-  deleteSubtask: (taskId: string, subtaskId: string) => void;
-  newSubtaskText: string;
-  setNewSubtaskText: (text: string) => void;
-  addSubtask: (taskId: string, icon?: string, executionTime?: number) => void;
-  getSubtaskCompletionString: (item: BujoItem) => string;
 }
 
-export const BulletItem = ({
-  item,
-  cycleStatus,
-  editingItemId,
-  editingItemContent,
-  setEditingItemContent,
-  handleSaveEditItem,
-  setEditingItemId,
-  handleStartEditItem,
-  handleDeleteItem,
-  handleAISplitTask,
-  breakingTaskIds,
-  expandedTaskId,
-  setExpandedTaskId,
-  toggleSubtask,
-  deleteSubtask,
-  newSubtaskText,
-  setNewSubtaskText,
-  addSubtask,
-  getSubtaskCompletionString
-}: BulletItemProps) => {
-  const { handleUpdateItemDelegatedTo, handleUpdateItemIcon } = useBujo();
+export const BulletItem = ({ item }: BulletItemProps) => {
+  const { 
+    handleUpdateItemDelegatedTo, 
+    handleUpdateItemIcon,
+    cycleStatus,
+    editingItemId,
+    editingItemContent,
+    setEditingItemContent,
+    handleSaveEditItem,
+    setEditingItemId,
+    handleStartEditItem,
+    handleDeleteItem,
+    handleAISplitTask,
+    breakingTaskIds,
+    expandedTaskId,
+    setExpandedTaskId,
+    toggleSubtask,
+    deleteSubtask,
+    newSubtaskText,
+    setNewSubtaskText,
+    addSubtask,
+    getSubtaskCompletionString,
+    handleReorderSubtasks
+  } = useBujo();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEndSubtasks = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      handleReorderSubtasks(item.id, active.id as string, over.id as string);
+    }
+  };
 
   const [localDelegatedTo, setLocalDelegatedTo] = useState(item.delegatedTo || '');
   const [localIcon, setLocalIcon] = useState(item.icon || '');
@@ -67,16 +80,7 @@ export const BulletItem = ({
   const [ctxIndex, setCtxIndex] = useState(0);
   const editInputRef = useRef<HTMLInputElement | null>(null);
 
-  const CTX_SUGGESTIONS = [
-    { tag: '@computador', icon: '💻', label: 'Computador' },
-    { tag: '@online', icon: '🌐', label: 'Online' },
-    { tag: '@rua', icon: '🚶', label: 'Rua / Fora' },
-    { tag: '@casa', icon: '🏠', label: 'Casa' },
-    { tag: '@trabalhando', icon: '💼', label: 'Trabalho' },
-    { tag: '@mestrado', icon: '🎓', label: 'Mestrado' },
-    { tag: '@programando', icon: '⚡', label: 'Programação' },
-    { tag: '@aguardando', icon: '⏳', label: 'Aguardando' }
-  ];
+  
 
   const getContextSearch = (value: string, cursorPosition: number | null) => {
     if (cursorPosition === null) return null;
@@ -170,22 +174,23 @@ export const BulletItem = ({
   }, [editingItemId, item.id]);
 
   const handleSaveEdit = () => {
-    handleUpdateItemDelegatedTo(item.id, localDelegatedTo);
-    handleUpdateItemIcon(item.id, localIcon);
     handleSaveEditItem(
       item.id,
+      editingItemContent,
       localEnergy,
       localComplexity,
       localExecutionTime === '' ? undefined : Number(localExecutionTime),
       localDate,
-      localTime
+      localTime,
+      localDelegatedTo,
+      localIcon
     );
   };
 
   const handleAddSubtaskLocal = () => {
     if (!newSubtaskText.trim()) return;
     const mins = subtaskMinutes ? Number(subtaskMinutes) : undefined;
-    addSubtask(item.id, subtaskIcon, mins);
+    addSubtask(item.id, newSubtaskText, setNewSubtaskText, subtaskIcon, mins);
     setNewSubtaskText('');
     setSubtaskIcon('');
     setSubtaskMinutes('');
@@ -535,39 +540,55 @@ export const BulletItem = ({
       {item.type === 'task' && isExpanded && (
         <div className="pl-9 pr-1.5 pb-1.5 border-l border-zinc-200/50 dark:border-white/5 mt-1 animate-fade-in flex flex-col gap-2">
           {item.subtasks && item.subtasks.length > 0 && (
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scroll-smooth">
-              {item.subtasks.map(sub => (
-                <div key={sub.id} className="flex items-center justify-between gap-3 text-[11px] group/sub py-0.5 animate-fade-in">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <button
-                      type="button"
-                      onClick={() => toggleSubtask(item.id, sub.id)}
-                      className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
-                        sub.completed ? 'bg-bujo-accent border-bujo-accent text-white' : 'border-zinc-300 dark:border-white/20'
-                      }`}
-                    >
-                      {sub.completed && <Check className="w-2.5 h-2.5 stroke-[4]" />}
-                    </button>
-                    <span className={`truncate flex items-center gap-1.5 ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
-                      {sub.icon && <span className="text-[11px] select-none shrink-0" title="Ícone do micro-passo">{sub.icon}</span>}
-                      <span>{sub.content}</span>
-                      {sub.executionTime && (
-                        <span className="text-[9px] bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-mono ml-1.5 inline-flex items-center gap-0.5 select-none" title="Tempo de execução do micro-passo">
-                          ⏱️ {sub.executionTime} min
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => deleteSubtask(item.id, sub.id)}
-                    className="text-zinc-400 hover:text-red-500 opacity-0 group-hover/sub:opacity-100 transition-opacity p-0.5 flex-shrink-0 cursor-pointer"
-                    title="Remover micro-tarefa"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1 scroll-smooth">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEndSubtasks}
+              >
+                <SortableContext
+                  items={item.subtasks.map(s => s.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {item.subtasks.map(sub => (
+                    <div key={sub.id} className="flex items-center gap-2 group/sub sortable-subtask">
+                      <DragHandle id={sub.id} className="opacity-0 group-hover/sub:opacity-40 hover:!opacity-100 transition-opacity flex-shrink-0">
+                        <GripVertical className="w-3 h-3 text-zinc-400" />
+                      </DragHandle>
+                      <SortableItem id={sub.id} className="flex-1 flex items-center justify-between gap-3 text-[11px] py-0.5 animate-fade-in">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); toggleSubtask(item.id, sub.id); }}
+                            className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
+                              sub.completed ? 'bg-bujo-accent border-bujo-accent text-white' : 'border-zinc-300 dark:border-white/20'
+                            }`}
+                          >
+                            {sub.completed && <Check className="w-2.5 h-2.5 stroke-[4]" />}
+                          </button>
+                          <span className={`truncate flex items-center gap-1.5 ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                            {sub.icon && <span className="text-[11px] select-none shrink-0" title="Ícone do micro-passo">{sub.icon}</span>}
+                            <span>{sub.content}</span>
+                            {sub.executionTime && (
+                              <span className="text-[9px] bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-mono ml-1.5 inline-flex items-center gap-0.5 select-none" title="Tempo de execução do micro-passo">
+                                ⏱️ {sub.executionTime} min
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); deleteSubtask(item.id, sub.id); }}
+                          className="text-zinc-400 hover:text-red-500 opacity-0 group-hover/sub:opacity-100 transition-opacity p-0.5 flex-shrink-0 cursor-pointer"
+                          title="Remover micro-tarefa"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </SortableItem>
+                    </div>
+                  ))}
+                </SortableContext>
+              </DndContext>
             </div>
           )}
 
