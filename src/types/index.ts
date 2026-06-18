@@ -5,7 +5,7 @@ export interface BujoItem {
   content: string;
   date: string; // YYYY-MM-DD
   time?: string; // HH:MM
-  subtasks?: { id: string; content: string; completed: boolean; icon?: string; executionTime?: number }[];
+  subtasks?: { id: string; content: string; completed: boolean; icon?: string; executionTime?: number; order?: number }[];
   priority?: boolean;
   delegatedTo?: string;
   icon?: string;
@@ -14,6 +14,7 @@ export interface BujoItem {
   executionTime?: number; // in minutes
   category?: string;
   createdAt?: string; // ISO string representing when it was created
+  order?: number;
 }
 
 export interface BujoSettings {
@@ -61,6 +62,7 @@ export interface CollectionItem {
   media: MediaItem[];
   subtasks: Subtask[];
   icon?: string;
+  order?: number;
 }
 
 export interface MediaItem {
@@ -68,6 +70,7 @@ export interface MediaItem {
   type: 'link' | 'image' | 'file';
   name: string;
   url: string;
+  order?: number;
 }
 
 export interface Subtask {
@@ -76,6 +79,7 @@ export interface Subtask {
   completed: boolean;
   icon?: string;
   executionTime?: number;
+  order?: number;
 }
 
 export interface DreamItem {

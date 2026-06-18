@@ -1,21 +1,7 @@
-export const adhdTriggers = [
-  { text: 'Tomar meus medicamentos', icon: '💊' },
-  { text: 'Beber um copo d\'água agora', icon: '💧' },
-  { text: 'Pagar contas/boletos de hoje', icon: '💸' },
-  { text: 'Responder mensagens pendentes', icon: '✉️' },
-  { text: 'Organizar a bagunça da mesa', icon: '🧹' }
-];
+import { ADHD_TRIGGERS, MAX_QUOTES } from './constants';
 
-export const maxQuotes = [
-  "Dividir a tarefa faz o monstro parecer menor. Eu já dividi a minha. E você?",
-  "Não precisa ser perfeito. Feito é melhor do que perfeito!",
-  "Sua mente está acelerada? Que tal beber um gole de água agora?",
-  "Apenas comece com o passo de 2 minutos. O resto vem depois!",
-  "Estou bem aqui ao seu lado. Vamos focar por mais alguns minutos!",
-  "Você já descarregou sua mente hoje no Brain Dump? Isso ajuda a clarear as coisas.",
-  "A cegueira temporal é real. Deixe o timer fazer o trabalho de contar o tempo por você.",
-  "Completar essa tarefa vai te dar uma bela dose de dopamina natural!"
-];
+export const adhdTriggers = ADHD_TRIGGERS;
+export const maxQuotes = MAX_QUOTES;
 
 export const getEnergyPoints = (settings?: {
   dayStart?: string;
@@ -106,6 +92,20 @@ export const getEnergyX = (h: number, settings?: any): number => {
   
   const span = maxHour - minHour;
   return span <= 0 ? 250 : ((hour - minHour) / span) * 500; // Map minHour - maxHour to 0 - 500 SVG coordinate
+};
+
+export const getHarmonyScore = (energyLevel: number, anxietyLevel: number): number => {
+  const e = energyLevel / 100;
+  const a = anxietyLevel / 100;
+  return Math.round((e * (1 - a)) * 100);
+};
+
+export const getHarmonyRecommendation = (score: number): string => {
+  if (score > 80) return "Sincronia Perfeita: Ótimo momento para tarefas complexas e criativas!";
+  if (score > 60) return "Equilíbrio Estável: Bom para manter o ritmo e concluir pendências.";
+  if (score > 40) return "Fricção Moderada: Considere simplificar as próximas tarefas.";
+  if (score > 20) return "Sobrecarga Detectada: Priorize o descanso e micro-passos.";
+  return "Estado de Crise: Pare tudo e use o Alívio Cognitivo agora.";
 };
 
 export const getRealTimeSuggestions = (text: string) => {
