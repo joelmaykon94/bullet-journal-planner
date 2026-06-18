@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ChevronRight, Sparkles, LogOut, Database, User, ShieldAlert, Zap, Download, Upload, FileText, Trash2 } from 'lucide-react';
+import { ChevronRight, Sparkles, LogOut, Database, User, ShieldAlert, Zap, Download, Upload, FileText, Trash2, Bell } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { useAuth } from '../../../context/AuthContext';
+import { requestNotificationPermission, sendNotification } from '../../../utils/notificationUtils';
 
 export const SettingsTab = () => {
   const {
@@ -486,6 +487,53 @@ export const SettingsTab = () => {
               )}
             </div>
           )}
+        </div>
+
+        {/* Browser Notifications Configuration */}
+        <div className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-4">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-bujo-highlight uppercase tracking-wider flex items-center gap-1.5 font-mono">
+              <Bell className="w-4 h-4" />
+              Notificações do Sistema
+            </span>
+            <p className="text-[10px] text-zinc-400 leading-relaxed">
+              Ative as notificações para receber alertas 5 minutos antes do início e do término planejado de suas tarefas.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-200/30 dark:bg-white/[0.02] border border-zinc-350 dark:border-white/5">
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-bujo-text block">Status das Notificações</span>
+              <span className="text-[10px] text-zinc-500 font-mono">
+                {Notification.permission === 'granted' 
+                  ? '✅ Autorizado pelo navegador' 
+                  : Notification.permission === 'denied' 
+                  ? '❌ Bloqueado pelo navegador' 
+                  : '⚠️ Aguardando autorização'}
+              </span>
+            </div>
+            
+            <button
+              onClick={async () => {
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                  sendNotification('🔔 Teste de Notificação', {
+                    body: 'Seu sistema de alertas do BuJo Focus está funcionando corretamente!',
+                  });
+                  showToast('Notificações ativadas com sucesso! 🔔');
+                } else {
+                  showToast('As notificações foram negadas ou não são suportadas.');
+                }
+              }}
+              className="px-4 py-2 text-xs font-bold bg-bujo-highlight hover:opacity-95 text-white rounded-xl transition-all cursor-pointer shadow-md shadow-bujo-highlight/10 w-full sm:w-auto text-center"
+            >
+              {Notification.permission === 'granted' ? 'Testar Notificação' : 'Ativar Notificações'}
+            </button>
+          </div>
+          
+          <p className="text-[9px] text-zinc-550 dark:text-zinc-500 leading-relaxed italic font-mono">
+            * O tempo padrão de execução de uma tarefa é de 25 minutos caso você não defina um tempo específico ao criá-la.
+          </p>
         </div>
       </div>
 
