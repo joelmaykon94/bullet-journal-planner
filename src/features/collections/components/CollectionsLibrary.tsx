@@ -1,6 +1,23 @@
 import { useState } from 'react';
-import { X, Trash2, Plus, ChevronRight, Link2, FileText } from 'lucide-react';
+import { 
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  rectSortingStrategy
+} from '@dnd-kit/sortable';
+import { X, Trash2, Plus, ChevronRight, Link2, FileText, Sparkles, LayoutPanelLeft, GripVertical } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
+import { CollectionItemModal } from './CollectionItemModal';
+import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 
 export const CollectionsLibrary = () => {
   const {
@@ -28,23 +45,35 @@ export const CollectionsLibrary = () => {
     migrateCollectionItemToDailyLog,
     decomposingCollectionItemIds,
     activeLLMCollectionItemId,
-    handleAICollectionItemDecompose,
-    handleAddCollectionItemSubtask,
-    handleToggleCollectionItemSubtask,
-    handleDeleteCollectionItemSubtask,
-    handleAddCollectionItemMediaLink,
-    handleUploadCollectionItemMedia,
-    handleDeleteCollectionItemMedia
+    handleReorderCollections,
+    handleReorderCollectionItems
   } = useBujo();
 
-  const [showAddMediaLink, setShowAddMediaLink] = useState(false);
-  const [mediaLinkName, setMediaLinkName] = useState('');
-  const [mediaLinkUrl, setMediaLinkUrl] = useState('');
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEndCollections = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      handleReorderCollections(active.id as string, over.id as string);
+    }
+  };
+
+  const handleDragEndItems = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (selectedCollectionId && over && active.id !== over.id) {
+      handleReorderCollectionItems(selectedCollectionId, active.id as string, over.id as string);
+    }
+  };
+
+  const [showItemModal, setShowItemModal] = useState(false);
   const [showColIconDropdown, setShowColIconDropdown] = useState(false);
   const [newColItemIcon, setNewColItemIcon] = useState('');
   const [showColItemIconDropdown, setShowColItemIconDropdown] = useState(false);
-  const [colSubIcon, setColSubIcon] = useState('');
-  const [showColSubIconDropdown, setShowColSubIconDropdown] = useState(false);
 
   const handleCancelCreateCollection = () => {
     setNewColName('');
@@ -55,6 +84,35 @@ export const CollectionsLibrary = () => {
 
   const activeCollection = collections.find(c => c.id === selectedCollectionId);
   const activeItem = activeCollection?.items.find((i: any) => i.id === selectedItemId);
+
+  // Smart Notes Parser (Unicode)
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    const lines = value.split('\n');
+    const updatedLines = lines.map(line => {
+      if (line.startsWith('- ')) return line.replace('- ', '• ');
+      if (line.startsWith('[] ')) return line.replace('[] ', '☐ ');
+      if (line.startsWith('# ')) return line.replace('# ', '❖ ').toUpperCase();
+      return line;
+    });
+
+    const newValue = updatedLines.join('\n');
+    
+    setCollections(prev => prev.map(col => {
+      if (col.id === selectedCollectionId) {
+        return {
+          ...col,
+          items: col.items.map((it: any) => {
+            if (it.id === selectedItemId) {
+              return { ...it, notes: newValue };
+            }
+            return it;
+          })
+        };
+      }
+      return col;
+    }));
+  };
 
   return (
     <div className="space-y-6 animate-fade-in no-print text-bujo-text">
@@ -99,41 +157,52 @@ export const CollectionsLibrary = () => {
       {/* Main View Area */}
       {!activeCollection ? (
         // List collections
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {collections.map(col => (
-            <div
-              key={col.id}
-              onClick={() => setSelectedCollectionId(col.id)}
-              className="p-5 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex flex-col justify-between h-44 group"
-            >
-              <div>
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-2xl">{col.icon || '📚'}</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteCollection(col.id);
-                    }}
-                    className="p-1 text-zinc-500 hover:text-red-400 rounded-lg hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEndCollections}
+        >
+          <SortableContext 
+            items={collections.map(c => c.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {collections.map(col => (
+                <div key={col.id} className="relative group/sort">
+                  <DragHandle id={col.id} className="absolute top-2 left-2 z-20 opacity-0 group-hover/sort:opacity-40 hover:!opacity-100 transition-opacity">
+                    <GripVertical className="w-3.5 h-3.5 text-zinc-400" />
+                  </DragHandle>
+                  <SortableItem id={col.id}>
+                    <div
+                      onClick={() => setSelectedCollectionId(col.id)}
+                      className="p-4 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 cursor-pointer transition-all flex flex-col justify-between h-32 group"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex justify-between items-start mb-1.5">
+                          <span className="text-xl ml-4">{col.icon || '📚'}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCollection(col.id);
+                            }}
+                            className="p-1 text-zinc-500 hover:text-red-400 rounded-lg hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <h3 className="text-xs font-bold text-zinc-200 truncate">{col.name}</h3>
+                        <p className="text-[9px] text-zinc-500 mt-0.5 leading-tight line-clamp-2">{col.description || 'Sem descrição.'}</p>
+                      </div>
+                      <span className="text-[8px] font-mono text-zinc-400 block">
+                        {col.items?.length || 0} itens
+                      </span>
+                    </div>
+                  </SortableItem>
                 </div>
-                <h3 className="text-sm font-bold text-zinc-200">{col.name}</h3>
-                <p className="text-[10px] text-zinc-500 mt-1 leading-normal line-clamp-2">{col.description || 'Sem descrição.'}</p>
-              </div>
-              <span className="text-[9px] font-mono text-zinc-400 mt-4 block">
-                {col.items?.length || 0} itens catalogados
-              </span>
+              ))}
             </div>
-          ))}
-
-          {collections.length === 0 && (
-            <div className="col-span-full py-16 text-center text-zinc-500 italic text-sm">
-              Nenhuma coleção criada ainda. Clique em "Nova Coleção" para iniciar!
-            </div>
-          )}
-        </div>
+          </SortableContext>
+        </DndContext>
       ) : (
         // Detail collection
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
@@ -149,58 +218,75 @@ export const CollectionsLibrary = () => {
               </div>
 
               <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
-                {activeCollection.items?.map((item: any) => {
-                  const isSelected = selectedItemId === item.id;
-                  const isDecomposing = decomposingCollectionItemIds[item.id] || activeLLMCollectionItemId === item.id;
-                  const completedSubtasks = item.subtasks?.filter((s: any) => s.completed).length || 0;
-                  const totalSubtasks = item.subtasks?.length || 0;
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEndItems}
+                >
+                  <SortableContext 
 
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => setSelectedItemId(item.id)}
-                      className={`p-3 rounded-2xl border text-left cursor-pointer transition-all flex items-center justify-between group ${
-                        isSelected 
-                          ? 'bg-bujo-highlight/10 border-bujo-highlight/40 text-bujo-text' 
-                          : 'bg-zinc-200/10 dark:bg-white/[0.01] border-zinc-250/20 dark:border-white/5 hover:border-zinc-350'
-                      }`}
-                    >
-                      <div className="space-y-1 min-w-0 pr-2 flex items-center gap-1.5 flex-1">
-                        {item.icon && <span className="text-base select-none shrink-0" title="Ícone do item">{item.icon}</span>}
-                        <div className="min-w-0 flex-1">
-                          <span className="text-xs font-semibold block truncate leading-tight">{item.title}</span>
-                          {totalSubtasks > 0 && (
-                            <span className="text-[9px] text-zinc-500 font-mono block">
-                              Progresso: {completedSubtasks}/{totalSubtasks} micro-tarefas
-                            </span>
-                          )}
+                    items={activeCollection.items?.map((i: any) => i.id) || []}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {activeCollection.items?.map((item: any) => {
+                      const isSelected = selectedItemId === item.id;
+                      const completedSubtasks = item.subtasks?.filter((s: any) => s.completed).length || 0;
+                      const totalSubtasks = item.subtasks?.length || 0;
+
+                      return (
+                        <div key={item.id} className="flex items-start gap-1 group/sort-item">
+                          <DragHandle id={item.id} className="mt-4 opacity-0 group-hover/sort-item:opacity-40 hover:!opacity-100 transition-opacity">
+                            <GripVertical className="w-3.5 h-3.5 text-zinc-500" />
+                          </DragHandle>
+                          <SortableItem id={item.id} className="flex-1 min-w-0">
+                            <div
+                              onClick={() => setSelectedItemId(item.id)}
+                              className={`p-3 rounded-2xl border text-left cursor-pointer transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group ${
+                                isSelected 
+                                  ? 'bg-bujo-highlight/10 border-bujo-highlight/40 text-bujo-text' 
+                                  : 'bg-zinc-200/10 dark:bg-white/[0.01] border-zinc-250/20 dark:border-white/5 hover:border-zinc-350'
+                              }`}
+                            >
+                              <div className="space-y-1 min-w-0 pr-0 sm:pr-2 flex items-center gap-1.5 w-full sm:w-auto flex-1">
+                                {item.icon && <span className="text-base select-none shrink-0" title="Ícone do item">{item.icon}</span>}
+                                <div className="min-w-0 flex-1">
+                                  <span className="text-xs font-semibold block truncate leading-tight">{item.title}</span>
+                                  {totalSubtasks > 0 && (
+                                    <span className="text-[9px] text-zinc-500 font-mono block mt-0.5">
+                                      Progresso: {completedSubtasks}/{totalSubtasks}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-end border-t border-zinc-200/20 dark:border-white/5 pt-2 sm:pt-0 sm:border-t-0 mt-1 sm:mt-0">
+                                <select
+                                  value={item.status || 'todo'}
+                                  onClick={e => e.stopPropagation()}
+                                  onChange={e => handleUpdateCollectionItemStatus(activeCollection.id, item.id, e.target.value as any)}
+                                  className="text-[10px] font-bold bg-zinc-200 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 rounded-lg px-2 py-1 text-bujo-text outline-none cursor-pointer"
+                                >
+                                  <option value="todo">Pendente</option>
+                                  <option value="doing">Fazendo</option>
+                                  <option value="done">Concluído</option>
+                                </select>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteCollectionItem(activeCollection.id, item.id);
+                                  }}
+                                  className="p-1.5 text-zinc-500 hover:text-red-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-200/30 sm:bg-transparent dark:bg-white/5 sm:dark:bg-transparent rounded-lg sm:rounded-none"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </SortableItem>
                         </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <select
-                          value={item.status || 'todo'}
-                          onClick={e => e.stopPropagation()}
-                          onChange={e => handleUpdateCollectionItemStatus(activeCollection.id, item.id, e.target.value as any)}
-                          className="text-[9px] font-bold bg-zinc-200 dark:bg-zinc-900 border border-zinc-250 dark:border-white/10 rounded-lg px-1.5 py-0.5 text-bujo-text outline-none cursor-pointer"
-                        >
-                          <option value="todo">Pendente</option>
-                          <option value="doing">Fazendo</option>
-                          <option value="done">Concluído</option>
-                        </select>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCollectionItem(activeCollection.id, item.id);
-                          }}
-                          className="p-1 text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </SortableContext>
+                </DndContext>
 
                 {(!activeCollection.items || activeCollection.items.length === 0) && (
                   <div className="py-12 text-center text-zinc-500 text-xs italic">
@@ -213,13 +299,9 @@ export const CollectionsLibrary = () => {
             <div className="p-3 bg-zinc-200/30 dark:bg-white/5 rounded-2xl border border-zinc-250/20 dark:border-white/5 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-[9px] font-bold text-zinc-500 uppercase block">Rápido: Adicionar Item</span>
-                {(newColItemTitle || newColItemIcon) && (
+                {newColItemTitle && (
                   <button
-                    onClick={() => {
-                      setNewColItemTitle('');
-                      setNewColItemIcon('');
-                      setShowColItemIconDropdown(false);
-                    }}
+                    onClick={() => setNewColItemTitle('')}
                     className="text-[9px] text-zinc-500 hover:text-red-500 font-bold cursor-pointer"
                   >
                     Limpar
@@ -242,28 +324,9 @@ export const CollectionsLibrary = () => {
                     <div className="absolute left-0 bottom-full mb-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-56 animate-scale-in">
                       <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-zinc-200/40 dark:border-white/5">
                         <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Escolha um Ícone</span>
-                        <div className="flex items-center gap-1.5">
-                          {newColItemIcon && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setNewColItemIcon('');
-                                setShowColItemIconDropdown(false);
-                              }}
-                              className="text-[9px] text-red-500 hover:underline font-bold cursor-pointer"
-                            >
-                              Limpar
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setShowColItemIconDropdown(false)}
-                            className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer"
-                            title="Fechar"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        <button type="button" onClick={() => setShowColItemIconDropdown(false)} className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                       <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
                         {['📝', '🎯', '🚀', '💡', '📚', '🏃‍♂️', '🍎', '🛒', '🎨', '🍿', '🏠', '🔑', '💬', '⚠️', '🛠️', '💰', '🏆', '🧘‍♂️', '🍕', '🔥'].map(emoji => (
@@ -300,20 +363,6 @@ export const CollectionsLibrary = () => {
                     }}
                     className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 pr-8 text-xs text-bujo-text outline-none focus:border-bujo-highlight"
                   />
-                  {(newColItemTitle || newColItemIcon) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNewColItemTitle('');
-                        setNewColItemIcon('');
-                        setShowColItemIconDropdown(false);
-                      }}
-                      className="absolute right-2.5 p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
-                      title="Limpar"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
                 </div>
 
                 <button
@@ -330,292 +379,68 @@ export const CollectionsLibrary = () => {
           </div>
 
           {/* Active Item Detail Panel */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 h-full min-h-[400px]">
             {activeItem ? (
-              <div className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 space-y-5 flex flex-col justify-between h-full">
-                <div className="space-y-4">
-                  {/* Item header */}
-                  <div className="flex justify-between items-start gap-4 border-b border-zinc-200/30 dark:border-white/5 pb-3">
-                    <div className="min-w-0">
-                      <span className="text-[9px] font-mono text-zinc-500 uppercase block mb-0.5">DETALHES DO ITEM</span>
-                      <h3 className="text-base font-bold leading-tight">{activeItem.title}</h3>
-                    </div>
+              <div className="p-6 rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 flex flex-col h-full space-y-4">
+                {/* Item header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-zinc-200/30 dark:border-white/5 pb-4">
+                  <div className="min-w-0">
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase block mb-0.5 tracking-tighter">REGISTRO SELECIONADO</span>
+                    <h3 className="text-base font-bold leading-tight flex items-center gap-2">
+                      {activeItem.icon && <span>{activeItem.icon}</span>}
+                      {activeItem.title}
+                    </h3>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      onClick={() => setShowItemModal(true)}
+                      className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 bg-bujo-highlight text-white text-[9px] sm:text-[10px] font-bold uppercase rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-md shadow-bujo-highlight/10 truncate"
+                    >
+                      <LayoutPanelLeft className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Mídias & Passos</span>
+                    </button>
                     <button
                       onClick={() => migrateCollectionItemToDailyLog(activeItem, activeCollection.name)}
-                      className="px-3 py-1.5 bg-bujo-accent/15 hover:bg-bujo-accent/25 border border-bujo-accent/30 text-bujo-accent text-[9px] font-black uppercase rounded-lg transition-colors flex items-center gap-1 text-white"
+                      className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 bg-bujo-accent/20 hover:bg-bujo-accent/30 border border-bujo-accent/30 text-bujo-accent text-[9px] font-black uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 truncate"
                     >
-                      🚀 Migrar para o Daily Log
+                      <span className="shrink-0">🚀</span> <span className="truncate">Migrar Log</span>
                     </button>
-                  </div>
-
-                  {/* Microtasks / subtasks section */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Micro-tarefas</span>
-                      <button
-                        onClick={() => handleAICollectionItemDecompose(activeCollection.id, activeItem.id, activeItem.title)}
-                        disabled={decomposingCollectionItemIds[activeItem.id] || activeLLMCollectionItemId === activeItem.id}
-                        className="text-[9px] font-bold text-bujo-highlight hover:underline flex items-center gap-1 transition-all disabled:opacity-50"
-                      >
-                        ⚡ Gerar passos com IA
-                      </button>
-                    </div>
-
-                    <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
-                      {activeItem.subtasks?.map((st: any) => (
-                        <div key={st.id} className="flex items-center gap-2 py-1 px-1.5 rounded-lg hover:bg-white/5 group transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={st.completed}
-                            onChange={() => handleToggleCollectionItemSubtask(activeCollection.id, activeItem.id, st.id)}
-                            className="rounded border-zinc-350 text-bujo-highlight focus:ring-bujo-highlight w-3.5 h-3.5"
-                          />
-                          <span className={`text-xs flex-1 leading-normal flex items-center gap-1.5 ${st.completed ? 'line-through text-zinc-500' : 'text-zinc-300'}`}>
-                            {st.icon && <span className="text-sm select-none shrink-0" title="Ícone do micro-passo">{st.icon}</span>}
-                            <span>{st.content}</span>
-                          </span>
-                          <button
-                            onClick={() => handleDeleteCollectionItemSubtask(activeCollection.id, activeItem.id, st.id)}
-                            className="p-0.5 text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-
-                      {(!activeItem.subtasks || activeItem.subtasks.length === 0) && (
-                        <span className="text-xs text-zinc-550 italic block py-2">Sem micro-tarefas.</span>
-                      )}
-                    </div>
-
-                    <form
-                      onSubmit={e => {
-                        e.preventDefault();
-                        const form = e.target as HTMLFormElement;
-                        const input = form.elements.namedItem('subtaskText') as HTMLInputElement;
-                        if (input.value.trim() || colSubIcon) {
-                          handleAddCollectionItemSubtask(activeCollection.id, activeItem.id, input.value.trim(), colSubIcon);
-                          input.value = '';
-                          setColSubIcon('');
-                        }
-                      }}
-                      className="flex gap-1.5 pt-1 relative"
-                    >
-                      {/* Icon selector for collection subtask */}
-                      <div className="relative shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setShowColSubIconDropdown(!showColSubIconDropdown)}
-                          className="w-8 h-8 rounded-lg bg-zinc-200/40 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 flex items-center justify-center text-xs hover:border-bujo-highlight transition-all cursor-pointer"
-                          title="Escolher Ícone"
-                        >
-                          {colSubIcon || '🎨'}
-                        </button>
-
-                        {showColSubIconDropdown && (
-                          <div className="absolute left-0 bottom-full mb-2 p-2 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-52 animate-scale-in">
-                            <div className="flex justify-between items-center mb-1 pb-1 border-b border-zinc-200/40 dark:border-white/5">
-                              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Ícone</span>
-                              <div className="flex items-center gap-1.5">
-                                {colSubIcon && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setColSubIcon('');
-                                      setShowColSubIconDropdown(false);
-                                    }}
-                                    className="text-[9px] text-red-500 hover:underline font-bold cursor-pointer"
-                                  >
-                                    Limpar
-                                  </button>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => setShowColSubIconDropdown(false)}
-                                  className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text cursor-pointer"
-                                  title="Fechar"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
-                              {['📝', '🎯', '🚀', '💡', '📚', '🏃‍♂️', '🍎', '🛒', '🎨', '🍿', '🏠', '🔑', '💬', '⚠️', '🛠️', '💰', '🏆', '🧘‍♂️', '🍕', '🔥'].map(emoji => (
-                                <button
-                                  key={emoji}
-                                  type="button"
-                                  onClick={() => {
-                                    setColSubIcon(emoji);
-                                    setShowColSubIconDropdown(false);
-                                  }}
-                                  className={`w-7 h-7 flex items-center justify-center rounded text-sm hover:bg-zinc-150 dark:hover:bg-white/5 transition-all ${
-                                    colSubIcon === emoji ? 'bg-bujo-highlight/20 border border-bujo-highlight' : ''
-                                  }`}
-                                >
-                                  {emoji}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="relative flex-1 flex items-center">
-                        <input
-                          type="text"
-                          name="subtaskText"
-                          placeholder="Adicionar micro-passo manual..."
-                          className="w-full bg-zinc-200/40 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-lg px-2 py-1.5 pr-8 text-xs outline-none focus:border-bujo-highlight placeholder:text-zinc-650"
-                        />
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            const form = e.currentTarget.closest('form') as HTMLFormElement;
-                            const input = form.elements.namedItem('subtaskText') as HTMLInputElement;
-                            input.value = '';
-                            setColSubIcon('');
-                            setShowColSubIconDropdown(false);
-                          }}
-                          className="absolute right-2 p-0.5 rounded-full hover:bg-zinc-250 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors cursor-pointer"
-                          title="Limpar"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      <button type="submit" className="px-2.5 py-1.5 bg-bujo-highlight text-white rounded-lg text-xs font-bold">
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
-                    </form>
-                  </div>
-
-                  {/* Media Library */}
-                  <div className="space-y-3 pt-3 border-t border-zinc-200/30 dark:border-white/5 relative">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Galeria de Mídias & Links</span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setShowAddMediaLink(!showAddMediaLink)}
-                          className="text-[9px] font-bold text-bujo-highlight hover:underline flex items-center gap-0.5"
-                        >
-                          <Link2 className="w-3 h-3" /> Link
-                        </button>
-                        <label className="text-[9px] font-bold text-bujo-highlight hover:underline flex items-center gap-0.5 cursor-pointer">
-                          <FileText className="w-3 h-3" /> Local
-                          <input
-                            type="file"
-                            className="hidden"
-                            onChange={e => handleUploadCollectionItemMedia(activeCollection.id, activeItem.id, e)}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    {showAddMediaLink && (
-                      <div className="p-3.5 rounded-2xl bg-zinc-200/40 dark:bg-white/[0.02] border border-zinc-250 dark:border-white/5 space-y-2.5 z-10 relative">
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            type="text"
-                            placeholder="Nome do link (ex: GitHub)"
-                            value={mediaLinkName}
-                            onChange={e => setMediaLinkName(e.target.value)}
-                            className="bg-zinc-100 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs outline-none focus:border-bujo-highlight placeholder:text-zinc-600"
-                          />
-                          <input
-                            type="url"
-                            placeholder="https://..."
-                            value={mediaLinkUrl}
-                            onChange={e => setMediaLinkUrl(e.target.value)}
-                            className="bg-zinc-100 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs outline-none focus:border-bujo-highlight placeholder:text-zinc-600"
-                          />
-                        </div>
-                        <div className="flex justify-end gap-2 text-[10px]">
-                          <button
-                            onClick={() => setShowAddMediaLink(false)}
-                            className="px-2 py-1 text-zinc-500 hover:text-bujo-text"
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            onClick={() => handleAddCollectionItemMediaLink(activeCollection.id, activeItem.id, mediaLinkName, setMediaLinkName, mediaLinkUrl, setMediaLinkUrl, setShowAddMediaLink)}
-                            className="px-3 py-1 bg-bujo-highlight text-white font-bold rounded-lg"
-                          >
-                            Anexar Link
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[160px] overflow-y-auto pr-1">
-                      {!activeItem.media || activeItem.media.length === 0 ? (
-                        <span className="text-xs text-zinc-550 italic block py-2 col-span-2">Sem anexos de mídias.</span>
-                      ) : (
-                        activeItem.media.map((med: any) => (
-                          <div
-                            key={med.id}
-                            className="p-2 rounded-xl bg-zinc-200/50 dark:bg-white/5 border border-zinc-250/20 dark:border-white/5 flex items-center justify-between text-xs hover:border-bujo-highlight/20 transition-all group/media"
-                          >
-                            <div className="flex items-center gap-2 truncate">
-                              <span className="text-zinc-400 shrink-0">
-                                {med.type === 'link' ? <Link2 className="w-3.5 h-3.5 text-blue-400" /> : <FileText className="w-3.5 h-3.5 text-amber-500" />}
-                              </span>
-                              {med.type === 'link' ? (
-                                <a
-                                  href={med.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="hover:underline text-blue-400 truncate leading-snug font-medium"
-                                >
-                                  {med.name || med.url}
-                                </a>
-                              ) : (
-                                <span className="truncate leading-snug font-medium">{med.name}</span>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => handleDeleteCollectionItemMedia(activeCollection.id, activeItem.id, med.id)}
-                              className="p-0.5 text-zinc-500 hover:text-red-400 opacity-0 group-hover/media:opacity-100 transition-opacity"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-zinc-200/30 dark:border-white/5 mt-auto text-left">
-                  <span className="text-[10px] text-zinc-500 font-mono block mb-1">ANOTAÇÕES DO REGISTRO</span>
+                {/* Full Column Notes Area */}
+                <div className="flex-1 flex flex-col space-y-2 min-h-0">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">Anotações do Registro</span>
+                    <span className="text-[8px] text-zinc-600 dark:text-zinc-500 italic">Dica: use - , [] ou # no início da linha</span>
+                  </div>
                   <textarea
-                    defaultValue={activeItem.notes || ''}
-                    onBlur={e => {
-                      setCollections(prev => prev.map(col => {
-                        return {
-                          ...col,
-                          items: col.items.map((it: any) => {
-                            if (it.id === activeItem.id) {
-                              return { ...it, notes: e.target.value };
-                            }
-                            return it;
-                          })
-                        };
-                      }));
-                    }}
-                    placeholder="Espaço livre para anotações do item... (Salva ao clicar fora)"
-                    rows={4}
-                    className="w-full bg-zinc-150 dark:bg-zinc-950 border border-zinc-250/20 dark:border-white/5 rounded-2xl p-3 text-xs text-bujo-text placeholder:text-zinc-650 resize-none outline-none focus:border-bujo-highlight/30 transition-all font-mono"
+                    value={activeItem.notes || ''}
+                    onChange={handleNotesChange}
+                    placeholder="Espaço livre para anotações... Suporta atalhos inteligentes."
+                    className="w-full flex-1 bg-zinc-150/50 dark:bg-zinc-950/40 border border-zinc-250/20 dark:border-white/5 rounded-2xl p-4 text-xs text-bujo-text placeholder:text-zinc-650 resize-none outline-none focus:border-bujo-highlight/30 transition-all font-mono leading-relaxed"
                   />
                 </div>
               </div>
             ) : (
-              <div className="h-full rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center justify-center py-20 text-center text-zinc-550 italic text-xs min-h-[350px]">
-                Selecione um registro na lista ao lado para ver e editar seus detalhes.
+              <div className="h-full rounded-3xl bg-zinc-200/15 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 flex flex-col items-center justify-center py-20 text-center text-zinc-550 italic text-xs min-h-[400px]">
+                <div className="p-4 rounded-full bg-zinc-200/20 dark:bg-white/5 mb-4">
+                  <ChevronRight className="w-8 h-8 text-zinc-400 rotate-90 lg:rotate-0" />
+                </div>
+                Selecione um registro na lista ao lado para ver e editar detalhes.
               </div>
             )}
           </div>
-
         </div>
+      )}
+
+      {/* Collection Item Modal (Media & Subtasks) */}
+      {selectedCollectionId && selectedItemId && (
+        <CollectionItemModal
+          isOpen={showItemModal}
+          onClose={() => setShowItemModal(false)}
+          collectionId={selectedCollectionId}
+          itemId={selectedItemId}
+        />
       )}
 
       {/* CREATE COLLECTION MODAL */}
@@ -654,7 +479,6 @@ export const CollectionsLibrary = () => {
                     className="w-16 bg-zinc-100 dark:bg-zinc-955 border border-zinc-205 dark:border-zinc-800 rounded-xl px-3 py-2 text-center text-sm outline-none focus:border-bujo-highlight"
                     title="Ou digite o emoji diretamente"
                   />
-                  <span className="text-[10px] text-zinc-550">Clique no ícone ou digite um emoji</span>
                 </div>
 
                 {showColIconDropdown && (
