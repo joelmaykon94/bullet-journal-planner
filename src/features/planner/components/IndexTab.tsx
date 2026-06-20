@@ -48,43 +48,44 @@ export const IndexTab = () => {
 
   // Metrics calculation
   const today = getLocalDateString();
-  const todayTasks = items.filter(i => i.date === today && i.type === 'task');
+  // For today's metrics, exclude migrated tasks (they are just records of tasks forwarded to today)
+  const todayTasks = items.filter(i => i.date === today && i.type === 'task' && i.status !== 'migrated');
   const completedToday = todayTasks.filter(i => i.status === 'completed').length;
   const completionRate = todayTasks.length === 0 ? 0 : Math.round((completedToday / todayTasks.length) * 100);
 
-  // General task statistics
-  const totalTasks = items.filter(i => i.type === 'task').length;
-  const pendingTasks = items.filter(i => i.type === 'task' && i.status === 'open').length;
-  const completedTasks = items.filter(i => i.type === 'task' && i.status === 'completed').length;
-  const otherTasksCount = items.filter(i => i.type === 'task' && i.status !== 'open' && i.status !== 'completed').length;
+  // General task statistics — exclude 'migrated' tasks to avoid double-counting.
+  // Migrated tasks are historical records; the real copy lives on the day it was migrated to.
+  const activeTasks = items.filter(i => i.type === 'task' && i.status !== 'migrated');
+  const totalTasks = activeTasks.length;
+  const pendingTasks = activeTasks.filter(i => i.status === 'open').length;
+  const completedTasks = activeTasks.filter(i => i.status === 'completed').length;
+  const otherTasksCount = activeTasks.filter(i => i.status !== 'open' && i.status !== 'completed').length;
 
-  // Context counts
-  const contextCounts = items.reduce((acc, item) => {
-    if (item.type === 'task') {
-      const matches = item.content.match(/@([a-zA-ZÀ-ÿ0-9_-]+)/g);
-      if (matches) {
-        matches.forEach(ctx => {
-          const c = ctx.toLowerCase();
-          acc[c] = (acc[c] || 0) + 1;
-        });
-      }
+  // Context counts — only count active (non-migrated) tasks
+  const contextCounts = activeTasks.reduce((acc, item) => {
+    const matches = item.content.match(/@([a-zA-ZÀ-ÿ0-9_-]+)/g);
+    if (matches) {
+      matches.forEach(ctx => {
+        const c = ctx.toLowerCase();
+        acc[c] = (acc[c] || 0) + 1;
+      });
     }
     return acc;
   }, {} as { [key: string]: number });
 
-  // Delegated counts
-  const delegateCounts = items.reduce((acc, item) => {
-    if (item.delegatedTo && item.type === 'task') {
+  // Delegated counts — only count active (non-migrated) tasks
+  const delegateCounts = activeTasks.reduce((acc, item) => {
+    if (item.delegatedTo) {
       const name = item.delegatedTo;
       acc[name] = (acc[name] || 0) + 1;
     }
     return acc;
   }, {} as { [key: string]: number });
-  const delegatedTotalCount = items.filter(item => item.type === 'task' && item.delegatedTo).length;
+  const delegatedTotalCount = activeTasks.filter(item => item.delegatedTo).length;
 
-  // Icon / Category counts
-  const categoryCounts = items.reduce((acc, item) => {
-    if (item.icon && item.type === 'task') {
+  // Icon / Category counts — only count active (non-migrated) tasks
+  const categoryCounts = activeTasks.reduce((acc, item) => {
+    if (item.icon) {
       acc[item.icon] = (acc[item.icon] || 0) + 1;
     }
     return acc;

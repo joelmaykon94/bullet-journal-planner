@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, CheckSquare, Sparkles, AlertCircle } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { DayTasksModal } from './DayTasksModal';
-import { getLocalDateString } from '../../../utils/plannerUtils';
+import { getLocalDateString, getTaskPendingDays } from '../../../utils/plannerUtils';
 
 export const WeeklyLogTab = () => {
   const {
@@ -150,12 +150,18 @@ export const WeeklyLogTab = () => {
 
                     {/* Content logs preview */}
                     <div className="space-y-1.5 mb-4">
-                      {dayTasks.slice(0, 3).map(t => (
+                      {dayTasks.slice(0, 3).map(t => {
+                        const tPendingDays = t.type === 'task' && (t.status === 'open' || t.status === 'migrated') ? getTaskPendingDays(t.date, t.createdAt) : 0;
+                        return (
                         <div key={t.id} className="flex items-center gap-1.5 text-[10px] text-zinc-400">
-                          <CheckSquare className={`w-3 h-3 shrink-0 ${t.status === 'completed' ? 'text-emerald-500' : 'text-zinc-650'}`} />
+                          <CheckSquare className={`w-3 h-3 shrink-0 ${t.status === 'completed' ? 'text-emerald-500' : tPendingDays >= 5 ? 'text-amber-500' : 'text-zinc-650'}`} />
                           <span className={`truncate ${t.status === 'completed' ? 'line-through text-zinc-600' : ''}`}>{t.content}</span>
+                          {tPendingDays >= 2 && (
+                            <span className="text-[8px] font-bold text-amber-500/80 whitespace-nowrap ml-auto shrink-0">{tPendingDays}d</span>
+                          )}
                         </div>
-                      ))}
+                        );
+                      })}
                       {dayEvents.slice(0, 2).map(e => (
                         <div key={e.id} className="flex items-center gap-1.5 text-[10px] text-zinc-555">
                           <span className="w-1.5 h-1.5 rounded-full bg-bujo-accent shrink-0"></span>

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useBujo } from '../../context/BujoContext';
-import hashiraGif from '../../assets/hashira.gif';
+import hashiraGif from '../../../assets/hashira.gif';
 
 export const CozyCabinBackground = () => {
   const { settings } = useBujo();

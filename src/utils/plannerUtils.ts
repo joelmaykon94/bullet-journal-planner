@@ -3,6 +3,59 @@ import { ADHD_TRIGGERS, MAX_QUOTES } from './constants';
 export const adhdTriggers = ADHD_TRIGGERS;
 export const maxQuotes = MAX_QUOTES;
 
+/**
+ * Calculate how many days a task has been pending.
+ * Uses createdAt (preserved across migrations) as the primary reference,
+ * falling back to item.date if createdAt is unavailable.
+ * This ensures that tasks migrated across multiple days retain
+ * their true age from the original creation date.
+ */
+export const getTaskPendingDays = (itemDate: string, itemCreatedAt?: string): number => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let refDate: Date;
+
+  if (itemCreatedAt) {
+    // Use original creation date (preserved across migrations)
+    refDate = new Date(itemCreatedAt);
+  } else if (itemDate) {
+    // Fallback to scheduled date
+    const [y, m, d] = itemDate.split('-').map(Number);
+    refDate = new Date(y, m - 1, d);
+  } else {
+    return 0;
+  }
+
+  refDate.setHours(0, 0, 0, 0);
+
+  const diffMs = today.getTime() - refDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  return Math.max(0, diffDays);
+};
+
+/**
+ * Returns a CSS class tier name for the aged paper effect.
+ * Returns '' if the task is not old enough.
+ */
+export const getAgingTier = (pendingDays: number): string => {
+  if (pendingDays >= 10) return 'aged-paper-3';
+  if (pendingDays >= 5) return 'aged-paper-2';
+  if (pendingDays >= 2) return 'aged-paper-1';
+  return '';
+};
+
+/**
+ * Returns a CSS class for the pending days badge color.
+ */
+export const getPendingBadgeClass = (pendingDays: number): string => {
+  if (pendingDays >= 10) return 'pending-days-3';
+  if (pendingDays >= 5) return 'pending-days-2';
+  if (pendingDays >= 2) return 'pending-days-1';
+  return '';
+};
+
 export const getEnergyPoints = (settings?: {
   dayStart?: string;
   energyPeakStart?: string;

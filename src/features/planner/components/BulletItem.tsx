@@ -17,6 +17,7 @@ import { Edit, Trash2, ChevronUp, ChevronDown, Check, ChevronRight, ChevronLeft,
 import { BujoItem } from '../../../types';
 import { useBujo } from '../../../context/BujoContext';
 import { BUJO_ICONS, CTX_SUGGESTIONS } from '../../../utils/constants';
+import { getTaskPendingDays, getAgingTier, getPendingBadgeClass } from '../../../utils/plannerUtils';
 import { DateInput } from '../../../components/common/DateInput';
 import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 
@@ -199,6 +200,13 @@ export const BulletItem = ({ item }: BulletItemProps) => {
   const hasSubtasks = item.subtasks && item.subtasks.length > 0;
   const isExpanded = expandedTaskId === item.id;
 
+  // Calculate aging for pending/migrated tasks.
+  // Migrated tasks are historical records of the same task — they carry the aging too.
+  const showsAging = item.type === 'task' && (item.status === 'open' || item.status === 'migrated');
+  const pendingDays = showsAging ? getTaskPendingDays(item.date, item.createdAt) : 0;
+  const agingClass = showsAging ? getAgingTier(pendingDays) : '';
+  const pendingBadgeClass = showsAging ? getPendingBadgeClass(pendingDays) : '';
+
   const renderContentWithTags = (content: string) => {
     const contextRegex = /(@computador|@online|@rua|@casa|@trabalhando|@mestrado|@programando|@aguardando)\b/gi;
     const parts = content.split(contextRegex);
@@ -241,7 +249,7 @@ export const BulletItem = ({ item }: BulletItemProps) => {
   };
 
   return (
-    <div className="p-2.5 sm:p-3 rounded-xl bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/30 dark:border-white/5 flex flex-col gap-2.5 transition-colors hover:bg-zinc-200/20 dark:hover:bg-white/[0.04]">
+    <div className={`p-2.5 sm:p-3 rounded-xl bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/30 dark:border-white/5 flex flex-col gap-2.5 transition-colors hover:bg-zinc-200/20 dark:hover:bg-white/[0.04] ${agingClass}`}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
         <div className="flex items-start gap-2.5 flex-1 min-w-0">
           <button
@@ -465,6 +473,11 @@ export const BulletItem = ({ item }: BulletItemProps) => {
                   {item.delegatedTo && (
                     <span className="bg-zinc-200/60 dark:bg-white/10 text-zinc-750 dark:text-zinc-350 px-2 py-0.5 rounded-full text-[10px] font-semibold inline-flex items-center gap-1 border border-zinc-350 dark:border-white/5 align-middle select-none">
                       👥 Delegado: <strong className="text-bujo-highlight">{item.delegatedTo}</strong>
+                    </span>
+                  )}
+                  {pendingDays >= 2 && (
+                    <span className={`pending-days-badge ${pendingBadgeClass} select-none`} title={`Pendente há ${pendingDays} dias`}>
+                      📅 {pendingDays}d pendente
                     </span>
                   )}
                 </div>

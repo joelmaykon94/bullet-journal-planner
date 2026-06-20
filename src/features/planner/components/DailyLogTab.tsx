@@ -360,7 +360,7 @@ export const DailyLogTab = () => {
               )}
 
               {showCtxAutocomplete && (
-                <div className="absolute left-0 bottom-full mb-2 w-full max-w-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-50 overflow-hidden animate-scale-in">
+                <div className="absolute left-0 top-full mt-2 w-full max-w-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-50 overflow-hidden animate-scale-in">
                   <div className="p-2 border-b border-zinc-200/40 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02]">
                     <span className="text-[9.5px] font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider">Contextos Sugeridos</span>
                   </div>
