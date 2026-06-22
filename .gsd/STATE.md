@@ -6,15 +6,15 @@ updated: 2026-06-22T15:02:00Z
 
 **Milestone:** v2.0
 **Phase:** 15 - Migration Duplication Fix & Unified Delay Tracking
-**Status:** in_progress
+**Status:** complete
 
 ## Last Action
 
-Created Plan 15.1 and started fixing TypeScript compilation error and implementing direct task migration to prevent duplication.
+Completed Phase 15 by fixing the task duplication in manual and auto-migration, correcting the TypeScript compile errors, and standardizing task delay calculations and visual card aging across all task list views (Daily Log, Someday/Maybe Tab, Weekly Log, etc.).
 
 ## Next Steps
 
-Complete Plan 15.1 execution, commit tasks, compile, and document the results.
+Review user requests for any additional features or refinements.
 
 ## Active Decisions
 

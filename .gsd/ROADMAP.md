@@ -7,7 +7,7 @@ updated: 2026-06-16T11:20:00Z
 # Roadmap
 
 > **Current Phase:** 15 - Migration Duplication Fix & Unified Delay Tracking
-> **Status:** 🚧 In Progress
+> **Status:** ✅ Complete
 
 ## Must-Haves (from SPEC)
 
@@ -105,11 +105,11 @@ updated: 2026-06-16T11:20:00Z
 - [x] Plan 14.2: Task Links Input and Clean Domain Rendering.
 
 ### Phase 15: Migration Duplication Fix & Unified Delay Tracking
-**Status**: 🚧 In Progress
+**Status**: ✅ Complete
 **Objective**: Fix task migration duplication in manual and auto-migration, unify card aging based on hours/days, and render consistent delay badges across all log screens.
 
 **Plans**:
-- [ ] Plan 15.1: Migration Duplication Fix & Unified Delay Tracking.
+- [x] Plan 15.1: Migration Duplication Fix & Unified Delay Tracking.
 
 ---
 
@@ -131,7 +131,7 @@ updated: 2026-06-16T11:20:00Z
 | 12    | ✅     | 1/1   | 2026-06-16 |
 | 13    | ✅     | 1/1   | 2026-06-16 |
 | 14    | ✅     | 2/2   | 2026-06-22 |
-| 15    | 🚧     | 1/1   | In Progress |
+| 15    | ✅     | 1/1   | 2026-06-22 |
 
 ---
 
@@ -142,5 +142,5 @@ updated: 2026-06-16T11:20:00Z
 | 1-5   | 2026-06-15 | 2026-06-15 | 1 day |
 | 6-13  | 2026-06-16 | 2026-06-16 | 1 day |
 | 14    | 2026-06-22 | 2026-06-22 | 1 day |
-| 15    | 2026-06-22 | In Progress | - |
+| 15    | 2026-06-22 | 2026-06-22 | 1 day |
 
