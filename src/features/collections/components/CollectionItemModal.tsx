@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DndContext, 
   closestCenter,
@@ -64,6 +64,16 @@ export const CollectionItemModal = ({ isOpen, onClose, collectionId, itemId }: C
 
   const activeCollection = collections.find(c => c.id === collectionId);
   const activeItem = activeCollection?.items.find((i: any) => i.id === itemId);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !activeItem) return null;
 
