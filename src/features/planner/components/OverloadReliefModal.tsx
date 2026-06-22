@@ -25,6 +25,17 @@ export const OverloadReliefModal = () => {
   } = useBujo();
 
   const onClose = () => setShowOverloadReliefModal(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const [anxiety, setAnxiety] = useState<number>(3); // 1 to 5
   const [energy, setEnergy] = useState<'high' | 'low' | 'exhausted'>('low');
   const [availableHours, setAvailableHours] = useState<number>(2); // 1, 2, 4, 8 hours

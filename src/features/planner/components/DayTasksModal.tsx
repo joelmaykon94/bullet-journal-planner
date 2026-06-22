@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   DndContext, 
   closestCenter,
@@ -74,6 +74,16 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
   const [energy, setEnergy] = useState(1);
   const [complexity, setComplexity] = useState(1);
   const [executionTime, setExecutionTime] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !dateStr) return null;
 
