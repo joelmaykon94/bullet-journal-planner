@@ -14,6 +14,7 @@ export const IndexTab = () => {
     userXp,
     setUserXp,
     setActiveTab,
+    setShowTutorial,
     items,
     completedPomodoros,
     getCognitiveLoad,
@@ -172,10 +173,10 @@ export const IndexTab = () => {
                 Diário Bujo
               </button>
               <button 
-                onClick={() => setActiveModal('budget')}
-                className="px-3 py-1.5 bg-blue-600 text-white text-[9px] font-bold rounded-lg hover:opacity-95 transition-opacity cursor-pointer shadow-sm shadow-blue-600/10"
+                onClick={() => setShowTutorial(true)}
+                className="px-3 py-1.5 bg-zinc-350/20 dark:bg-white/10 text-[9px] font-bold rounded-lg hover:bg-zinc-300/40 dark:hover:bg-white/20 transition-colors cursor-pointer"
               >
-                Planejador Financeiro
+                Tutorial
               </button>
             </div>
           </div>
