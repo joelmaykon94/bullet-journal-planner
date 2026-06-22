@@ -1,4 +1,5 @@
 import { ADHD_TRIGGERS, MAX_QUOTES } from './constants';
+import { BujoItem } from '../types';
 
 export const adhdTriggers = ADHD_TRIGGERS;
 export const maxQuotes = MAX_QUOTES;
@@ -385,6 +386,48 @@ export const getTaskDelayInfo = (itemDate: string, itemTime?: string, itemCreate
     displayString,
     hasHourDelay
   };
+};
+
+export const deduplicateBujoItems = (items: BujoItem[]): BujoItem[] => {
+  if (!items || !Array.isArray(items)) return [];
+  const groups = new Map<string, BujoItem[]>();
+  items.forEach(item => {
+    if (!item) return;
+    const normalizedContent = (item.content || '').trim().toLowerCase();
+    const date = item.date || 'no_date';
+    const type = item.type || 'no_type';
+    const time = item.time || 'no_time';
+    const category = item.category || 'no_category';
+    const key = `${type}|${date}|${time}|${category}|${normalizedContent}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(item);
+  });
+
+  const cleaned: BujoItem[] = [];
+  groups.forEach(groupItems => {
+    if (groupItems.length > 1) {
+      let best = groupItems[0];
+      for (const item of groupItems) {
+        if (item.status === 'completed' && best.status !== 'completed') {
+          best = item;
+        } else if (item.status === best.status) {
+          const itemSubCount = (item.subtasks || []).length;
+          const bestSubCount = (best.subtasks || []).length;
+          if (itemSubCount > bestSubCount) {
+            best = item;
+          } else if (itemSubCount === bestSubCount) {
+            const itemTime = item.createdAt ? new Date(item.createdAt).getTime() : 0;
+            const bestTime = best.createdAt ? new Date(best.createdAt).getTime() : 0;
+            if (itemTime > bestTime) best = item;
+          }
+        }
+      }
+      cleaned.push(best);
+    } else {
+      cleaned.push(groupItems[0]);
+    }
+  });
+  return cleaned;
 };
 
 

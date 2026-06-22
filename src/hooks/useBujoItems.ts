@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { BujoItem, DreamItem } from '../types';
-import { getLocalDateString, getWeekdaysForDate, extractLinksFromText } from '../utils/plannerUtils';
+import { getLocalDateString, getWeekdaysForDate, extractLinksFromText, deduplicateBujoItems } from '../utils/plannerUtils';
 import { parseSmartTask } from '../utils/smartParser';
 
 export function useBujoItems(
@@ -11,7 +11,7 @@ export function useBujoItems(
 ) {
   const [items, setItems] = useState<BujoItem[]>(() => {
     const saved = localStorage.getItem('bujo_focus_items');
-    if (saved) return JSON.parse(saved);
+    if (saved) return deduplicateBujoItems(JSON.parse(saved));
     const today = getLocalDateString();
     return [
       { 
@@ -360,7 +360,7 @@ export function useBujoItems(
   // Someday/Maybe state
   const [somedayItems, setSomedayItems] = useState<BujoItem[]>(() => {
     const saved = localStorage.getItem('bujo_focus_someday_items');
-    if (saved) return JSON.parse(saved);
+    if (saved) return deduplicateBujoItems(JSON.parse(saved));
     return [
       { id: 'sd-1', type: 'task', status: 'open', content: 'Aprender tocar piano', date: 'someday_maybe' },
       { id: 'sd-2', type: 'task', status: 'open', content: 'Planejar viagem para o Japão', date: 'someday_maybe' }

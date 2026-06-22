@@ -9,7 +9,7 @@ import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useAmbientAudio, SoundType } from '../hooks/useAmbientAudio';
 import { useHabits, HabitLog } from '../hooks/useHabits';
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
-import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate, extractLinksFromText } from '../utils/plannerUtils';
+import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate, extractLinksFromText, deduplicateBujoItems } from '../utils/plannerUtils';
 import { HOURS, MONTHS, BRAIN_DUMP_KEYWORDS } from '../utils/constants';
 
 import { useAuth } from './AuthContext';
@@ -522,6 +522,13 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           merged[key] = localVal !== null && localVal !== undefined ? localVal : remoteVal;
         }
       }
+    }
+
+    if (Array.isArray(merged.bujo_focus_items)) {
+      merged.bujo_focus_items = deduplicateBujoItems(merged.bujo_focus_items);
+    }
+    if (Array.isArray(merged.bujo_focus_someday_items)) {
+      merged.bujo_focus_someday_items = deduplicateBujoItems(merged.bujo_focus_someday_items);
     }
 
     return merged;
