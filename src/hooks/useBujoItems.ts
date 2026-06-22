@@ -803,10 +803,12 @@ export function useBujoItems(
     migrateUncompletedTasksToNextDay,
     // Lixeira & Someday
     trashItems,
+    setTrashItems,
     handleRestoreItem,
     handleDeletePermanently,
     handleEmptyTrash,
     somedayItems,
+    setSomedayItems,
     handleAddSomedayItem,
     handleDeleteSomedayItem,
     handleScheduleSomedayItem,
@@ -818,6 +820,7 @@ export function useBujoItems(
     handleUpdateItemIcon,
     // Dream Board
     dreams,
+    setDreams,
     handleAddDream,
     handleToggleDreamConquered,
     handleDeleteDream

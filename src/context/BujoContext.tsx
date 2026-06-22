@@ -534,155 +534,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     return merged;
   };
 
-  useEffect(() => {
-    if (!supabase || !user) {
-      setSyncStatus('offline');
-      return;
-    }
-
-    let active = true;
-
-    const performInitialSync = async () => {
-      setSyncStatus('syncing');
-      try {
-        const { data: row, error } = await supabase
-          .from('bujo_user_data')
-          .select('data')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        const localData = serializeLocalBujoData();
-
-        if (!row) {
-          const { error: insertError } = await supabase
-            .from('bujo_user_data')
-            .insert({ user_id: user.id, data: localData });
-
-          if (insertError) throw insertError;
-          if (active) {
-            lastSyncHashRef.current = JSON.stringify(localData);
-            setSyncStatus('synced');
-            showToast('☁️ Backup inicial criado no Supabase!');
-          }
-        } else {
-          const remoteData = row.data || {};
-          const mergedData = mergeBujoData(localData, remoteData);
-
-          Object.entries(mergedData).forEach(([key, val]) => {
-            localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
-          });
-
-          if (active) {
-            lastSyncHashRef.current = JSON.stringify(mergedData);
-            setSyncStatus('synced');
-            showToast('☁️ Dados sincronizados com o Supabase!');
-            
-            if (!sessionStorage.getItem('bujo_synced_reload')) {
-              sessionStorage.setItem('bujo_synced_reload', 'true');
-              window.location.reload();
-            }
-          }
-        }
-      } catch (err: any) {
-        console.error('Supabase sync error:', err);
-        if (active) {
-          setSyncStatus('error');
-          const msg = err?.message || err?.details || JSON.stringify(err);
-          showToast(`❌ Erro de Sincronização: ${msg}`);
-        }
-      }
-    };
-
-    performInitialSync();
-
-    return () => {
-      active = false;
-    };
-  }, [supabase, user]);
-
-  useEffect(() => {
-    if (!supabase || !user || syncStatus === 'error') return;
-
-    const checkAndSync = async () => {
-      const localData = serializeLocalBujoData();
-      const currentHash = JSON.stringify(localData);
-
-      if (currentHash === lastSyncHashRef.current) return;
-
-      setSyncStatus('syncing');
-      try {
-        const { error } = await supabase
-          .from('bujo_user_data')
-          .upsert({ 
-            user_id: user.id, 
-            data: localData,
-            updated_at: new Date().toISOString()
-          });
-
-        if (error) throw error;
-        lastSyncHashRef.current = currentHash;
-        setSyncStatus('synced');
-      } catch (err: any) {
-        console.error('Background sync error:', err);
-        setSyncStatus('error');
-        const msg = err?.message || JSON.stringify(err);
-        showToast(`❌ Erro ao salvar na nuvem: ${msg}`);
-      }
-    };
-
-    const interval = setInterval(checkAndSync, 5000);
-    return () => clearInterval(interval);
-  }, [supabase, user, syncStatus]);
-
-  const handleRetrySync = async () => {
-    if (!supabase || !user) return;
-    setSyncStatus('syncing');
-    try {
-      const { data: row, error } = await supabase
-        .from('bujo_user_data')
-        .select('data')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      const localData = serializeLocalBujoData();
-
-      if (!row) {
-        const { error: insertError } = await supabase
-          .from('bujo_user_data')
-          .insert({ user_id: user.id, data: localData });
-
-        if (insertError) throw insertError;
-        lastSyncHashRef.current = JSON.stringify(localData);
-        setSyncStatus('synced');
-        showToast('☁️ Backup inicial criado no Supabase!');
-      } else {
-        const remoteData = row.data || {};
-        const mergedData = mergeBujoData(localData, remoteData);
-
-        Object.entries(mergedData).forEach(([key, val]) => {
-          localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
-        });
-
-        lastSyncHashRef.current = JSON.stringify(mergedData);
-        setSyncStatus('synced');
-        showToast('☁️ Dados sincronizados com o Supabase!');
-        
-        if (!sessionStorage.getItem('bujo_synced_reload')) {
-          sessionStorage.setItem('bujo_synced_reload', 'true');
-          window.location.reload();
-        }
-      }
-    } catch (err: any) {
-      console.error('Manual sync retry error:', err);
-      setSyncStatus('error');
-      const msg = err?.message || err?.details || JSON.stringify(err);
-      showToast(`❌ Erro ao re-sincronizar: ${msg}`);
-    }
-  };
+  // Note: Synchronization hooks have been relocated below the state hooks initialization
 
   // Sync effects
   useEffect(() => {
@@ -1132,6 +984,189 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   // Task Notifications Hook
   useTaskNotifications(items);
+
+  const updateReactStatesFromSync = (mergedData: any) => {
+    if (!mergedData) return;
+
+    if (mergedData.bujo_focus_items) {
+      itemsData.setItems(mergedData.bujo_focus_items);
+    }
+    if (mergedData.bujo_focus_someday_items) {
+      itemsData.setSomedayItems(mergedData.bujo_focus_someday_items);
+    }
+    if (mergedData.bujo_focus_trash_items) {
+      itemsData.setTrashItems(mergedData.bujo_focus_trash_items);
+    }
+    if (mergedData.bujo_focus_dreams) {
+      itemsData.setDreams(mergedData.bujo_focus_dreams);
+    }
+    if (mergedData.bujo_collections) {
+      setCollections(mergedData.bujo_collections);
+    }
+    if (mergedData.bujo_focus_xp !== undefined) {
+      setUserXp(Number(mergedData.bujo_focus_xp) || 0);
+    }
+    if (mergedData.bujo_focus_anxiety_level !== undefined) {
+      setAnxietyLevel(Number(mergedData.bujo_focus_anxiety_level) || 3);
+    }
+    if (mergedData.bujo_focus_current_energy) {
+      setCurrentEnergy(mergedData.bujo_focus_current_energy);
+    }
+    if (mergedData.bujo_feature_help_viewed) {
+      setViewedFeatureHelp(mergedData.bujo_feature_help_viewed);
+    }
+    if (mergedData.bujo_focus_settings) {
+      settingsData.setSettings(mergedData.bujo_focus_settings);
+    }
+    if (mergedData.bujo_habits) {
+      habitData.setHabits(mergedData.bujo_habits);
+    }
+    if (mergedData.bujo_habit_logs) {
+      habitData.setHabitLogs(mergedData.bujo_habit_logs);
+    }
+  };
+
+  useEffect(() => {
+    if (!supabase || !user) {
+      setSyncStatus('offline');
+      return;
+    }
+
+    let active = true;
+
+    const performInitialSync = async () => {
+      setSyncStatus('syncing');
+      try {
+        const { data: row, error } = await supabase
+          .from('bujo_user_data')
+          .select('data')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        const localData = serializeLocalBujoData();
+
+        if (!row) {
+          const { error: insertError } = await supabase
+            .from('bujo_user_data')
+            .insert({ user_id: user.id, data: localData });
+
+          if (insertError) throw insertError;
+          if (active) {
+            lastSyncHashRef.current = JSON.stringify(localData);
+            setSyncStatus('synced');
+            showToast('☁️ Backup inicial criado no Supabase!');
+          }
+        } else {
+          const remoteData = row.data || {};
+          const mergedData = mergeBujoData(localData, remoteData);
+
+          Object.entries(mergedData).forEach(([key, val]) => {
+            localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+          });
+
+          if (active) {
+            updateReactStatesFromSync(mergedData);
+            lastSyncHashRef.current = JSON.stringify(mergedData);
+            setSyncStatus('synced');
+            showToast('☁️ Dados sincronizados com o Supabase!');
+          }
+        }
+      } catch (err: any) {
+        console.error('Supabase sync error:', err);
+        if (active) {
+          setSyncStatus('error');
+          const msg = err?.message || err?.details || JSON.stringify(err);
+          showToast(`❌ Erro de Sincronização: ${msg}`);
+        }
+      }
+    };
+
+    performInitialSync();
+
+    return () => {
+      active = false;
+    };
+  }, [supabase, user]);
+
+  useEffect(() => {
+    if (!supabase || !user || syncStatus === 'error') return;
+
+    const checkAndSync = async () => {
+      const localData = serializeLocalBujoData();
+      const currentHash = JSON.stringify(localData);
+
+      if (currentHash === lastSyncHashRef.current) return;
+
+      setSyncStatus('syncing');
+      try {
+        const { error } = await supabase
+          .from('bujo_user_data')
+          .upsert({ 
+            user_id: user.id, 
+            data: localData,
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) throw error;
+        lastSyncHashRef.current = currentHash;
+        setSyncStatus('synced');
+      } catch (err: any) {
+        console.error('Background sync error:', err);
+        setSyncStatus('error');
+        const msg = err?.message || JSON.stringify(err);
+        showToast(`❌ Erro ao salvar na nuvem: ${msg}`);
+      }
+    };
+
+    const interval = setInterval(checkAndSync, 5000);
+    return () => clearInterval(interval);
+  }, [supabase, user, syncStatus]);
+
+  const handleRetrySync = async () => {
+    if (!supabase || !user) return;
+    setSyncStatus('syncing');
+    try {
+      const { data: row, error } = await supabase
+        .from('bujo_user_data')
+        .select('data')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      const localData = serializeLocalBujoData();
+
+      if (!row) {
+        const { error: insertError } = await supabase
+          .from('bujo_user_data')
+          .insert({ user_id: user.id, data: localData });
+
+        if (insertError) throw insertError;
+        lastSyncHashRef.current = JSON.stringify(localData);
+        setSyncStatus('synced');
+        showToast('☁️ Backup inicial criado no Supabase!');
+      } else {
+        const remoteData = row.data || {};
+        const mergedData = mergeBujoData(localData, remoteData);
+
+        Object.entries(mergedData).forEach(([key, val]) => {
+          localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+        });
+
+        updateReactStatesFromSync(mergedData);
+        lastSyncHashRef.current = JSON.stringify(mergedData);
+        setSyncStatus('synced');
+        showToast('☁️ Dados sincronizados com o Supabase!');
+      }
+    } catch (err: any) {
+      console.error('Manual sync retry error:', err);
+      setSyncStatus('error');
+      const msg = err?.message || err?.details || JSON.stringify(err);
+      showToast(`❌ Erro ao re-sincronizar: ${msg}`);
+    }
+  };
 
   // Data Management Implementations
   const exportFullDataJSON = () => {
