@@ -39,7 +39,8 @@ export interface BujoContextType {
     icon?: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number
+    executionTime?: number,
+    link?: string
   ) => void;
   handleTimelineAddInput: (
     timelineInput: string,
@@ -68,7 +69,8 @@ export interface BujoContextType {
     date?: string,
     time?: string,
     delegatedTo?: string,
-    icon?: string
+    icon?: string,
+    link?: string
   ) => void;
   handleReorderItems: (activeId: string, overId: string) => void;
   handleReorderSubtasks: (taskId: string, activeId: string, overId: string) => void;
@@ -89,7 +91,7 @@ export interface BujoContextType {
   handleDeletePermanently: (id: string) => void;
   handleEmptyTrash: () => void;
   somedayItems: BujoItem[];
-  handleAddSomedayItem: (content: string, type?: 'task' | 'event' | 'note', category?: string) => void;
+  handleAddSomedayItem: (content: string, type?: 'task' | 'event' | 'note', category?: string, link?: string) => void;
   handleDeleteSomedayItem: (id: string) => void;
   handleScheduleSomedayItem: (id: string, date: string) => void;
   handleToggleSomedayItem: (id: string) => void;
@@ -354,7 +356,8 @@ export interface BujoContextType {
     icon?: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number
+    executionTime?: number,
+    link?: string
   ) => void;
 
   // Media & Prints
@@ -1782,7 +1785,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     icon?: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number
+    executionTime?: number,
+    link?: string
   ) => {
     e.preventDefault();
     if (!content.trim()) return;
@@ -1800,7 +1804,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       icon,
       energy,
       complexity,
-      executionTime
+      executionTime,
+      link
     };
 
     setItems(prev => [newEvent, ...prev]);

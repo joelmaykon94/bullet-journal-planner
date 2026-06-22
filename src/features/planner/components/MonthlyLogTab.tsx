@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Sparkles, Calendar as CalendarIcon, CheckSquare, Plus, Search, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Calendar as CalendarIcon, CheckSquare, Plus, Search, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { DayTasksModal } from './DayTasksModal';
 import { BulletItem } from './BulletItem';
@@ -23,6 +23,8 @@ const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveSta
   const [energy, setEnergy] = useState(1);
   const [complexity, setComplexity] = useState(1);
   const [executionTime, setExecutionTime] = useState('');
+  const [showLinkInput, setShowLinkInput] = useState<boolean>(false);
+  const [linkInput, setLinkInput] = useState<string>('');
 
   const handleLocalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +41,8 @@ const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveSta
       inputIcon,
       inputType === 'task' ? energy : undefined,
       inputType === 'task' ? complexity : undefined,
-      inputType === 'task' && executionTime ? Number(executionTime) : undefined
+      inputType === 'task' && executionTime ? Number(executionTime) : undefined,
+      linkInput.trim() || undefined
     );
 
     // Reset local states
@@ -49,6 +52,8 @@ const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveSta
     setEnergy(1);
     setComplexity(1);
     setExecutionTime('');
+    setLinkInput('');
+    setShowLinkInput(false);
     setShowIconDropdown(false);
   };
 
@@ -59,6 +64,8 @@ const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveSta
     setEnergy(1);
     setComplexity(1);
     setExecutionTime('');
+    setLinkInput('');
+    setShowLinkInput(false);
     setShowIconDropdown(false);
   };
 
@@ -225,7 +232,16 @@ const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveSta
         )}
 
         <div className="flex items-center gap-1.5 ml-auto">
-          {(inputText || inputTime || inputIcon) && (
+          <button
+            type="button"
+            onClick={() => setShowLinkInput(!showLinkInput)}
+            className="px-1.5 py-0.5 bg-zinc-300/40 dark:bg-zinc-900 text-zinc-505 hover:text-bujo-text rounded text-[9.5px] font-bold border border-zinc-200/20 dark:border-white/5 transition-colors cursor-pointer flex items-center gap-0.5"
+            title="Adicionar Link"
+          >
+            {showLinkInput ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            <span>Link</span>
+          </button>
+          {(inputText || inputTime || inputIcon || linkInput) && (
             <button
               type="button"
               onClick={handleClearInputs}
@@ -242,6 +258,18 @@ const QuickAddForm = ({ activeCalendarDate, setActiveCalendarDate, handleSaveSta
           </button>
         </div>
       </div>
+
+      {showLinkInput && (
+        <div className="pt-1 border-t border-zinc-200/20 dark:border-white/5">
+          <input
+            type="text"
+            placeholder="Colar link/URL da tarefa..."
+            value={linkInput}
+            onChange={(e) => setLinkInput(e.target.value)}
+            className="w-full bg-zinc-100 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-white/5 rounded-lg px-2 py-1 text-xs text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
+          />
+        </div>
+      )}
     </form>
   );
 };

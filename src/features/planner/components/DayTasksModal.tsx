@@ -13,7 +13,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { X, Search, GripVertical } from 'lucide-react';
+import { X, Search, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
 import { BUJO_ICONS } from '../../../utils/constants';
@@ -74,6 +74,8 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
   const [energy, setEnergy] = useState(1);
   const [complexity, setComplexity] = useState(1);
   const [executionTime, setExecutionTime] = useState('');
+  const [showLinkInput, setShowLinkInput] = useState<boolean>(false);
+  const [linkInput, setLinkInput] = useState<string>('');
 
   if (!isOpen || !dateStr) return null;
 
@@ -95,7 +97,8 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
       inputIcon,
       inputType === 'task' ? energy : undefined,
       inputType === 'task' ? complexity : undefined,
-      inputType === 'task' && executionTime ? Number(executionTime) : undefined
+      inputType === 'task' && executionTime ? Number(executionTime) : undefined,
+      linkInput.trim() || undefined
     );
 
     // Reset local states
@@ -105,6 +108,7 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
     setEnergy(1);
     setComplexity(1);
     setExecutionTime('');
+    setLinkInput('');
     setShowIconDropdown(false);
   };
 
@@ -115,6 +119,8 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
     setEnergy(1);
     setComplexity(1);
     setExecutionTime('');
+    setLinkInput('');
+    setShowLinkInput(false);
     setShowIconDropdown(false);
   };
 
@@ -310,7 +316,16 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
 
               {/* Action buttons */}
               <div className="flex items-center gap-1.5 ml-auto">
-                {(inputText || inputTime || inputIcon) && (
+                <button
+                  type="button"
+                  onClick={() => setShowLinkInput(!showLinkInput)}
+                  className="p-1 rounded hover:bg-white/5 text-zinc-400 hover:text-white transition-colors flex items-center gap-1 text-[10px] font-semibold cursor-pointer border border-white/5 bg-zinc-900"
+                  title="Adicionar Link"
+                >
+                  {showLinkInput ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  <span>Link</span>
+                </button>
+                {(inputText || inputTime || inputIcon || linkInput) && (
                   <button
                     type="button"
                     onClick={handleClearInputs}
@@ -327,6 +342,18 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
                 </button>
               </div>
             </div>
+
+            {showLinkInput && (
+              <div className="pt-1.5 border-t border-white/5">
+                <input
+                  type="text"
+                  placeholder="Colar link/URL da tarefa..."
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/5 rounded-lg px-2.5 py-1 text-xs text-white placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
+                />
+              </div>
+            )}
           </form>
         </div>
 

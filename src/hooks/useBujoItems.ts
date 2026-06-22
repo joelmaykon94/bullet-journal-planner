@@ -139,7 +139,8 @@ export function useBujoItems(
     icon?: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number
+    executionTime?: number,
+    link?: string
   ) => {
     if (!standardInput.trim()) return;
 
@@ -182,7 +183,8 @@ export function useBujoItems(
           executionTime: executionTime || undefined,
           delegatedTo: delegatedTo || undefined,
           priority: isPriority,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          link: link || undefined
         };
         itemsToCreate.push(item);
       });
@@ -201,7 +203,8 @@ export function useBujoItems(
         executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
         delegatedTo: delegatedTo || undefined,
         priority: standardType === 'task' ? isPriority : undefined,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        link: link || undefined
       };
       itemsToCreate.push(newItem);
     }
@@ -424,7 +427,7 @@ export function useBujoItems(
     showToast('Lixeira esvaziada');
   };
 
-  const handleAddSomedayItem = (content: string, type: 'task' | 'event' | 'note' = 'task', category?: string) => {
+  const handleAddSomedayItem = (content: string, type: 'task' | 'event' | 'note' = 'task', category?: string, link?: string) => {
     const newItem: BujoItem = {
       id: 'sd-' + Math.random().toString(),
       type,
@@ -433,7 +436,8 @@ export function useBujoItems(
       date: 'someday_maybe',
       category,
       subtasks: type === 'task' ? [] : undefined,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      link: link || undefined
     };
     setSomedayItems(prev => [...prev, newItem]);
     showToast('Adicionado a Algum Dia/Talvez');
@@ -511,7 +515,8 @@ export function useBujoItems(
     date?: string,
     time?: string,
     delegatedTo?: string,
-    icon?: string
+    icon?: string,
+    link?: string
   ) => {
     setItems(prev => prev.map(item => {
       if (item.id === id) {
@@ -528,7 +533,8 @@ export function useBujoItems(
           delegatedTo: delegatedTo !== undefined ? delegatedTo : (autoDelegatedTo !== undefined ? autoDelegatedTo : item.delegatedTo),
           date: date ?? item.date,
           time: time !== undefined ? time : item.time,
-          icon: icon ?? item.icon
+          icon: icon ?? item.icon,
+          link: link !== undefined ? link : item.link
         };
       }
       return item;

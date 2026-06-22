@@ -13,7 +13,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, GripVertical, X } from 'lucide-react';
+import { Plus, GripVertical, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { BulletItem } from './BulletItem';
 import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
@@ -43,6 +43,8 @@ export const FutureLogTab = () => {
   const [energy, setEnergy] = useState(1);
   const [complexity, setComplexity] = useState(1);
   const [executionTime, setExecutionTime] = useState('');
+  const [showLinkInput, setShowLinkInput] = useState<boolean>(false);
+  const [linkInput, setLinkInput] = useState<string>('');
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -66,13 +68,16 @@ export const FutureLogTab = () => {
       inputIcon,
       energy,
       complexity,
-      executionTime ? Number(executionTime) : undefined
+      executionTime ? Number(executionTime) : undefined,
+      linkInput.trim() || undefined
     );
     // Reset local states
     setInputIcon('');
     setEnergy(1);
     setComplexity(1);
     setExecutionTime('');
+    setLinkInput('');
+    setShowLinkInput(false);
     setShowIconDropdown(false);
   };
 
@@ -235,6 +240,29 @@ export const FutureLogTab = () => {
                 className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-3 py-1 text-xs text-bujo-text outline-none"
               />
             </div>
+
+            <div className="flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={() => setShowLinkInput(!showLinkInput)}
+                className="w-full py-1.5 bg-zinc-200/50 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg text-xs text-zinc-500 hover:text-bujo-text flex items-center justify-center gap-1 cursor-pointer transition-colors"
+              >
+                {showLinkInput ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                <span>Link da tarefa</span>
+              </button>
+            </div>
+
+            {showLinkInput && (
+              <div className="flex flex-col gap-1">
+                <input
+                  type="text"
+                  placeholder="Colar link/URL..."
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-3 py-1.5 text-xs text-bujo-text placeholder-zinc-500 outline-none"
+                />
+              </div>
+            )}
 
             <button
               type="submit"

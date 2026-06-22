@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
   Plus, Calendar, Trash2, Check, Cloud, 
-  Search, Folder, Pin, Clock, Tag, ChevronDown, 
+  Search, Folder, Pin, Clock, Tag, ChevronDown, ChevronUp,
   BookOpen, Edit3, X, Inbox, AlertCircle
 } from 'lucide-react';
+import { getLinkDomain } from '../../../utils/plannerUtils';
 import { useBujo } from '../../../context/BujoContext';
 import { BujoItem } from '../../../types';
 import { DateInput } from '../../../components/common/DateInput';
@@ -76,6 +77,8 @@ export const SomedayMaybeTab = () => {
   const [inputContent, setInputContent] = useState('');
   const [inputType, setInputType] = useState<'task' | 'event' | 'note'>('task');
   const [inputCategory, setInputCategory] = useState<string>('');
+  const [showLinkInput, setShowLinkInput] = useState<boolean>(false);
+  const [linkInput, setLinkInput] = useState<string>('');
 
   // Inline inputs for specific category cards
   const [cardInputs, setCardInputs] = useState<{ [catId: string]: string }>({});
@@ -123,9 +126,11 @@ export const SomedayMaybeTab = () => {
     e.preventDefault();
     const content = inputContent.trim();
     if (!content) return;
-    handleAddSomedayItem(content, inputType, inputCategory || undefined);
+    handleAddSomedayItem(content, inputType, inputCategory || undefined, linkInput.trim() || undefined);
     setInputContent('');
     setInputCategory('');
+    setLinkInput('');
+    setShowLinkInput(false);
   };
 
   // Handle Specific Category Card Quick Add
@@ -291,22 +296,38 @@ export const SomedayMaybeTab = () => {
                 <select
                   value={inputCategory}
                   onChange={(e) => setInputCategory(e.target.value)}
-                  className="bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 rounded-xl px-2 py-1 text-[10px] text-bujo-text outline-none cursor-pointer"
+                  className="bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 rounded-xl px-2 py-1 text-[10px] text-bujo-text outline-none cursor-pointer mr-2"
                 >
                   <option value="">📂 Enviar p/ Inbox</option>
                   {CATEGORIES.map(c => (
                     <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
                   ))}
                 </select>
+
+                <button
+                  type="button"
+                  onClick={() => setShowLinkInput(!showLinkInput)}
+                  className="px-2 py-1 bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 rounded-xl text-[10px] text-zinc-550 hover:text-bujo-text flex items-center gap-0.5 cursor-pointer"
+                  title="Adicionar Link"
+                >
+                  {showLinkInput ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  <span>Link</span>
+                </button>
               </div>
 
-              <button
-                type="submit"
-                className="px-3.5 py-1.5 bg-bujo-highlight hover:opacity-95 text-white font-bold rounded-xl text-[11px] flex items-center gap-1 transition-all cursor-pointer shadow-sm"
-              >
-                <Plus className="w-3.5 h-3.5" /> Adicionar
-              </button>
             </div>
+
+            {showLinkInput && (
+              <div className="pt-2.5 border-t border-zinc-200/50 dark:border-zinc-800">
+                <input
+                  type="text"
+                  placeholder="Colar link/URL da tarefa..."
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  className="w-full bg-[#FAF7F2] dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
+                />
+              </div>
+            )}
           </form>
 
           {/* Sticky Notes Grid Area */}
@@ -376,6 +397,18 @@ export const SomedayMaybeTab = () => {
                             onDoubleClick={() => handleStartEdit(item)}
                           >
                             {item.content}
+                            {item.link && (
+                              <a
+                                href={item.link.startsWith('http') ? item.link : `https://${item.link}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-bujo-accent hover:underline bg-bujo-accent/10 px-1.5 py-0.5 rounded border border-bujo-accent/20 align-middle font-sans font-normal"
+                                title={item.link}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                🔗 {getLinkDomain(item.link)}
+                              </a>
+                            )}
                           </p>
                         )}
                       </div>
@@ -547,6 +580,18 @@ export const SomedayMaybeTab = () => {
                                     title="Double-click para editar"
                                   >
                                     {item.content}
+                                    {item.link && (
+                                      <a
+                                        href={item.link.startsWith('http') ? item.link : `https://${item.link}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="ml-1.5 inline-flex items-center gap-0.5 text-[9.5px] text-bujo-highlight hover:underline bg-bujo-highlight/10 px-1 py-0.5 rounded border border-bujo-highlight/20 align-middle font-sans font-normal"
+                                        title={item.link}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        🔗 {getLinkDomain(item.link)}
+                                      </a>
+                                    )}
                                   </span>
                                 )}
                               </div>

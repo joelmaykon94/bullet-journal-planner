@@ -15,6 +15,7 @@ export interface BujoItem {
   category?: string;
   createdAt?: string; // ISO string representing when it was created
   order?: number;
+  link?: string;
 }
 
 export interface BujoSettings {

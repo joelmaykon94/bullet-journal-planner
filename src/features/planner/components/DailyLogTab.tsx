@@ -13,7 +13,7 @@ import {
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
-import { Download, Printer, ChevronLeft, ChevronRight, X, GripVertical } from 'lucide-react';
+import { Download, Printer, ChevronLeft, ChevronRight, X, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
 import { getLocalDateString } from '../../../utils/plannerUtils';
@@ -57,6 +57,8 @@ export const DailyLogTab = () => {
   const [standardComplexity, setStandardComplexity] = useState<number>(1);
   const [standardExecutionTime, setStandardExecutionTime] = useState<string>('');
   const [iconSearch, setIconSearch] = useState('');
+  const [showLinkInput, setShowLinkInput] = useState<boolean>(true);
+  const [linkInput, setLinkInput] = useState<string>('');
 
   const [showCtxAutocomplete, setShowCtxAutocomplete] = useState(false);
   const [ctxSearch, setCtxSearch] = useState('');
@@ -165,7 +167,8 @@ export const DailyLogTab = () => {
       standardIcon,
       standardType === 'task' ? standardEnergy : undefined,
       standardType === 'task' ? standardComplexity : undefined,
-      standardType === 'task' && standardExecutionTime ? Number(standardExecutionTime) : undefined
+      standardType === 'task' && standardExecutionTime ? Number(standardExecutionTime) : undefined,
+      linkInput.trim() || undefined
     );
 
     setStandardIcon('');
@@ -176,6 +179,7 @@ export const DailyLogTab = () => {
     // Keep standard date aligned with current selection
     setStandardDate(selectedDate);
     setStandardTime('');
+    setLinkInput('');
   };
 
   const dateItems = items.filter(i => i.date === selectedDate);
@@ -201,7 +205,7 @@ export const DailyLogTab = () => {
         <div>
           <span className="text-[9px] text-zinc-400 uppercase font-mono tracking-widest">DIÁRIO CONSOLIDADO</span>
           <h3 className="text-2xl font-light">
-            Daily Log — <span className="italic font-normal" style={{ fontFamily: "'Instrument Serif', serif" }}>
+            Log Diário — <span className="italic font-normal" style={{ fontFamily: "'Instrument Serif', serif" }}>
               {selectedDate === today ? 'Hoje' : new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
           </h3>
@@ -425,11 +429,33 @@ export const DailyLogTab = () => {
               </div>
             </div>
             <div className="flex items-center gap-2 ml-auto w-full lg:w-auto justify-end">
+              <button
+                type="button"
+                onClick={() => setShowLinkInput(!showLinkInput)}
+                className="p-1 rounded hover:bg-zinc-200/60 dark:hover:bg-white/10 text-zinc-400 hover:text-bujo-text transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                title="Adicionar Link"
+              >
+                {showLinkInput ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                <span>Link</span>
+              </button>
+
               <button type="submit" className="px-3.5 py-1 bg-bujo-highlight text-white rounded-lg text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md shadow-bujo-highlight/10">
                 Cadastrar
               </button>
             </div>
           </div>
+
+          {showLinkInput && (
+            <div className="pt-1.5 border-t border-zinc-200/20 dark:border-white/5">
+              <input
+                type="text"
+                placeholder="Colar link/URL da tarefa..."
+                value={linkInput}
+                onChange={(e) => setLinkInput(e.target.value)}
+                className="w-full bg-zinc-100 dark:bg-zinc-950/45 border border-zinc-250 dark:border-white/10 rounded-lg px-2.5 py-1 text-xs text-bujo-text placeholder:text-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
+              />
+            </div>
+          )}
         </form>
       </div>
 

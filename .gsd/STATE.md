@@ -1,20 +1,20 @@
 ---
-updated: 2026-06-16T12:35:00Z
+updated: 2026-06-22T15:02:00Z
 ---
 
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 13 - Contextual Feature Help
+**Phase:** 14 - Task Links Input & Clean Domain Rendering
 **Status:** complete
 
 ## Last Action
 
-Completed Phase 13 with Plan 13.1. Implemented a robust contextual help system for the application. Each major feature accessible from the sidebar now has a dedicated help modal (with descriptions, step-by-step guides, and pro-tips) that triggers automatically on the first visit. Also added a floating 'Help' button that allows users to pull up this contextual help on demand at any time.
+Completed Phase 14 by adding collapsible task link inputs to all feature forms (open by default in the Daily Log, closed everywhere else) and rendering clean, short domain name badges as clickable links inline instead of showing raw URL addresses.
 
 ## Next Steps
 
-Review Roadmap for potential new milestones or further UX/UI polish based on user usage patterns.
+Review Roadmap for any further UX requirements or enhancements.
 
 ## Active Decisions
 

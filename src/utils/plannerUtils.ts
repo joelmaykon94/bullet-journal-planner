@@ -252,3 +252,15 @@ export const getWeekdaysForDate = (dateStr: string): string[] => {
   }
   return weekdays;
 };
+
+export const getLinkDomain = (url?: string): string => {
+  if (!url) return '';
+  try {
+    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+    const parsed = new URL(formattedUrl);
+    return parsed.hostname.replace('www.', '');
+  } catch {
+    return 'Link';
+  }
+};
+
