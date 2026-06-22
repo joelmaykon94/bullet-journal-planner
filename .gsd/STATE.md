@@ -10,11 +10,11 @@ updated: 2026-06-22T20:42:00Z
 
 ## Last Action
 
-Completed Phase 15 including Plan 15.1 and Plan 15.2. Fixed task duplication in migration, unified delay tracking, enabled multiple direct link NLP parsing into subtasks with clean domain badges, standardized all task creation forms, kept rapid capture minimal, and fixed long text wrapping/alignment on BulletItem action buttons in the daily log. Additionally, resolved persistent background task duplication by implementing programmatic client-side and sync-merge task deduplication (`deduplicateBujoItems`), added a highlighted visual Goals Reminder Area on the Index Tab dashboard, removed the manual "Migrar Pendentes" button from DailyLogTab, and added a programmatic recovery script in useBujoItems that automatically restores active tasks mistakenly migrated to tomorrow back to today. Also implemented a neuro-adapted Budget Planner dashboard tab/modal on the Index tab allowing users to manage monthly income, overdue debts, fixed monthly bills, active installment payments, and variable expenses, fully integrated with automated parsing of completed Bujo shopping/purchase tasks for the current month.
+Completed Phase 15 including Plan 15.1, Plan 15.2, and Plan 15.3. Fixed task duplication in migration, unified delay tracking, enabled multiple direct link NLP parsing into subtasks with clean domain badges, standardized all task creation forms, kept rapid capture minimal, and fixed long text wrapping/alignment on BulletItem action buttons in the daily log. Additionally, resolved persistent background task duplication by implementing programmatic client-side and sync-merge task deduplication (`deduplicateBujoItems`), added a highlighted visual Goals Reminder Area on the Index Tab dashboard, and removed the manual "Migrar Pendentes" button from DailyLogTab. Also implemented a neuro-adapted, highly customizable Budget Planner dashboard tab/modal on the Index tab. Upgraded the budget planner with period filtering (year, month, week, day), members/responsible filtering (Joel, Larissa, Maykon), category and macro-category classification (Essenciais, Estilo de Vida, Investimentos/Dívidas, Outros), inline editing, and created/due dates for all entries, fully integrated with automated parsing of completed Bujo shopping tasks.
 
 ## Next Steps
 
-Awaiting user feedback on budget planner and general Phase 15.2 changes.
+Awaiting user feedback on Phase 15.3 budget planner modifications.
 
 ## Active Decisions
 
