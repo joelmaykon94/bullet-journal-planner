@@ -110,6 +110,7 @@ updated: 2026-06-16T11:20:00Z
 
 **Plans**:
 - [x] Plan 15.1: Migration Duplication Fix & Unified Delay Tracking.
+- [x] Plan 15.2: NLP Direct Link Extraction & Layout Alignment.
 
 ---
 
@@ -131,7 +132,7 @@ updated: 2026-06-16T11:20:00Z
 | 12    | ✅     | 1/1   | 2026-06-16 |
 | 13    | ✅     | 1/1   | 2026-06-16 |
 | 14    | ✅     | 2/2   | 2026-06-22 |
-| 15    | ✅     | 1/1   | 2026-06-22 |
+| 15    | ✅     | 2/2   | 2026-06-22 |
 
 ---
 

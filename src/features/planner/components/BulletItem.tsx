@@ -71,7 +71,6 @@ export const BulletItem = ({ item }: BulletItemProps) => {
   const [localExecutionTime, setLocalExecutionTime] = useState<number | ''>(item.executionTime || '');
   const [localDate, setLocalDate] = useState(item.date || '');
   const [localTime, setLocalTime] = useState(item.time || '');
-  const [localLink, setLocalLink] = useState(item.link || '');
   const [subtaskIcon, setSubtaskIcon] = useState<string>('');
   const [showSubtaskIconDropdown, setShowSubtaskIconDropdown] = useState<boolean>(false);
   const [subtaskMinutes, setSubtaskMinutes] = useState<string>('');
@@ -172,7 +171,6 @@ export const BulletItem = ({ item }: BulletItemProps) => {
       setLocalExecutionTime(item.executionTime || '');
       setLocalDate(item.date || '');
       setLocalTime(item.time || '');
-      setLocalLink(item.link || '');
     }
   }, [editingItemId, item.id]);
 
@@ -186,8 +184,7 @@ export const BulletItem = ({ item }: BulletItemProps) => {
       localDate,
       localTime,
       localDelegatedTo,
-      localIcon,
-      localLink
+      localIcon
     );
   };
 
@@ -271,9 +268,41 @@ export const BulletItem = ({ item }: BulletItemProps) => {
     });
   };
 
+  const renderTextAndBadges = (content: string, legacyLink?: string) => {
+    const urlRegex = /(https?:\/\/[^\s,;]+)/g;
+    const links: string[] = Array.from(content.match(urlRegex) || []);
+    if (legacyLink && !links.includes(legacyLink)) {
+      links.push(legacyLink);
+    }
+    const cleanContent = content.replace(urlRegex, '').replace(/[\s,;]+/g, ' ').trim();
+    
+    return (
+      <span className="inline-flex flex-wrap items-center gap-1.5 align-middle">
+        {cleanContent ? (
+          <span>{renderContentWithTags(cleanContent)}</span>
+        ) : links.length === 0 ? (
+          <span>{renderContentWithTags(content)}</span>
+        ) : null}
+        {links.map((link, idx) => (
+          <a
+            key={idx}
+            href={link.startsWith('http') ? link : `https://${link}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-[11px] text-bujo-highlight hover:underline bg-bujo-highlight/10 px-1.5 py-0.5 rounded border border-bujo-highlight/20 align-middle font-sans font-normal"
+            title={link}
+            onClick={(e) => e.stopPropagation()}
+          >
+            🔗 {getLinkDomain(link)}
+          </a>
+        ))}
+      </span>
+    );
+  };
+
   return (
     <div className={`p-2.5 sm:p-3 rounded-xl bg-zinc-200/10 dark:bg-white/[0.02] border border-zinc-200/30 dark:border-white/5 flex flex-col gap-2.5 transition-colors hover:bg-zinc-200/20 dark:hover:bg-white/[0.04] ${agingClass}`}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+      <div className="flex flex-row items-start justify-between gap-3 w-full">
         <div className="flex items-start gap-2.5 flex-1 min-w-0">
           <button
             onClick={() => cycleStatus(item.id)}
@@ -462,18 +491,6 @@ export const BulletItem = ({ item }: BulletItemProps) => {
                   </div>
                 </div>
 
-                {/* Link Edit Input */}
-                <div className="flex flex-col gap-1 mt-2">
-                  <span className="text-[11px] text-zinc-400 font-bold">Link (URL):</span>
-                  <input
-                    type="text"
-                    placeholder="Colar link/URL..."
-                    value={localLink}
-                    onChange={(e) => setLocalLink(e.target.value)}
-                    className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-350 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none w-full"
-                  />
-                </div>
-
                 {/* Edit Form Actions */}
                 <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-zinc-200/40 dark:border-white/5">
                   <button
@@ -498,19 +515,7 @@ export const BulletItem = ({ item }: BulletItemProps) => {
                     item.status === 'cancelled' ? 'line-through text-red-500/75 dark:text-red-400/70 opacity-60' : ''
                   }`}>
                     {item.priority && <span className="text-bujo-highlight font-bold mr-1.5">*</span>}
-                    {renderContentWithTags(item.content)}
-                    {item.link && (
-                      <a
-                        href={item.link.startsWith('http') ? item.link : `https://${item.link}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-2 inline-flex items-center gap-1 text-[11px] text-bujo-highlight hover:underline bg-bujo-highlight/10 px-1.5 py-0.5 rounded border border-bujo-highlight/20 align-middle font-sans font-normal"
-                        title={item.link}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        🔗 {getLinkDomain(item.link)}
-                      </a>
-                    )}
+                    {renderTextAndBadges(item.content, item.link)}
                     {item.type === 'task' && hasSubtasks && (
                       <span className="text-[9.5px] text-bujo-accent font-semibold ml-1.5 font-mono">
                         {getSubtaskCompletionString(item)}
@@ -555,7 +560,7 @@ export const BulletItem = ({ item }: BulletItemProps) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 self-end sm:self-auto no-print flex-shrink-0">
+        <div className="flex items-center gap-1.5 self-start no-print flex-shrink-0">
           {editingItemId !== item.id && (
             <>
               {item.type === 'task' && (
@@ -628,7 +633,7 @@ export const BulletItem = ({ item }: BulletItemProps) => {
                           </button>
                           <span className={`truncate flex items-center gap-1.5 ${sub.completed ? 'line-through opacity-40' : 'text-zinc-600 dark:text-zinc-300'}`}>
                             {sub.icon && <span className="text-[11px] select-none shrink-0" title="Ícone do micro-passo">{sub.icon}</span>}
-                            <span>{sub.content}</span>
+                            <span>{renderTextAndBadges(sub.content)}</span>
                             {sub.executionTime && (
                               <span className="text-[9px] bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-mono ml-1.5 inline-flex items-center gap-0.5 select-none" title="Tempo de execução do micro-passo">
                                 ⏱️ {sub.executionTime} min

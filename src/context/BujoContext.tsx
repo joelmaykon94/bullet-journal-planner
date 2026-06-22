@@ -9,7 +9,7 @@ import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useAmbientAudio, SoundType } from '../hooks/useAmbientAudio';
 import { useHabits, HabitLog } from '../hooks/useHabits';
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
-import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
+import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate, extractLinksFromText } from '../utils/plannerUtils';
 import { HOURS, MONTHS, BRAIN_DUMP_KEYWORDS } from '../utils/constants';
 
 import { useAuth } from './AuthContext';
@@ -91,7 +91,16 @@ export interface BujoContextType {
   handleDeletePermanently: (id: string) => void;
   handleEmptyTrash: () => void;
   somedayItems: BujoItem[];
-  handleAddSomedayItem: (content: string, type?: 'task' | 'event' | 'note', category?: string, link?: string) => void;
+  handleAddSomedayItem: (
+    content: string,
+    type?: 'task' | 'event' | 'note',
+    category?: string,
+    icon?: string,
+    time?: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
+  ) => void;
   handleDeleteSomedayItem: (id: string) => void;
   handleScheduleSomedayItem: (id: string, date: string) => void;
   handleToggleSomedayItem: (id: string) => void;
@@ -353,11 +362,12 @@ export interface BujoContextType {
     e: React.FormEvent,
     content: string,
     setContent: (v: string) => void,
+    type: 'task' | 'event' | 'note',
     icon?: string,
+    time?: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number,
-    link?: string
+    executionTime?: number
   ) => void;
 
   // Media & Prints
@@ -1447,15 +1457,22 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     e.preventDefault();
     if (!rapidText.trim()) return;
 
+    const { cleanContent, links } = extractLinksFromText(rapidText.trim());
+    const extractedSubtasks = links.map((lnk, lIdx) => ({
+      id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 11)}`,
+      content: lnk,
+      completed: false
+    }));
+
     const newItem: BujoItem = {
       id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: rapidType,
       status: 'open',
-      content: rapidText.trim(),
+      content: cleanContent,
       date: getLocalDateString(),
       time: rapidTime || undefined,
       priority: rapidPriority,
-      subtasks: rapidType === 'task' ? [] : undefined
+      subtasks: rapidType === 'task' ? extractedSubtasks : undefined
     };
 
     setItems(prev => [newItem, ...prev]);
@@ -1505,13 +1522,25 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   const createStandardTaskWithSuggestions = (subtasks: string[]) => {
     if (!standardInput.trim()) return;
+    const { cleanContent, links } = extractLinksFromText(standardInput.trim());
+    const linkSubtasks = links.map((lnk, lIdx) => ({
+      id: `st-lnk-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
+      content: lnk,
+      completed: false
+    }));
+    const suggestionSubtasks = subtasks.map(s => ({
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      content: s,
+      completed: false
+    }));
+
     const newItem: BujoItem = {
       id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: 'task',
       status: 'open',
-      content: standardInput.trim(),
+      content: cleanContent,
       date: getLocalDateString(),
-      subtasks: subtasks.map(s => ({ id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, content: s, completed: false })),
+      subtasks: [...linkSubtasks, ...suggestionSubtasks],
       createdAt: new Date().toISOString()
     };
     setItems(prev => [newItem, ...prev]);
@@ -1522,13 +1551,25 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
   const createRapidTaskWithSuggestions = (subtasks: string[]) => {
     if (!rapidText.trim()) return;
+    const { cleanContent, links } = extractLinksFromText(rapidText.trim());
+    const linkSubtasks = links.map((lnk, lIdx) => ({
+      id: `st-lnk-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
+      content: lnk,
+      completed: false
+    }));
+    const suggestionSubtasks = subtasks.map(s => ({
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      content: s,
+      completed: false
+    }));
+
     const newItem: BujoItem = {
       id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       type: 'task',
       status: 'open',
-      content: rapidText.trim(),
+      content: cleanContent,
       date: getLocalDateString(),
-      subtasks: subtasks.map(s => ({ id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, content: s, completed: false })),
+      subtasks: [...linkSubtasks, ...suggestionSubtasks],
       createdAt: new Date().toISOString()
     };
     setItems(prev => [newItem, ...prev]);
@@ -1782,35 +1823,43 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     e: React.FormEvent,
     content: string,
     setContent: (v: string) => void,
+    type: 'task' | 'event' | 'note',
     icon?: string,
+    time?: string,
     energy?: number,
     complexity?: number,
-    executionTime?: number,
-    link?: string
+    executionTime?: number
   ) => {
     e.preventDefault();
     if (!content.trim()) return;
+
+    const { cleanContent, links } = extractLinksFromText(content);
+    const extractedSubtasks = links.map((lnk, lIdx) => ({
+      id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
+      content: lnk,
+      completed: false
+    }));
 
     const year = new Date().getFullYear();
     const dateStr = `${year}-${(selectedMonth + 1).toString().padStart(2, '0')}-01`;
 
     const newEvent: BujoItem = {
       id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      type: 'event',
+      type,
       status: 'open',
-      content: content.trim(),
+      content: cleanContent,
       date: dateStr,
-      subtasks: [],
+      time: time || undefined,
+      subtasks: type === 'task' ? extractedSubtasks : undefined,
       icon,
-      energy,
-      complexity,
-      executionTime,
-      link
+      energy: type === 'task' ? energy : undefined,
+      complexity: type === 'task' ? complexity : undefined,
+      executionTime: type === 'task' ? executionTime : undefined
     };
 
     setItems(prev => [newEvent, ...prev]);
     setContent('');
-    showToast('Evento agendado no Future Log!');
+    showToast(type === 'task' ? 'Tarefa agendada no Future Log!' : type === 'event' ? 'Evento agendado no Future Log!' : 'Nota salva no Future Log!');
   };
 
   // PDF Exportation

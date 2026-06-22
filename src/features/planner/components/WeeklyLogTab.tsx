@@ -158,7 +158,9 @@ export const WeeklyLogTab = () => {
                         return (
                         <div key={t.id} className="flex items-center gap-1.5 text-[10px] text-zinc-400">
                           <CheckSquare className={`w-3 h-3 shrink-0 ${t.status === 'completed' ? 'text-emerald-500' : isAged ? 'text-amber-500' : 'text-zinc-650'}`} />
-                          <span className={`truncate ${t.status === 'completed' ? 'line-through text-zinc-600' : ''}`}>{t.content}</span>
+                          <span className={`truncate ${t.status === 'completed' ? 'line-through text-zinc-600' : ''}`}>
+                            {t.content.replace(/(https?:\/\/[^\s,;]+)/g, '').replace(/[\s,;]+/g, ' ').trim() || t.content}
+                          </span>
                           {hasBadge && delayInfo && (
                             <span className="text-[8px] font-bold text-amber-500/80 whitespace-nowrap ml-auto shrink-0">{delayInfo.displayString}</span>
                           )}

@@ -43,8 +43,8 @@ export const FutureLogTab = () => {
   const [energy, setEnergy] = useState(1);
   const [complexity, setComplexity] = useState(1);
   const [executionTime, setExecutionTime] = useState('');
-  const [showLinkInput, setShowLinkInput] = useState<boolean>(false);
-  const [linkInput, setLinkInput] = useState<string>('');
+  const [inputType, setInputType] = useState<'task' | 'event' | 'note'>('event');
+  const [inputTime, setInputTime] = useState('');
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -54,8 +54,7 @@ export const FutureLogTab = () => {
   };
 
   const currentMonthEvents = items.filter(item => {
-    if (item.type !== 'event') return false;
-    if (!item.date) return false;
+    if (!item.date || item.date === 'someday_maybe') return false;
     const dateMonth = new Date(item.date + 'T00:00:00').getMonth();
     return dateMonth === selectedMonth;
   });
@@ -65,19 +64,19 @@ export const FutureLogTab = () => {
       e,
       inputText,
       setInputText,
+      inputType,
       inputIcon,
+      inputTime,
       energy,
       complexity,
-      executionTime ? Number(executionTime) : undefined,
-      linkInput.trim() || undefined
+      executionTime ? Number(executionTime) : undefined
     );
     // Reset local states
     setInputIcon('');
     setEnergy(1);
     setComplexity(1);
     setExecutionTime('');
-    setLinkInput('');
-    setShowLinkInput(false);
+    setInputTime('');
     setShowIconDropdown(false);
   };
 
@@ -94,8 +93,7 @@ export const FutureLogTab = () => {
         {months.map((month, index) => {
           const isSelected = selectedMonth === index;
           const monthEvents = items.filter(item => {
-            if (item.type !== 'event') return false;
-            if (!item.date) return false;
+            if (!item.date || item.date === 'someday_maybe') return false;
             const dateMonth = new Date(item.date + 'T00:00:00').getMonth();
             return dateMonth === index;
           });
@@ -111,7 +109,7 @@ export const FutureLogTab = () => {
               }`}
             >
               <h4 className="text-xs font-bold uppercase tracking-wider">{month}</h4>
-              <span className="text-[10px] text-zinc-400 font-mono">{monthEvents.length} eventos agendados</span>
+              <span className="text-[10px] text-zinc-400 font-mono">{monthEvents.length} itens agendados</span>
             </div>
           );
         })}
@@ -121,7 +119,7 @@ export const FutureLogTab = () => {
         
         <div className="flex-1 space-y-3">
           <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-500 border-b border-zinc-200/40 dark:border-white/5 pb-2">
-            Eventos de {months[selectedMonth]}
+            Itens de {months[selectedMonth]}
           </h4>
           <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
             <DndContext 
@@ -149,14 +147,29 @@ export const FutureLogTab = () => {
             </DndContext>
 
             {currentMonthEvents.length === 0 && (
-              <p className="text-xs text-zinc-500 italic py-2 text-center">Sem eventos agendados para este mês.</p>
+              <p className="text-xs text-zinc-500 italic py-2 text-center">Sem itens agendados para este mês.</p>
             )}
           </div>
         </div>
 
         <div className="w-full md:w-80 space-y-3 no-print">
-          <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-500">Agendar Novo Evento</h4>
+          <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-500">Agendar Novo Item</h4>
           <form onSubmit={handleLocalSubmit} className="space-y-3 bg-zinc-200/20 dark:bg-white/[0.02] p-4 rounded-2xl border border-zinc-300/40 dark:border-white/5">
+            <div className="flex bg-zinc-200/50 dark:bg-zinc-950/60 p-0.5 rounded-lg border border-zinc-200/40 dark:border-white/5 justify-between">
+              {(['task', 'event', 'note'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setInputType(t)}
+                  className={`px-2.5 py-0.5 rounded-md text-[10.5px] font-semibold transition-all cursor-pointer flex-1 text-center ${
+                    inputType === t ? 'bg-bujo-highlight text-white shadow-sm' : 'text-zinc-500 hover:text-bujo-text'
+                  }`}
+                >
+                  {t === 'task' ? '• Tarefa' : t === 'event' ? '○ Evento' : '- Nota'}
+                </button>
+              ))}
+            </div>
+
             <div className="flex items-center gap-2">
               <div className="relative shrink-0">
                 <button
@@ -186,6 +199,7 @@ export const FutureLogTab = () => {
                           onClick={() => {
                             setInputIcon(icon.emoji);
                             setShowIconDropdown(false);
+                            setIconSearch('');
                           }}
                           className="w-7 h-7 flex items-center justify-center rounded hover:bg-zinc-150 dark:hover:bg-white/5 transition-all text-sm"
                         >
@@ -201,67 +215,58 @@ export const FutureLogTab = () => {
                 required
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Nome do evento..."
+                placeholder={inputType === 'task' ? "Adicionar tarefa..." : inputType === 'event' ? "Adicionar evento..." : "Adicionar nota..."}
                 className="flex-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs text-bujo-text placeholder:text-zinc-650 outline-none focus:border-bujo-highlight/40"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] text-zinc-500 font-bold uppercase">Energia ⚡</span>
-                <select
-                  value={energy}
-                  onChange={(e) => setEnergy(Number(e.target.value))}
-                  className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-bujo-text outline-none"
-                >
-                  {[1, 2, 3, 4, 5].map(v => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] text-zinc-500 font-bold uppercase">Complex. 🧠</span>
-                <select
-                  value={complexity}
-                  onChange={(e) => setComplexity(Number(e.target.value))}
-                  className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-bujo-text outline-none"
-                >
-                  {[1, 2, 3, 4, 5].map(v => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </div>
-            </div>
-
             <div className="flex flex-col gap-1">
-              <span className="text-[9px] text-zinc-500 font-bold uppercase">Tempo (min) ⏱️</span>
+              <span className="text-[9px] text-zinc-550 dark:text-zinc-400 font-bold uppercase">Hora ⏱️</span>
               <input
-                type="number"
-                min="0"
-                placeholder="Minutos"
-                value={executionTime}
-                onChange={(e) => setExecutionTime(e.target.value)}
+                type="time"
+                value={inputTime}
+                onChange={(e) => setInputTime(e.target.value)}
                 className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-3 py-1 text-xs text-bujo-text outline-none"
               />
             </div>
 
-            <div className="flex flex-col gap-1">
-              <button
-                type="button"
-                onClick={() => setShowLinkInput(!showLinkInput)}
-                className="w-full py-1.5 bg-zinc-200/50 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg text-xs text-zinc-500 hover:text-bujo-text flex items-center justify-center gap-1 cursor-pointer transition-colors"
-              >
-                {showLinkInput ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                <span>Link da tarefa</span>
-              </button>
-            </div>
+            {inputType === 'task' && (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] text-zinc-500 font-bold uppercase">Energia ⚡</span>
+                    <select
+                      value={energy}
+                      onChange={(e) => setEnergy(Number(e.target.value))}
+                      className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-bujo-text outline-none"
+                    >
+                      {[1, 2, 3, 4, 5].map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] text-zinc-500 font-bold uppercase">Complex. 🧠</span>
+                    <select
+                      value={complexity}
+                      onChange={(e) => setComplexity(Number(e.target.value))}
+                      className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-bujo-text outline-none"
+                    >
+                      {[1, 2, 3, 4, 5].map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                </div>
 
-            {showLinkInput && (
-              <div className="flex flex-col gap-1">
-                <input
-                  type="text"
-                  placeholder="Colar link/URL..."
-                  value={linkInput}
-                  onChange={(e) => setLinkInput(e.target.value)}
-                  className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-3 py-1.5 text-xs text-bujo-text placeholder-zinc-500 outline-none"
-                />
-              </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] text-zinc-500 font-bold uppercase">Tempo (min) ⏱️</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Minutos"
+                    value={executionTime}
+                    onChange={(e) => setExecutionTime(e.target.value)}
+                    className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-3 py-1 text-xs text-bujo-text outline-none"
+                  />
+                </div>
+              </>
             )}
 
             <button

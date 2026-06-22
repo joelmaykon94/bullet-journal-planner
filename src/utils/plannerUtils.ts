@@ -264,6 +264,30 @@ export const getLinkDomain = (url?: string): string => {
   }
 };
 
+export interface ParsedTaskLinks {
+  cleanContent: string;
+  links: string[];
+}
+
+export const extractLinksFromText = (text: string): ParsedTaskLinks => {
+  const urlRegex = /(https?:\/\/[^\s,;]+)/g;
+  const links = text.match(urlRegex) || [];
+  let cleanContent = text.replace(urlRegex, '').replace(/[\s,;]+/g, ' ').trim();
+  
+  if (!cleanContent && links.length > 0) {
+    const firstLink = links[0];
+    if (firstLink) {
+      cleanContent = getLinkDomain(firstLink) || firstLink;
+    }
+  }
+  
+  return {
+    cleanContent,
+    links
+  };
+};
+
+
 export interface TaskDelayInfo {
   totalHours: number;
   days: number;

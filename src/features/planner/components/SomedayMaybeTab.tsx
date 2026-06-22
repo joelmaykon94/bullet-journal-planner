@@ -8,6 +8,7 @@ import { getLinkDomain, getTaskDelayInfo } from '../../../utils/plannerUtils';
 import { useBujo } from '../../../context/BujoContext';
 import { BujoItem } from '../../../types';
 import { DateInput } from '../../../components/common/DateInput';
+import { BUJO_ICONS } from '../../../utils/constants';
 
 // Categories for Someday/Maybe items
 const CATEGORIES = [
@@ -77,8 +78,13 @@ export const SomedayMaybeTab = () => {
   const [inputContent, setInputContent] = useState('');
   const [inputType, setInputType] = useState<'task' | 'event' | 'note'>('task');
   const [inputCategory, setInputCategory] = useState<string>('');
-  const [showLinkInput, setShowLinkInput] = useState<boolean>(false);
-  const [linkInput, setLinkInput] = useState<string>('');
+  const [inputIcon, setInputIcon] = useState('');
+  const [showIconDropdown, setShowIconDropdown] = useState(false);
+  const [iconSearch, setIconSearch] = useState('');
+  const [inputTime, setInputTime] = useState('');
+  const [energy, setEnergy] = useState(1);
+  const [complexity, setComplexity] = useState(1);
+  const [executionTime, setExecutionTime] = useState('');
 
   // Inline inputs for specific category cards
   const [cardInputs, setCardInputs] = useState<{ [catId: string]: string }>({});
@@ -90,6 +96,38 @@ export const SomedayMaybeTab = () => {
   // Dropdown states
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
   const [scheduleDates, setScheduleDates] = useState<{ [id: string]: string }>({});
+
+  const renderTextAndBadges = (content: string, legacyLink?: string) => {
+    const urlRegex = /(https?:\/\/[^\s,;]+)/g;
+    const links: string[] = Array.from(content.match(urlRegex) || []);
+    if (legacyLink && !links.includes(legacyLink)) {
+      links.push(legacyLink);
+    }
+    const cleanContent = content.replace(urlRegex, '').replace(/[\s,;]+/g, ' ').trim();
+    
+    return (
+      <span className="inline-flex flex-wrap items-center gap-1.5 align-middle">
+        {cleanContent ? (
+          <span>{cleanContent}</span>
+        ) : links.length === 0 ? (
+          <span>{content}</span>
+        ) : null}
+        {links.map((link, idx) => (
+          <a
+            key={idx}
+            href={link.startsWith('http') ? link : `https://${link}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-0.5 text-[10px] text-bujo-accent hover:underline bg-bujo-accent/10 px-1.5 py-0.5 rounded border border-bujo-accent/20 align-middle font-sans font-normal"
+            title={link}
+            onClick={(e) => e.stopPropagation()}
+          >
+            🔗 {getLinkDomain(link)}
+          </a>
+        ))}
+      </span>
+    );
+  };
 
   // Deterministic sticky note rotation based on ID
   const getStickyRotation = (id: string) => {
@@ -121,16 +159,28 @@ export const SomedayMaybeTab = () => {
     }
   };
 
-  // Handle Main Form Submission (Inbox Add)
   const handleSubmitMain = (e: React.FormEvent) => {
     e.preventDefault();
     const content = inputContent.trim();
     if (!content) return;
-    handleAddSomedayItem(content, inputType, inputCategory || undefined, linkInput.trim() || undefined);
+    handleAddSomedayItem(
+      content,
+      inputType,
+      inputCategory || undefined,
+      inputIcon || undefined,
+      inputTime || undefined,
+      energy,
+      complexity,
+      executionTime ? Number(executionTime) : undefined
+    );
     setInputContent('');
     setInputCategory('');
-    setLinkInput('');
-    setShowLinkInput(false);
+    setInputIcon('');
+    setInputTime('');
+    setEnergy(1);
+    setComplexity(1);
+    setExecutionTime('');
+    setShowIconDropdown(false);
   };
 
   // Handle Specific Category Card Quick Add
@@ -274,8 +324,8 @@ export const SomedayMaybeTab = () => {
               />
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-zinc-200/50 dark:border-white/5">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-3 pt-2 border-t border-zinc-200/50 dark:border-white/5">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* Type Selection dots */}
                 <div className="flex items-center gap-1 bg-zinc-200/40 dark:bg-white/5 p-1 rounded-xl border border-zinc-300/30 dark:border-white/5 text-[10px]">
                   {(['task', 'event', 'note'] as const).map(type => (
@@ -292,11 +342,53 @@ export const SomedayMaybeTab = () => {
                   ))}
                 </div>
 
+                {/* Icon Selection Dropdown */}
+                <div className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowIconDropdown(!showIconDropdown)}
+                    className="w-7 h-7 rounded-lg bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 flex items-center justify-center text-xs hover:border-bujo-highlight hover:bg-zinc-200 dark:hover:bg-white/10 transition-all cursor-pointer"
+                    title="Escolher Ícone/Desenho"
+                  >
+                    <span>{inputIcon || '🎨'}</span>
+                  </button>
+                  {showIconDropdown && (
+                    <div className="absolute left-0 top-full mt-2 p-2 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-52 animate-scale-in">
+                      <input
+                        type="text"
+                        placeholder="Pesquisar..."
+                        value={iconSearch}
+                        onChange={(e) => setIconSearch(e.target.value)}
+                        className="w-full px-2 py-1 mb-2 text-xs rounded bg-zinc-150 dark:bg-zinc-950 border border-zinc-250 dark:border-white/10 text-bujo-text outline-none"
+                      />
+                      <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+                        {BUJO_ICONS.filter(icon => 
+                          icon.name.toLowerCase().includes(iconSearch.toLowerCase()) || 
+                          icon.tooltip.toLowerCase().includes(iconSearch.toLowerCase())
+                        ).map(icon => (
+                          <button
+                            key={icon.emoji}
+                            type="button"
+                            onClick={() => {
+                              setInputIcon(icon.emoji);
+                              setShowIconDropdown(false);
+                              setIconSearch('');
+                            }}
+                            className="w-7 h-7 flex items-center justify-center rounded hover:bg-zinc-150 dark:hover:bg-white/5 transition-all text-sm"
+                          >
+                            {icon.emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Optional Quick Category */}
                 <select
                   value={inputCategory}
                   onChange={(e) => setInputCategory(e.target.value)}
-                  className="bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 rounded-xl px-2 py-1 text-[10px] text-bujo-text outline-none cursor-pointer mr-2"
+                  className="bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 rounded-xl px-2 py-1 text-[10px] text-bujo-text outline-none cursor-pointer"
                 >
                   <option value="">📂 Enviar p/ Inbox</option>
                   {CATEGORIES.map(c => (
@@ -304,30 +396,66 @@ export const SomedayMaybeTab = () => {
                   ))}
                 </select>
 
+                {/* Time picker */}
+                <div className="flex items-center gap-1 bg-zinc-200/40 dark:bg-white/5 px-2 py-1 rounded-xl border border-zinc-300/30 dark:border-white/5">
+                  <span className="text-zinc-555 dark:text-zinc-400 text-[8.5px] uppercase font-mono">Hora:</span>
+                  <input
+                    type="time"
+                    value={inputTime}
+                    onChange={(e) => setInputTime(e.target.value)}
+                    className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-[9.5px] font-mono py-0 w-20"
+                  />
+                </div>
+              </div>
+
+              {inputType === 'task' && (
+                <div className="flex flex-wrap items-center gap-2 bg-zinc-100/50 dark:bg-white/5 px-2.5 py-1.5 rounded-xl border border-zinc-200/40 dark:border-white/5 text-[9px] w-full max-w-sm">
+                  <div className="flex items-center gap-1">
+                    <span className="text-zinc-450 select-none text-[8.5px] uppercase font-mono tracking-wider">Energia:</span>
+                    <select
+                      value={energy}
+                      onChange={(e) => setEnergy(Number(e.target.value))}
+                      className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-[9.5px] font-semibold py-0"
+                    >
+                      {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-zinc-950 text-white">⚡ {v}</option>)}
+                    </select>
+                  </div>
+                  <div className="w-px h-3 bg-zinc-200/60 dark:bg-white/15 mx-1" />
+                  <div className="flex items-center gap-1">
+                    <span className="text-zinc-450 select-none text-[8.5px] uppercase font-mono tracking-wider">Complex:</span>
+                    <select
+                      value={complexity}
+                      onChange={(e) => setComplexity(Number(e.target.value))}
+                      className="bg-transparent border-none text-bujo-text outline-none cursor-pointer text-[9.5px] font-semibold py-0"
+                    >
+                      {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-zinc-950 text-white">🧠 {v}</option>)}
+                    </select>
+                  </div>
+                  <div className="w-px h-3 bg-zinc-200/60 dark:bg-white/15 mx-1" />
+                  <div className="flex items-center gap-1">
+                    <span className="text-zinc-450 select-none text-[8.5px] uppercase font-mono tracking-wider">Tempo:</span>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="min"
+                      value={executionTime}
+                      onChange={(e) => setExecutionTime(e.target.value)}
+                      className="bg-transparent border-none text-bujo-text outline-none w-8 font-mono text-[9.5px] text-center placeholder:text-zinc-550 font-semibold"
+                    />
+                    <span className="text-[8.5px] text-zinc-450">min</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end pt-1">
                 <button
-                  type="button"
-                  onClick={() => setShowLinkInput(!showLinkInput)}
-                  className="px-2 py-1 bg-zinc-200/40 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 rounded-xl text-[10px] text-zinc-550 hover:text-bujo-text flex items-center gap-0.5 cursor-pointer"
-                  title="Adicionar Link"
+                  type="submit"
+                  className="px-4 py-1.5 bg-bujo-highlight text-white rounded-lg text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md shadow-bujo-highlight/10"
                 >
-                  {showLinkInput ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                  <span>Link</span>
+                  Adicionar
                 </button>
               </div>
-
             </div>
-
-            {showLinkInput && (
-              <div className="pt-2.5 border-t border-zinc-200/50 dark:border-zinc-800">
-                <input
-                  type="text"
-                  placeholder="Colar link/URL da tarefa..."
-                  value={linkInput}
-                  onChange={(e) => setLinkInput(e.target.value)}
-                  className="w-full bg-[#FAF7F2] dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-bujo-text placeholder-zinc-500 outline-none focus:border-bujo-highlight/50 transition-colors"
-                />
-              </div>
-            )}
           </form>
 
           {/* Sticky Notes Grid Area */}
@@ -427,19 +555,7 @@ export const SomedayMaybeTab = () => {
                             }`}
                             onDoubleClick={() => handleStartEdit(item)}
                           >
-                            {item.content}
-                            {item.link && (
-                              <a
-                                href={item.link.startsWith('http') ? item.link : `https://${item.link}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-bujo-accent hover:underline bg-bujo-accent/10 px-1.5 py-0.5 rounded border border-bujo-accent/20 align-middle font-sans font-normal"
-                                title={item.link}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                🔗 {getLinkDomain(item.link)}
-                              </a>
-                            )}
+                            {renderTextAndBadges(item.content, item.link)}
                           </p>
                         )}
                       </div>
@@ -635,19 +751,7 @@ export const SomedayMaybeTab = () => {
                                       }`}
                                       title="Double-click para editar"
                                     >
-                                      {item.content}
-                                      {item.link && (
-                                        <a
-                                          href={item.link.startsWith('http') ? item.link : `https://${item.link}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="ml-1.5 inline-flex items-center gap-0.5 text-[9.5px] text-bujo-highlight hover:underline bg-bujo-highlight/10 px-1 py-0.5 rounded border border-bujo-highlight/20 align-middle font-sans font-normal"
-                                          title={item.link}
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          🔗 {getLinkDomain(item.link)}
-                                        </a>
-                                      )}
+                                      {renderTextAndBadges(item.content, item.link)}
                                       {delayInfo && (delayInfo.hasHourDelay ? delayInfo.totalHours >= 6 : delayInfo.days >= 2) && (
                                         <span className={`ml-1.5 px-1 py-px rounded text-[8px] font-mono font-bold align-middle inline-flex items-center gap-0.5 ${pendingBadgeClass}`}>
                                           📅 {delayInfo.displayString}

@@ -10,11 +10,11 @@ updated: 2026-06-22T15:02:00Z
 
 ## Last Action
 
-Completed Phase 15 by fixing the task duplication in manual and auto-migration, correcting the TypeScript compile errors, and standardizing task delay calculations and visual card aging across all task list views (Daily Log, Someday/Maybe Tab, Weekly Log, etc.).
+Completed Phase 15 including Plan 15.1 and Plan 15.2. Fixed task duplication in migration, unified delay tracking, enabled multiple direct link NLP parsing into subtasks with clean domain badges, standardized all task creation forms, kept rapid capture minimal, and fixed long text wrapping/alignment on BulletItem action buttons in the daily log.
 
 ## Next Steps
 
-Review user requests for any additional features or refinements.
+Awaiting user feedback on Phase 15.2 changes.
 
 ## Active Decisions
 

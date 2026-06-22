@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { BujoItem, DreamItem } from '../types';
-import { getLocalDateString, getWeekdaysForDate } from '../utils/plannerUtils';
+import { getLocalDateString, getWeekdaysForDate, extractLinksFromText } from '../utils/plannerUtils';
 import { parseSmartTask } from '../utils/smartParser';
 
 export function useBujoItems(
@@ -133,9 +133,17 @@ export function useBujoItems(
     const parsed = parseSmartTask(standardInput.trim(), standardDate || selectedDate);
     const content = parsed.cleanContent;
 
+    // Extract links & clean content
+    const { cleanContent, links } = extractLinksFromText(content);
+    const extractedSubtasks = links.map((lnk, lIdx) => ({
+      id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
+      content: lnk,
+      completed: false
+    }));
+
     // Delegation regex extraction
     let delegatedTo = undefined;
-    const delegationMatch = content.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
+    const delegationMatch = cleanContent.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
     if (delegationMatch) {
       delegatedTo = delegationMatch[1];
     }
@@ -146,7 +154,7 @@ export function useBujoItems(
     const finalComplexity = parsed.complexity || complexity || 1;
     const isPriority = parsed.priority !== undefined ? parsed.priority : undefined;
 
-    const isRecurring = standardType === 'task' && content.toLowerCase().includes('todos os dias');
+    const isRecurring = standardType === 'task' && cleanContent.toLowerCase().includes('todos os dias');
     
     let itemsToCreate: BujoItem[] = [];
     
@@ -158,18 +166,17 @@ export function useBujoItems(
           id: `${idTime}-${Math.random().toString(36).substring(2, 11)}`,
           type: 'task',
           status: 'open',
-          content: content,
+          content: cleanContent,
           date: wDate,
           time: finalTime,
-          subtasks: [],
+          subtasks: extractedSubtasks,
           icon: icon || undefined,
           energy: finalEnergy,
           complexity: finalComplexity,
           executionTime: executionTime || undefined,
           delegatedTo: delegatedTo || undefined,
           priority: isPriority,
-          createdAt: new Date().toISOString(),
-          link: link || undefined
+          createdAt: new Date().toISOString()
         };
         itemsToCreate.push(item);
       });
@@ -178,24 +185,23 @@ export function useBujoItems(
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
         type: standardType,
         status: 'open',
-        content: content,
+        content: cleanContent,
         date: targetDate,
         time: finalTime,
-        subtasks: standardType === 'task' ? [] : undefined,
+        subtasks: standardType === 'task' ? extractedSubtasks : undefined,
         icon: icon || undefined,
         energy: standardType === 'task' ? finalEnergy : undefined,
         complexity: standardType === 'task' ? finalComplexity : undefined,
         executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
         delegatedTo: delegatedTo || undefined,
         priority: standardType === 'task' ? isPriority : undefined,
-        createdAt: new Date().toISOString(),
-        link: link || undefined
+        createdAt: new Date().toISOString()
       };
       itemsToCreate.push(newItem);
     }
 
     // Check for collection sync: [Collection Name] some task
-    const collectionMatch = content.match(/^\[(.*?)\]\s*(.*)/);
+    const collectionMatch = cleanContent.match(/^\[(.*?)\]\s*(.*)/);
     if (collectionMatch && standardType === 'task') {
       const colName = collectionMatch[1];
       const taskContent = collectionMatch[2];
@@ -412,17 +418,37 @@ export function useBujoItems(
     showToast('Lixeira esvaziada');
   };
 
-  const handleAddSomedayItem = (content: string, type: 'task' | 'event' | 'note' = 'task', category?: string, link?: string) => {
+  const handleAddSomedayItem = (
+    content: string,
+    type: 'task' | 'event' | 'note' = 'task',
+    category?: string,
+    icon?: string,
+    time?: string,
+    energy?: number,
+    complexity?: number,
+    executionTime?: number
+  ) => {
+    const { cleanContent, links } = extractLinksFromText(content);
+    const extractedSubtasks = links.map((lnk, lIdx) => ({
+      id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
+      content: lnk,
+      completed: false
+    }));
+
     const newItem: BujoItem = {
       id: 'sd-' + Math.random().toString(),
       type,
       status: 'open',
-      content: content.trim(),
+      content: cleanContent,
       date: 'someday_maybe',
       category,
-      subtasks: type === 'task' ? [] : undefined,
-      createdAt: new Date().toISOString(),
-      link: link || undefined
+      time: time || undefined,
+      icon,
+      energy: type === 'task' ? energy : undefined,
+      complexity: type === 'task' ? complexity : undefined,
+      executionTime: type === 'task' ? executionTime : undefined,
+      subtasks: type === 'task' ? extractedSubtasks : undefined,
+      createdAt: new Date().toISOString()
     };
     setSomedayItems(prev => [...prev, newItem]);
     showToast('Adicionado a Algum Dia/Talvez');
@@ -441,7 +467,17 @@ export function useBujoItems(
   const handleEditSomedayItemContent = (id: string, newContent: string) => {
     setSomedayItems(prev => prev.map(item => {
       if (item.id === id) {
-        return { ...item, content: newContent.trim() };
+        const { cleanContent, links } = extractLinksFromText(newContent);
+        const newSubtasks = links.map((lnk, lIdx) => ({
+          id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
+          content: lnk,
+          completed: false
+        }));
+        return { 
+          ...item, 
+          content: cleanContent,
+          subtasks: item.type === 'task' ? [...(item.subtasks || []), ...newSubtasks] : undefined
+        };
       }
       return item;
     }));
@@ -505,13 +541,20 @@ export function useBujoItems(
   ) => {
     setItems(prev => prev.map(item => {
       if (item.id === id) {
+        const { cleanContent, links } = extractLinksFromText(editingItemContent);
+        const newSubtasks = links.map((lnk, lIdx) => ({
+          id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
+          content: lnk,
+          completed: false
+        }));
+
         // Delegation regex extraction from content if not explicitly provided
-        const delegationMatch = editingItemContent.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
+        const delegationMatch = cleanContent.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
         const autoDelegatedTo = delegationMatch ? delegationMatch[1] : undefined;
 
         return {
           ...item,
-          content: editingItemContent,
+          content: cleanContent,
           energy: item.type === 'task' ? (energy ?? item.energy) : undefined,
           complexity: item.type === 'task' ? (complexity ?? item.complexity) : undefined,
           executionTime: item.type === 'task' ? (executionTime ?? item.executionTime) : undefined,
@@ -519,7 +562,7 @@ export function useBujoItems(
           date: date ?? item.date,
           time: time !== undefined ? time : item.time,
           icon: icon ?? item.icon,
-          link: link !== undefined ? link : item.link
+          subtasks: item.type === 'task' ? [...(item.subtasks || []), ...newSubtasks] : undefined
         };
       }
       return item;
