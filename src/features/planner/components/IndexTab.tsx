@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2, X, GraduationCap, Zap, Activity, Shield, Plus, Award } from 'lucide-react';
+import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2, X, GraduationCap, Zap, Activity, Shield, Plus, Award, DollarSign } from 'lucide-react';
+import { BudgetPlanner } from './BudgetPlanner';
 import { EnergyChart } from '../../adhd/components/EnergyChart';
 import { HabitTracker } from './HabitTracker';
 import { UserPersonaCard } from './UserPersonaCard';
@@ -43,7 +44,7 @@ export const IndexTab = () => {
   } = useBujo();
 
   // Modal states for dashboard cards
-  const [activeModal, setActiveModal] = useState<'knowledge' | 'energy' | 'habits' | 'focus' | null>(null);
+  const [activeModal, setActiveModal] = useState<'knowledge' | 'energy' | 'habits' | 'focus' | 'budget' | null>(null);
 
   const [newGoalText, setNewGoalText] = useState('');
   const [sessionConqueredIds, setSessionConqueredIds] = useState<string[]>([]);
@@ -59,9 +60,9 @@ export const IndexTab = () => {
   const handleToggleGoal = (id: string, isCurrentlyConquered: boolean) => {
     handleToggleDreamConquered(id);
     if (!isCurrentlyConquered) {
-      setSessionConqueredIds(prev => [...prev, id]);
+      setSessionConqueredIds((prev: string[]) => [...prev, id]);
     } else {
-      setSessionConqueredIds(prev => prev.filter(x => x !== id));
+      setSessionConqueredIds((prev: string[]) => prev.filter((x: string) => x !== id));
     }
   };
 
@@ -170,6 +171,12 @@ export const IndexTab = () => {
                 className="px-3 py-1.5 bg-bujo-highlight text-white text-[9px] font-bold rounded-lg hover:opacity-95 transition-opacity cursor-pointer shadow-sm shadow-bujo-highlight/10"
               >
                 Diário Bujo
+              </button>
+              <button 
+                onClick={() => setActiveModal('budget')}
+                className="px-3 py-1.5 bg-blue-600 text-white text-[9px] font-bold rounded-lg hover:opacity-95 transition-opacity cursor-pointer shadow-sm shadow-blue-600/10"
+              >
+                Planejador Financeiro
               </button>
               <button 
                 onClick={() => setShowTutorial(true)}
@@ -421,7 +428,7 @@ export const IndexTab = () => {
           <Target className="w-3.5 h-3.5 text-bujo-highlight" />
           Menu de Acesso Rápido
         </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2.5">
           {[
             { tab: 'daily_spread', label: 'Agenda Diária', icon: Sliders },
             { tab: 'weekly_log', label: 'Log Semanal', icon: LayoutGrid },
@@ -430,13 +437,20 @@ export const IndexTab = () => {
             { tab: 'brain_dump', label: 'Despejo de Mente', icon: Brain },
             { tab: 'dream_board', label: 'Sonhos', icon: Sparkles },
             { tab: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
-            { tab: 'trash', label: 'Lixeira', icon: Trash2 }
+            { tab: 'trash', label: 'Lixeira', icon: Trash2 },
+            { tab: 'budget', label: 'Finanças', icon: DollarSign, isModal: true }
           ].map(item => {
             const Icon = item.icon;
             return (
               <div 
                 key={item.tab}
-                onClick={() => setActiveTab(item.tab as any)}
+                onClick={() => {
+                  if (item.isModal) {
+                    setActiveModal(item.tab as any);
+                  } else {
+                    setActiveTab(item.tab as any);
+                  }
+                }}
                 className="p-2.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/50 hover:bg-zinc-200/20 dark:hover:bg-white/10 hover:-translate-y-0.5 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-1"
               >
                 <div className="p-1.5 rounded-lg bg-bujo-highlight/10 text-bujo-highlight shrink-0 flex items-center justify-center">
@@ -450,7 +464,7 @@ export const IndexTab = () => {
       </div>
 
       {/* 3. Dashboard Cards Grid — replaces full-width scrollable sections */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
         {/* Card: Evolução Acadêmica */}
         <button
           id="tutorial-knowledge-chart"
@@ -509,6 +523,20 @@ export const IndexTab = () => {
             <span className="text-[9px] text-zinc-500 block mt-0.5">Persona, áudio e IA</span>
           </div>
         </button>
+
+        {/* Card: Planejador Financeiro */}
+        <button
+          onClick={() => setActiveModal('budget')}
+          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-blue-500/40 hover:bg-blue-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
+        >
+          <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover:scale-110 transition-transform">
+            <DollarSign className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-zinc-100 block">Planejador Financeiro</span>
+            <span className="text-[9px] text-zinc-500 block mt-0.5">Gerenciar saldo e contas</span>
+          </div>
+        </button>
       </div>
 
       {/* Full-screen Modals for each card */}
@@ -529,18 +557,21 @@ export const IndexTab = () => {
                   activeModal === 'knowledge' ? 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30' :
                   activeModal === 'energy' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' :
                   activeModal === 'habits' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
+                  activeModal === 'budget' ? 'bg-blue-500/15 text-blue-400 border-blue-500/30' :
                   'bg-red-500/15 text-red-400 border-red-500/30'
                 }`}>
                   {activeModal === 'knowledge' && <GraduationCap className="w-4 h-4" />}
                   {activeModal === 'energy' && <Zap className="w-4 h-4" />}
                   {activeModal === 'habits' && <Activity className="w-4 h-4" />}
                   {activeModal === 'focus' && <Shield className="w-4 h-4" />}
+                  {activeModal === 'budget' && <DollarSign className="w-4 h-4" />}
                 </div>
                 <h3 className="text-sm font-extrabold text-white tracking-tight">
                   {activeModal === 'knowledge' && 'Evolução Acadêmica'}
                   {activeModal === 'energy' && 'Ritmo Energético TDAH'}
                   {activeModal === 'habits' && 'Rastreador de Hábitos'}
                   {activeModal === 'focus' && 'Guia de Foco & Persona'}
+                  {activeModal === 'budget' && 'Planejador Financeiro'}
                 </h3>
               </div>
               <button
@@ -585,6 +616,7 @@ export const IndexTab = () => {
                   getCognitiveLoad={getCognitiveLoad}
                 />
               )}
+              {activeModal === 'budget' && <BudgetPlanner onClose={() => setActiveModal(null)} />}
             </div>
           </div>
         </div>
