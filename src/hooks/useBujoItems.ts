@@ -199,7 +199,7 @@ export function useBujoItems(
           date: wDate,
           time: finalTime,
           subtasks: extractedSubtasks,
-          icon: icon || undefined,
+          icon: icon || '🎯',
           energy: finalEnergy,
           complexity: finalComplexity,
           executionTime: executionTime || undefined,
@@ -218,7 +218,7 @@ export function useBujoItems(
         date: targetDate,
         time: finalTime,
         subtasks: standardType === 'task' ? extractedSubtasks : undefined,
-        icon: icon || undefined,
+        icon: icon || (standardType === 'task' ? '🎯' : undefined),
         energy: standardType === 'task' ? finalEnergy : undefined,
         complexity: standardType === 'task' ? finalComplexity : undefined,
         executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
@@ -472,7 +472,7 @@ export function useBujoItems(
       date: 'someday_maybe',
       category,
       time: time || undefined,
-      icon,
+      icon: icon || (type === 'task' ? '🎯' : undefined),
       energy: type === 'task' ? energy : undefined,
       complexity: type === 'task' ? complexity : undefined,
       executionTime: type === 'task' ? executionTime : undefined,
@@ -812,6 +812,15 @@ export function useBujoItems(
     }));
   };
 
+  const handleReorderDreams = (activeId: string, overId: string) => {
+    setDreams(prev => {
+      const oldIndex = prev.findIndex(i => i.id === activeId);
+      const newIndex = prev.findIndex(i => i.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
   return {
     items,
     setItems,
@@ -852,6 +861,7 @@ export function useBujoItems(
     setDreams,
     handleAddDream,
     handleToggleDreamConquered,
-    handleDeleteDream
+    handleDeleteDream,
+    handleReorderDreams
   };
 }

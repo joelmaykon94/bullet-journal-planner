@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, X, Sparkles } from 'lucide-react';
 import { Collection } from '../../types';
+import { BUJO_ICONS } from '../../utils/constants';
 
 interface RapidLogModalProps {
   showRapidLog: boolean;
@@ -18,6 +19,12 @@ interface RapidLogModalProps {
   handleSaveRapidLog: (e: React.FormEvent) => void;
   renderRealTimeSuggestions: (input: string, type: 'task' | 'event' | 'note', handler: any) => React.ReactNode;
   createRapidTaskWithSuggestions: (subtasks: string[]) => void;
+  rapidIcon: string;
+  setRapidIcon: (icon: string) => void;
+  rapidDate: string;
+  setRapidDate: (date: string) => void;
+  rapidTime: string;
+  setRapidTime: (time: string) => void;
 }
 
 export const RapidLogModal = ({
@@ -35,8 +42,16 @@ export const RapidLogModal = ({
   selectCollectionAutocompleteRapid,
   handleSaveRapidLog,
   renderRealTimeSuggestions,
-  createRapidTaskWithSuggestions
+  createRapidTaskWithSuggestions,
+  rapidIcon,
+  setRapidIcon,
+  rapidDate,
+  setRapidDate,
+  rapidTime,
+  setRapidTime
 }: RapidLogModalProps) => {
+  const [showIconDropdown, setShowIconDropdown] = useState(false);
+  const [iconSearch, setIconSearch] = useState('');
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && showRapidLog) {
@@ -117,6 +132,74 @@ export const RapidLogModal = ({
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Metadata Grid (Icon, Date, Time) */}
+          <div className="grid grid-cols-3 gap-3 bg-zinc-50 dark:bg-white/[0.02] border border-zinc-150 dark:border-white/5 p-3 rounded-2xl relative">
+            {/* Icon Picker Dropdown */}
+            <div className="flex flex-col gap-1 relative">
+              <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Ícone</label>
+              <button
+                type="button"
+                onClick={() => setShowIconDropdown(!showIconDropdown)}
+                className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 text-sm hover:border-bujo-highlight transition-all cursor-pointer select-none"
+              >
+                <span>{rapidIcon || (rapidType === 'task' ? '🎯' : '🎨')}</span>
+                <span className="text-[9px] text-zinc-400">▼</span>
+              </button>
+              {showIconDropdown && (
+                <div className="absolute left-0 bottom-full mb-2 p-2 bg-white dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl shadow-2xl z-50 w-52 animate-scale-in">
+                  <input
+                    type="text"
+                    placeholder="Pesquisar..."
+                    value={iconSearch}
+                    onChange={(e) => setIconSearch(e.target.value)}
+                    className="w-full px-2 py-1 mb-2 text-xs rounded bg-zinc-150 dark:bg-zinc-950 border border-zinc-250 dark:border-white/10 text-bujo-text outline-none"
+                  />
+                  <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+                    {BUJO_ICONS.filter(icon => 
+                      icon.name.toLowerCase().includes(iconSearch.toLowerCase()) || 
+                      icon.tooltip.toLowerCase().includes(iconSearch.toLowerCase())
+                    ).map(icon => (
+                      <button
+                        key={icon.emoji}
+                        type="button"
+                        onClick={() => {
+                          setRapidIcon(icon.emoji);
+                          setShowIconDropdown(false);
+                          setIconSearch('');
+                        }}
+                        className="w-7 h-7 flex items-center justify-center rounded hover:bg-zinc-150 dark:hover:bg-white/5 transition-all text-sm"
+                      >
+                        {icon.emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Date Input */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Data</label>
+              <input
+                type="date"
+                value={rapidDate}
+                onChange={(e) => setRapidDate(e.target.value)}
+                className="w-full px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 text-xs text-bujo-text focus:outline-none focus:border-bujo-highlight cursor-pointer"
+              />
+            </div>
+
+            {/* Time Input */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Hora</label>
+              <input
+                type="time"
+                value={rapidTime}
+                onChange={(e) => setRapidTime(e.target.value)}
+                className="w-full px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 text-xs text-bujo-text focus:outline-none focus:border-bujo-highlight cursor-pointer"
+              />
+            </div>
           </div>
 
           {renderRealTimeSuggestions(rapidInput, rapidType, createRapidTaskWithSuggestions)}

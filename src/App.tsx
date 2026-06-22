@@ -70,6 +70,12 @@ function AppContent() {
     handleSaveRapidLog,
     renderRealTimeSuggestions,
     createRapidTaskWithSuggestions,
+    rapidIcon,
+    setRapidIcon,
+    rapidDate,
+    setRapidDate,
+    rapidTime,
+    setRapidTime,
     focoActive,
     expandedTaskId,
     setExpandedTaskId,
@@ -267,6 +273,12 @@ function AppContent() {
           handleSaveRapidLog={handleSaveRapidLog}
           renderRealTimeSuggestions={renderRealTimeSuggestions}
           createRapidTaskWithSuggestions={createRapidTaskWithSuggestions}
+          rapidIcon={rapidIcon}
+          setRapidIcon={setRapidIcon}
+          rapidDate={rapidDate}
+          setRapidDate={setRapidDate}
+          rapidTime={rapidTime}
+          setRapidTime={setRapidTime}
         />
       )}
 

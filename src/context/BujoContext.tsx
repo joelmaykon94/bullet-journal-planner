@@ -114,6 +114,7 @@ export interface BujoContextType {
   handleAddDream: (title: string, category: string, icon?: string, description?: string) => void;
   handleToggleDreamConquered: (id: string) => void;
   handleDeleteDream: (id: string) => void;
+  handleReorderDreams: (activeId: string, overId: string) => void;
 
   // Settings
   settings: BujoSettings;
@@ -296,6 +297,10 @@ export interface BujoContextType {
   setRapidTime: React.Dispatch<React.SetStateAction<string>>;
   rapidPriority: boolean;
   setRapidPriority: React.Dispatch<React.SetStateAction<boolean>>;
+  rapidIcon: string;
+  setRapidIcon: React.Dispatch<React.SetStateAction<string>>;
+  rapidDate: string;
+  setRapidDate: React.Dispatch<React.SetStateAction<string>>;
   showRapidLog: boolean;
   setShowRapidLog: React.Dispatch<React.SetStateAction<boolean>>;
   showAutocomplete: boolean;
@@ -1313,6 +1318,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const [rapidType, setRapidType] = useState<'task' | 'event' | 'note'>('task');
   const [rapidTime, setRapidTime] = useState<string>('');
   const [rapidPriority, setRapidPriority] = useState<boolean>(false);
+  const [rapidIcon, setRapidIcon] = useState<string>('');
+  const [rapidDate, setRapidDate] = useState<string>(() => getLocalDateString());
   const [showRapidLog, setShowRapidLog] = useState<boolean>(false);
 
   const [showAutocomplete, setShowAutocomplete] = useState<boolean>(false);
@@ -1511,17 +1518,19 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       type: rapidType,
       status: 'open',
       content: cleanContent,
-      date: getLocalDateString(),
+      date: rapidDate || getLocalDateString(),
       time: rapidTime || undefined,
       priority: rapidPriority,
-      subtasks: rapidType === 'task' ? extractedSubtasks : undefined
+      subtasks: rapidType === 'task' ? extractedSubtasks : undefined,
+      icon: rapidIcon || (rapidType === 'task' ? '🎯' : undefined)
     };
 
     setItems(prev => [newItem, ...prev]);
     setRapidText('');
     setRapidTime('');
     setRapidPriority(false);
-    setShowRapidLog(false);
+    setRapidIcon('');
+    setRapidDate(getLocalDateString());
     showToast('Entrada salva com sucesso!');
   };
 
@@ -1893,7 +1902,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       date: dateStr,
       time: time || undefined,
       subtasks: type === 'task' ? extractedSubtasks : undefined,
-      icon,
+      icon: icon || (type === 'task' ? '🎯' : undefined),
       energy: type === 'task' ? energy : undefined,
       complexity: type === 'task' ? complexity : undefined,
       executionTime: type === 'task' ? executionTime : undefined
@@ -2389,6 +2398,10 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       setRapidTime,
       rapidPriority,
       setRapidPriority,
+      rapidIcon,
+      setRapidIcon,
+      rapidDate,
+      setRapidDate,
       showRapidLog,
       setShowRapidLog,
       showAutocomplete,
