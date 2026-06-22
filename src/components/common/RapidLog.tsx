@@ -36,6 +36,7 @@ export const RapidLogModal = ({
   handleSaveRapidLog,
   renderRealTimeSuggestions,
   createRapidTaskWithSuggestions
+}: RapidLogModalProps) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && showRapidLog) {
