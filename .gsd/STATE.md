@@ -5,16 +5,17 @@ updated: 2026-06-22T20:42:00Z
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 16 - Drag-and-Drop Reordering for Dreams and Achievements
+**Phase:** 17 - Close Modals on Escape Key Press
 **Status:** complete
 
 ## Last Action
 
-Completed Phase 16. Enabled drag-and-drop reordering for dreams and achievements in both DreamBoardTab and IndexTab (Objetivos de Hoje card) with instant synchronization and localStorage persistence.
+Completed Phase 17. Integrated Escape keydown event listeners on all modal and popover overlays inside the application, ensuring a seamless user experience when closing dialogs via keyboard.
 
 ## Next Steps
 
 Awaiting user feedback.
+
 
 
 ## Active Decisions

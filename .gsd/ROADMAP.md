@@ -6,7 +6,7 @@ updated: 2026-06-16T11:20:00Z
 
 # Roadmap
 
-> **Current Phase:** 16 - Drag-and-Drop Reordering for Dreams and Achievements
+> **Current Phase:** 17 - Close Modals on Escape Key Press
 > **Status:** ✅ Complete
 
 ## Must-Haves (from SPEC)
@@ -119,6 +119,13 @@ updated: 2026-06-16T11:20:00Z
 **Plans**:
 - [x] Plan 16.1: Drag-and-Drop Reordering for Dreams and Achievements.
 
+### Phase 17: Close Modals on Escape Key Press
+**Status**: ✅ Complete
+**Objective**: Ensure that pressing the Escape key immediately closes any open modals or dialog overlays across the application for a better keyboard user experience.
+
+**Plans**:
+- [x] Plan 17.1: Close Modals on Escape Key Press.
+
 ---
 
 ## Progress Summary
@@ -141,6 +148,7 @@ updated: 2026-06-16T11:20:00Z
 | 14    | ✅     | 2/2   | 2026-06-22 |
 | 15    | ✅     | 2/2   | 2026-06-22 |
 | 16    | ✅     | 1/1   | 2026-06-22 |
+| 17    | ✅     | 1/1   | 2026-06-22 |
 
 ---
 
@@ -153,5 +161,6 @@ updated: 2026-06-16T11:20:00Z
 | 14    | 2026-06-22 | 2026-06-22 | 1 day |
 | 15    | 2026-06-22 | 2026-06-22 | 1 day |
 | 16    | 2026-06-22 | 2026-06-22 | 1 day |
+| 17    | 2026-06-22 | 2026-06-22 | 1 day |
 
 
