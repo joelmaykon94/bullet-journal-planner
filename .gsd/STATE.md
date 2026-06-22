@@ -1,5 +1,5 @@
 ---
-updated: 2026-06-22T17:09:00Z
+updated: 2026-06-22T20:27:00Z
 ---
 
 # Project State
@@ -10,11 +10,11 @@ updated: 2026-06-22T17:09:00Z
 
 ## Last Action
 
-Completed Phase 15 including Plan 15.1 and Plan 15.2. Fixed task duplication in migration, unified delay tracking, enabled multiple direct link NLP parsing into subtasks with clean domain badges, standardized all task creation forms, kept rapid capture minimal, and fixed long text wrapping/alignment on BulletItem action buttons in the daily log. Additionally, resolved persistent background task duplication by implementing programmatic client-side and sync-merge task deduplication (`deduplicateBujoItems`).
+Completed Phase 15 including Plan 15.1 and Plan 15.2. Fixed task duplication in migration, unified delay tracking, enabled multiple direct link NLP parsing into subtasks with clean domain badges, standardized all task creation forms, kept rapid capture minimal, and fixed long text wrapping/alignment on BulletItem action buttons in the daily log. Additionally, resolved persistent background task duplication by implementing programmatic client-side and sync-merge task deduplication (`deduplicateBujoItems`), and added a highlighted visual Goals Reminder Area on the Index Tab dashboard displaying active dreams with quick-adding capability and celebration states.
 
 ## Next Steps
 
-Awaiting user feedback on task deduplication and general Phase 15.2 changes.
+Awaiting user feedback on active goals reminder area and general Phase 15.2 changes.
 
 ## Active Decisions
 
