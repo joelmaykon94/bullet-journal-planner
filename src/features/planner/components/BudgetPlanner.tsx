@@ -1,5 +1,26 @@
 import { useState, useEffect } from 'react';
-import { Target, TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Calendar, CreditCard, AlertTriangle, CheckCircle2, X, ShoppingCart, PlusCircle, Check } from 'lucide-react';
+import { 
+  Target, 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  Plus, 
+  Trash2, 
+  Calendar, 
+  CreditCard, 
+  AlertTriangle, 
+  CheckCircle2, 
+  X, 
+  ShoppingCart, 
+  PlusCircle, 
+  Check, 
+  ChevronLeft, 
+  ChevronRight, 
+  User, 
+  Folder, 
+  Tag, 
+  Edit2 
+} from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 interface BudgetItem {
@@ -10,48 +31,115 @@ interface BudgetItem {
   isPaid?: boolean;
   currentInstallment?: number;
   totalInstallments?: number;
-  date?: string;
+  date: string; // Transaction/Created Date (YYYY-MM-DD)
+  dueDate?: string; // Due Date (YYYY-MM-DD)
+  createdAt: string; // Record Creation Date (YYYY-MM-DD)
+  owner: 'Joel' | 'Larissa' | 'Maykon' | 'Geral';
+  category: 
+    | 'Dívidas' 
+    | 'Escola' 
+    | 'Veículo' 
+    | 'Internet' 
+    | 'Casa' 
+    | 'Serviços Online' 
+    | 'Saúde' 
+    | 'Alimentação' 
+    | 'Educação' 
+    | 'Lazer' 
+    | 'Vestuário' 
+    | 'Cuidados Pessoais' 
+    | 'Geral';
+  macroCategory: 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros';
 }
+
+const DEFAULT_MACRO_MAP: Record<string, 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros'> = {
+  'Dívidas': 'Investimentos/Dívidas',
+  'Escola': 'Essenciais',
+  'Veículo': 'Essenciais',
+  'Internet': 'Essenciais',
+  'Casa': 'Essenciais',
+  'Serviços Online': 'Estilo de Vida',
+  'Saúde': 'Essenciais',
+  'Alimentação': 'Essenciais',
+  'Educação': 'Essenciais',
+  'Lazer': 'Estilo de Vida',
+  'Vestuário': 'Estilo de Vida',
+  'Cuidados Pessoais': 'Estilo de Vida',
+  'Geral': 'Outros'
+};
+
+const getMacroCategoryForCategory = (cat: string): 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros' => {
+  return DEFAULT_MACRO_MAP[cat] || 'Outros';
+};
+
+const sanitizeBudgetItems = (items: any[], defaultType: 'income' | 'fixed' | 'installment' | 'arrears' | 'variable'): BudgetItem[] => {
+  const todayStr = new Date().toISOString().split('T')[0];
+  return items.map(item => ({
+    id: item.id || `budget-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+    description: item.description || '',
+    value: typeof item.value === 'number' ? item.value : parseFloat(item.value) || 0,
+    type: item.type || defaultType,
+    isPaid: !!item.isPaid,
+    currentInstallment: item.currentInstallment,
+    totalInstallments: item.totalInstallments,
+    date: item.date || todayStr,
+    dueDate: item.dueDate || undefined,
+    createdAt: item.createdAt || todayStr,
+    owner: item.owner || 'Geral',
+    category: item.category || 'Geral',
+    macroCategory: item.macroCategory || 'Outros'
+  }));
+};
+
+const DEFAULT_INCOMES: BudgetItem[] = [
+  { id: 'inc-1', description: 'Salário Base', value: 2500, type: 'income', date: '2026-06-01', createdAt: '2026-06-01', owner: 'Geral', category: 'Geral', macroCategory: 'Outros' },
+  { id: 'inc-2', description: 'Trabalho Freelancer', value: 600, type: 'income', date: '2026-06-15', createdAt: '2026-06-15', owner: 'Geral', category: 'Geral', macroCategory: 'Outros' }
+];
+
+const DEFAULT_FIXED: BudgetItem[] = [
+  { id: 'fix-1', description: 'Aluguel', value: 1000, type: 'fixed', isPaid: true, date: '2026-06-05', dueDate: '2026-06-10', createdAt: '2026-06-01', owner: 'Geral', category: 'Casa', macroCategory: 'Essenciais' },
+  { id: 'fix-2', description: 'Assinatura Internet', value: 120, type: 'fixed', isPaid: false, date: '2026-06-15', dueDate: '2026-06-20', createdAt: '2026-06-01', owner: 'Geral', category: 'Internet', macroCategory: 'Essenciais' }
+];
+
+const DEFAULT_INSTALLMENTS: BudgetItem[] = [
+  { id: 'inst-1', description: 'Parcela Notebook', value: 200, type: 'installment', isPaid: false, currentInstallment: 4, totalInstallments: 10, date: '2026-06-10', dueDate: '2026-06-15', createdAt: '2026-03-10', owner: 'Geral', category: 'Serviços Online', macroCategory: 'Estilo de Vida' }
+];
+
+const DEFAULT_DEBTS: BudgetItem[] = [
+  { id: 'deb-1', description: 'Fatura de Cartão Atrasada', value: 450, type: 'arrears', isPaid: false, date: '2026-06-01', dueDate: '2026-06-05', createdAt: '2026-06-01', owner: 'Joel', category: 'Dívidas', macroCategory: 'Investimentos/Dívidas' }
+];
+
+const DEFAULT_NEW: BudgetItem[] = [
+  { id: 'new-1', description: 'Jantar Restaurante', value: 90, type: 'variable', isPaid: true, date: '2026-06-22', createdAt: '2026-06-22', owner: 'Joel', category: 'Lazer', macroCategory: 'Estilo de Vida' }
+];
 
 export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const { items, showToast } = useBujo();
 
-  // Load local states from localStorage
+  // Load local states from localStorage with sanitization
   const [incomes, setIncomes] = useState<BudgetItem[]>(() => {
     const saved = localStorage.getItem('bujo_budget_income');
-    return saved ? JSON.parse(saved) : [
-      { id: 'inc-1', description: 'Salário Base', value: 2500, type: 'income' },
-      { id: 'inc-2', description: 'Trabalho Freelancer', value: 600, type: 'income' }
-    ];
+    return saved ? sanitizeBudgetItems(JSON.parse(saved), 'income') : DEFAULT_INCOMES;
   });
 
   const [fixedBills, setFixedBills] = useState<BudgetItem[]>(() => {
     const saved = localStorage.getItem('bujo_budget_fixed');
-    return saved ? JSON.parse(saved) : [
-      { id: 'fix-1', description: 'Aluguel', value: 1000, type: 'fixed', isPaid: true },
-      { id: 'fix-2', description: 'Assinatura Internet', value: 120, type: 'fixed', isPaid: false }
-    ];
+    return saved ? sanitizeBudgetItems(JSON.parse(saved), 'fixed') : DEFAULT_FIXED;
   });
 
   const [installments, setInstallments] = useState<BudgetItem[]>(() => {
     const saved = localStorage.getItem('bujo_budget_installments');
-    return saved ? JSON.parse(saved) : [
-      { id: 'inst-1', description: 'Parcela Notebook', value: 200, type: 'installment', isPaid: false, currentInstallment: 4, totalInstallments: 10 }
-    ];
+    return saved ? sanitizeBudgetItems(JSON.parse(saved), 'installment') : DEFAULT_INSTALLMENTS;
   });
 
   const [overdueDebts, setOverdueDebts] = useState<BudgetItem[]>(() => {
     const saved = localStorage.getItem('bujo_budget_debts');
-    return saved ? JSON.parse(saved) : [
-      { id: 'deb-1', description: 'Fatura de Cartão Atrasada', value: 450, type: 'arrears', isPaid: false }
-    ];
+    return saved ? sanitizeBudgetItems(JSON.parse(saved), 'arrears') : DEFAULT_DEBTS;
   });
 
   const [newExpenses, setNewExpenses] = useState<BudgetItem[]>(() => {
     const saved = localStorage.getItem('bujo_budget_new');
-    return saved ? JSON.parse(saved) : [
-      { id: 'new-1', description: 'Jantar Restaurante', value: 90, type: 'variable', isPaid: true }
-    ];
+    return saved ? sanitizeBudgetItems(JSON.parse(saved), 'variable') : DEFAULT_NEW;
   });
 
   // Save to localStorage effects
@@ -78,18 +166,106 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   // Tab state
   const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'fixed' | 'installment' | 'arrears' | 'variable' | 'bujo_tasks'>('overview');
 
-  // Input states for adding new entries
+  // Filtering states (Year, Month, Week, Day)
+  const [viewMode, setViewMode] = useState<'year' | 'month' | 'week' | 'day'>('month');
+  const [selectedAnchorDate, setSelectedAnchorDate] = useState<Date>(() => new Date());
+  const [filterOwner, setFilterOwner] = useState<string>('Todos');
+  const [filterMacro, setFilterMacro] = useState<string>('Todos');
+
+  // Form input states for adding new entries
   const [descInput, setDescInput] = useState('');
   const [valueInput, setValueInput] = useState('');
+  const [dateInput, setDateInput] = useState(() => new Date().toISOString().split('T')[0]);
+  const [dueDateInput, setDueDateInput] = useState('');
+  const [ownerInput, setOwnerInput] = useState<'Joel' | 'Larissa' | 'Maykon' | 'Geral'>('Geral');
+  const [categoryInput, setCategoryInput] = useState<string>('Geral');
+  const [macroCategoryInput, setMacroCategoryInput] = useState<'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros'>('Outros');
   const [currInstallment, setCurrInstallment] = useState('1');
   const [totInstallments, setTotInstallments] = useState('12');
+
+  // Inline editing states
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editDesc, setEditDesc] = useState('');
+  const [editValue, setEditValue] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editDueDate, setEditDueDate] = useState('');
+  const [editOwner, setEditOwner] = useState<'Joel' | 'Larissa' | 'Maykon' | 'Geral'>('Geral');
+  const [editCategory, setEditCategory] = useState<string>('Geral');
+  const [editMacroCategory, setEditMacroCategory] = useState<'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros'>('Outros');
+  const [editCurrInstallment, setEditCurrInstallment] = useState('1');
+  const [editTotInstallments, setEditTotInstallments] = useState('12');
+
+  // Category change wrapper to auto-select macro classification
+  const handleCategoryChange = (cat: string) => {
+    setCategoryInput(cat);
+    setMacroCategoryInput(getMacroCategoryForCategory(cat));
+  };
+
+  const handleEditCategoryChange = (cat: string) => {
+    setEditCategory(cat);
+    setEditMacroCategory(getMacroCategoryForCategory(cat));
+  };
+
+  // Date manipulation helpers
+  const getWeekRange = (d: Date): [Date, Date] => {
+    const workingDate = new Date(d);
+    const day = workingDate.getDay();
+    const diff = workingDate.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+    const start = new Date(workingDate.setDate(diff));
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return [start, end];
+  };
+
+  const handlePrevPeriod = () => {
+    setSelectedAnchorDate(prev => {
+      const d = new Date(prev);
+      if (viewMode === 'year') d.setFullYear(d.getFullYear() - 1);
+      else if (viewMode === 'month') d.setMonth(d.getMonth() - 1);
+      else if (viewMode === 'week') d.setDate(d.getDate() - 7);
+      else if (viewMode === 'day') d.setDate(d.getDate() - 1);
+      return d;
+    });
+  };
+
+  const handleNextPeriod = () => {
+    setSelectedAnchorDate(prev => {
+      const d = new Date(prev);
+      if (viewMode === 'year') d.setFullYear(d.getFullYear() + 1);
+      else if (viewMode === 'month') d.setMonth(d.getMonth() + 1);
+      else if (viewMode === 'week') d.setDate(d.getDate() + 7);
+      else if (viewMode === 'day') d.setDate(d.getDate() + 1);
+      return d;
+    });
+  };
+
+  const formatPeriodLabel = (): string => {
+    if (viewMode === 'year') {
+      return selectedAnchorDate.getFullYear().toString();
+    }
+    if (viewMode === 'month') {
+      const monthNames = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+      return `${monthNames[selectedAnchorDate.getMonth()]} de ${selectedAnchorDate.getFullYear()}`;
+    }
+    if (viewMode === 'week') {
+      const [start, end] = getWeekRange(selectedAnchorDate);
+      return `${start.getDate().toString().padStart(2, '0')}/${(start.getMonth() + 1).toString().padStart(2, '0')} a ${end.getDate().toString().padStart(2, '0')}/${(end.getMonth() + 1).toString().padStart(2, '0')}`;
+    }
+    // day mode
+    return selectedAnchorDate.toLocaleDateString('pt-BR');
+  };
 
   // Dynamic automatic parsing of completed shopping tasks from Bujo
   const parseExpenseFromTaskContent = (content: string): number => {
     const r$Match = content.match(/(?:R\$|\$)\s*(\d+(?:[.,]\d+)?)/i);
     if (r$Match) return parseFloat(r$Match[1].replace(',', '.'));
     
-    const reaisMatch = content.match(/(\d+(?:[.,]\d+)?)\s*(?:reais|reais|R$)/i);
+    const reaisMatch = content.match(/(\d+(?:[.,]\d+)?)\s*(?:reais|R$)/i);
     if (reaisMatch) return parseFloat(reaisMatch[1].replace(',', '.'));
 
     const numberMatch = content.match(/\b(\d+(?:[.,]\d+)?)\b\s*$/);
@@ -98,14 +274,9 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     return 0;
   };
 
-  const today = new Date();
-  const currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-
-  const bujoShoppingTasks = items
+  const allCompletedBujoTasks = items
     .filter(item => {
       if (item.type !== 'task' || item.status !== 'completed' || !item.date) return false;
-      if (!item.date.startsWith(currentYearMonth)) return false;
-      
       const contentLower = item.content.toLowerCase();
       return (
         contentLower.includes('comprar') ||
@@ -124,35 +295,142 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     }))
     .filter(exp => exp.value > 0);
 
-  // Calculations
-  const totalIncome = incomes.reduce((acc, curr) => acc + curr.value, 0);
-  
-  const totalFixed = fixedBills.reduce((acc, curr) => acc + curr.value, 0);
-  const totalInstallments = installments.reduce((acc, curr) => acc + curr.value, 0);
-  const totalArrears = overdueDebts.reduce((acc, curr) => acc + curr.value, 0);
-  const totalVariable = newExpenses.reduce((acc, curr) => acc + curr.value, 0);
-  const totalBujoShopping = bujoShoppingTasks.reduce((acc, curr) => acc + curr.value, 0);
+  // Period and category filtering logic
+  const filterByPeriodAndMeta = (list: BudgetItem[]): BudgetItem[] => {
+    return list.filter(item => {
+      if (!item.date) return false;
+      const itemDate = new Date(item.date + 'T00:00:00');
+      
+      let inPeriod = false;
+      if (viewMode === 'year') {
+        inPeriod = itemDate.getFullYear() === selectedAnchorDate.getFullYear();
+      } else if (viewMode === 'month') {
+        inPeriod = itemDate.getFullYear() === selectedAnchorDate.getFullYear() &&
+                   itemDate.getMonth() === selectedAnchorDate.getMonth();
+      } else if (viewMode === 'week') {
+        const [start, end] = getWeekRange(selectedAnchorDate);
+        inPeriod = itemDate >= start && itemDate <= end;
+      } else if (viewMode === 'day') {
+        inPeriod = itemDate.getFullYear() === selectedAnchorDate.getFullYear() &&
+                   itemDate.getMonth() === selectedAnchorDate.getMonth() &&
+                   itemDate.getDate() === selectedAnchorDate.getDate();
+      }
+
+      if (!inPeriod) return false;
+
+      // Filter by Owner
+      if (filterOwner !== 'Todos' && item.owner !== filterOwner) return false;
+
+      // Filter by Macro Category
+      if (filterMacro !== 'Todos' && item.macroCategory !== filterMacro) return false;
+
+      return true;
+    });
+  };
+
+  // Filtering for integrated Bujo tasks
+  const filteredBujoShopping = allCompletedBujoTasks.filter(task => {
+    const taskDate = new Date(task.date + 'T00:00:00');
+    let inPeriod = false;
+    if (viewMode === 'year') {
+      inPeriod = taskDate.getFullYear() === selectedAnchorDate.getFullYear();
+    } else if (viewMode === 'month') {
+      inPeriod = taskDate.getFullYear() === selectedAnchorDate.getFullYear() &&
+                 taskDate.getMonth() === selectedAnchorDate.getMonth();
+    } else if (viewMode === 'week') {
+      const [start, end] = getWeekRange(selectedAnchorDate);
+      inPeriod = taskDate >= start && taskDate <= end;
+    } else if (viewMode === 'day') {
+      inPeriod = taskDate.getFullYear() === selectedAnchorDate.getFullYear() &&
+                 taskDate.getMonth() === selectedAnchorDate.getMonth() &&
+                 taskDate.getDate() === selectedAnchorDate.getDate();
+    }
+
+    if (!inPeriod) return false;
+
+    // Bujo tasks default to Geral / Outros for classifications
+    if (filterOwner !== 'Todos' && filterOwner !== 'Geral') return false;
+    if (filterMacro !== 'Todos' && filterMacro !== 'Outros' && filterMacro !== 'Estilo de Vida') return false;
+
+    return true;
+  });
+
+  // Filtered lists for calculations
+  const fIncomes = filterByPeriodAndMeta(incomes);
+  const fFixed = filterByPeriodAndMeta(fixedBills);
+  const fInstallments = filterByPeriodAndMeta(installments);
+  const fArrears = filterByPeriodAndMeta(overdueDebts);
+  const fVariable = filterByPeriodAndMeta(newExpenses);
+
+  const totalIncome = fIncomes.reduce((acc, curr) => acc + curr.value, 0);
+  const totalFixed = fFixed.reduce((acc, curr) => acc + curr.value, 0);
+  const totalInstallments = fInstallments.reduce((acc, curr) => acc + curr.value, 0);
+  const totalArrears = fArrears.reduce((acc, curr) => acc + curr.value, 0);
+  const totalVariable = fVariable.reduce((acc, curr) => acc + curr.value, 0);
+  const totalBujoShopping = filteredBujoShopping.reduce((acc, curr) => acc + curr.value, 0);
 
   const totalExpenses = totalFixed + totalInstallments + totalArrears + totalVariable + totalBujoShopping;
   const currentBalance = totalIncome - totalExpenses;
 
-  // Paid vs Unpaid breakdown
-  const paidFixed = fixedBills.filter(b => b.isPaid).reduce((acc, curr) => acc + curr.value, 0);
-  const paidInstallments = installments.filter(b => b.isPaid).reduce((acc, curr) => acc + curr.value, 0);
-  const paidArrears = overdueDebts.filter(b => b.isPaid).reduce((acc, curr) => acc + curr.value, 0);
-  const paidVariable = newExpenses.filter(b => b.isPaid).reduce((acc, curr) => acc + curr.value, 0);
+  // Paid vs Unpaid details
+  const paidFixed = fFixed.filter(b => b.isPaid).reduce((acc, curr) => acc + curr.value, 0);
+  const paidInstallments = fInstallments.filter(b => b.isPaid).reduce((acc, curr) => acc + curr.value, 0);
+  const paidArrears = fArrears.filter(b => b.isPaid).reduce((acc, curr) => acc + curr.value, 0);
+  const paidVariable = fVariable.filter(b => b.isPaid).reduce((acc, curr) => acc + curr.value, 0);
 
-  const totalPaidExpenses = paidFixed + paidInstallments + paidArrears + paidVariable + totalBujoShopping; // Bujo shopping tasks are completed, so they count as paid/spent
+  const totalPaidExpenses = paidFixed + paidInstallments + paidArrears + paidVariable + totalBujoShopping; 
   const remainingToPay = totalExpenses - totalPaidExpenses;
 
-  // Percentage calculations
+  // Percentage allocations for progress bars
   const fixedPercent = totalExpenses > 0 ? Math.round((totalFixed / totalExpenses) * 100) : 0;
   const installmentsPercent = totalExpenses > 0 ? Math.round((totalInstallments / totalExpenses) * 100) : 0;
   const arrearsPercent = totalExpenses > 0 ? Math.round((totalArrears / totalExpenses) * 100) : 0;
   const variablePercent = totalExpenses > 0 ? Math.round((totalVariable / totalExpenses) * 100) : 0;
   const shoppingPercent = totalExpenses > 0 ? Math.round((totalBujoShopping / totalExpenses) * 100) : 0;
 
-  // Add Item handler
+  // Macro-category totals
+  const getMacroCategoryTotal = (macro: string): number => {
+    let sum = 0;
+    const sumList = (list: BudgetItem[]) => list.filter(item => item.macroCategory === macro).reduce((a, c) => a + c.value, 0);
+    sum += sumList(fFixed);
+    sum += sumList(fInstallments);
+    sum += sumList(fArrears);
+    sum += sumList(fVariable);
+    if (macro === 'Outros') {
+      sum += totalBujoShopping;
+    }
+    return sum;
+  };
+
+  // Category totals
+  const getCategoryTotal = (cat: string): number => {
+    let sum = 0;
+    const sumList = (list: BudgetItem[]) => list.filter(item => item.category === cat).reduce((a, c) => a + c.value, 0);
+    sum += sumList(fFixed);
+    sum += sumList(fInstallments);
+    sum += sumList(fArrears);
+    sum += sumList(fVariable);
+    if (cat === 'Geral') {
+      sum += totalBujoShopping;
+    }
+    return sum;
+  };
+
+  // Owner totals
+  const getOwnerTotal = (owner: string): number => {
+    let sum = 0;
+    const sumList = (list: BudgetItem[]) => list.filter(item => item.owner === owner).reduce((a, c) => a + c.value, 0);
+    sum += sumList(fFixed);
+    sum += sumList(fInstallments);
+    sum += sumList(fArrears);
+    sum += sumList(fVariable);
+    if (owner === 'Geral') {
+      sum += totalBujoShopping;
+    }
+    return sum;
+  };
+
+  // Handlers for lists
   const handleAddNewItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!descInput.trim() || !valueInput.trim()) return;
@@ -165,7 +443,13 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
       description: descInput.trim(),
       value: val,
       type: activeTab as any,
-      isPaid: false
+      isPaid: false,
+      date: dateInput,
+      dueDate: dueDateInput || undefined,
+      createdAt: new Date().toISOString().split('T')[0],
+      owner: ownerInput,
+      category: categoryInput as any,
+      macroCategory: macroCategoryInput
     };
 
     if (activeTab === 'installment') {
@@ -185,14 +469,71 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
       setNewExpenses(prev => [...prev, newItem]);
     }
 
+    // Reset inputs
     setDescInput('');
     setValueInput('');
+    setDateInput(new Date().toISOString().split('T')[0]);
+    setDueDateInput('');
+    setOwnerInput('Geral');
+    setCategoryInput('Geral');
+    setMacroCategoryInput('Outros');
     setCurrInstallment('1');
     setTotInstallments('12');
     showToast('💰 Item adicionado ao orçamento!');
   };
 
-  // Toggle paid state
+  const handleStartEdit = (item: BudgetItem) => {
+    setEditingItemId(item.id);
+    setEditDesc(item.description);
+    setEditValue(item.value.toString());
+    setEditDate(item.date);
+    setEditDueDate(item.dueDate || '');
+    setEditOwner(item.owner);
+    setEditCategory(item.category);
+    setEditMacroCategory(item.macroCategory);
+    setEditCurrInstallment((item.currentInstallment || 1).toString());
+    setEditTotInstallments((item.totalInstallments || 12).toString());
+  };
+
+  const handleSaveEdit = (e: React.FormEvent, type: string) => {
+    e.preventDefault();
+    if (!editDesc.trim() || !editValue.trim()) return;
+
+    const val = parseFloat(editValue.replace(',', '.'));
+    if (isNaN(val)) return;
+
+    const updateList = (list: BudgetItem[]) => list.map(item => {
+      if (item.id !== editingItemId) return item;
+      
+      const updated: BudgetItem = {
+        ...item,
+        description: editDesc.trim(),
+        value: val,
+        date: editDate,
+        dueDate: editDueDate || undefined,
+        owner: editOwner,
+        category: editCategory as any,
+        macroCategory: editMacroCategory
+      };
+
+      if (type === 'installment') {
+        updated.currentInstallment = parseInt(editCurrInstallment) || 1;
+        updated.totalInstallments = parseInt(editTotInstallments) || 12;
+      }
+
+      return updated;
+    });
+
+    if (type === 'income') setIncomes(updateList);
+    else if (type === 'fixed') setFixedBills(updateList);
+    else if (type === 'installment') setInstallments(updateList);
+    else if (type === 'arrears') setOverdueDebts(updateList);
+    else if (type === 'variable') setNewExpenses(updateList);
+
+    setEditingItemId(null);
+    showToast('💾 Lançamento atualizado!');
+  };
+
   const handleTogglePaid = (id: string, type: string) => {
     const updateItem = (list: BudgetItem[]) => list.map(item => item.id === id ? { ...item, isPaid: !item.isPaid } : item);
 
@@ -204,7 +545,6 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     showToast('🔄 Status de pagamento atualizado!');
   };
 
-  // Delete item handler
   const handleDeleteItem = (id: string, type: string) => {
     if (type === 'income') setIncomes(prev => prev.filter(item => item.id !== id));
     else if (type === 'fixed') setFixedBills(prev => prev.filter(item => item.id !== id));
@@ -214,6 +554,15 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
 
     showToast('🗑️ Item removido!');
   };
+
+  const availableCategories = [
+    'Geral', 'Dívidas', 'Escola', 'Veículo', 'Internet', 'Casa', 
+    'Serviços Online', 'Saúde', 'Alimentação', 'Educação', 'Lazer', 
+    'Vestuário', 'Cuidados Pessoais'
+  ];
+
+  const availableOwners = ['Geral', 'Joel', 'Larissa', 'Maykon'];
+  const availableMacros = ['Essenciais', 'Estilo de Vida', 'Investimentos/Dívidas', 'Outros'];
 
   return (
     <div className="flex flex-col gap-4 h-full font-mono text-zinc-200">
@@ -230,7 +579,10 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
         ].map(t => (
           <button
             key={t.id}
-            onClick={() => setActiveTab(t.id as any)}
+            onClick={() => {
+              setActiveTab(t.id as any);
+              setEditingItemId(null);
+            }}
             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors border shrink-0 ${
               activeTab === t.id
                 ? 'bg-bujo-highlight text-white border-bujo-highlight shadow-sm shadow-bujo-highlight/15'
@@ -246,11 +598,92 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
       <div className="flex-1 overflow-y-auto min-h-[300px] max-h-[65vh] pr-1">
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-4 animate-fade-in">
-            {/* Screen 1: Balance Header Card */}
+            {/* Filter Dashboard Header (Period selection & Date Selector) */}
+            <div className="flex flex-col md:flex-row gap-3 items-stretch justify-between p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/60 border border-zinc-250/20 select-none">
+              
+              {/* Period Selector Tabs */}
+              <div className="flex items-center gap-1.5 bg-zinc-200/10 dark:bg-black/25 p-0.5 rounded-xl border border-zinc-250/20">
+                {[
+                  { id: 'year', label: 'Ano' },
+                  { id: 'month', label: 'Mês' },
+                  { id: 'week', label: 'Semana' },
+                  { id: 'day', label: 'Dia' }
+                ].map(mode => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setViewMode(mode.id as any)}
+                    className={`px-2.5 py-1 rounded-lg text-[8.5px] font-bold uppercase transition-all cursor-pointer ${
+                      viewMode === mode.id 
+                        ? 'bg-bujo-highlight text-white shadow' 
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Date Swiper Control */}
+              <div className="flex items-center justify-between md:justify-center gap-2">
+                <button
+                  onClick={handlePrevPeriod}
+                  className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                
+                <span className="text-[10px] font-extrabold uppercase text-white min-w-[140px] text-center">
+                  {formatPeriodLabel()}
+                </span>
+
+                <button
+                  onClick={handleNextPeriod}
+                  className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Owner and Macro Filters */}
+              <div className="flex items-center gap-2.5">
+                {/* Member filter */}
+                <div className="flex flex-col gap-0.5 min-w-[80px]">
+                  <span className="text-[6.5px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Membro</span>
+                  <select
+                    value={filterOwner}
+                    onChange={(e) => setFilterOwner(e.target.value)}
+                    className="bg-zinc-200/10 dark:bg-black/35 border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
+                  >
+                    <option value="Todos">👤 Todos</option>
+                    {availableOwners.map(o => (
+                      <option key={o} value={o}>👤 {o}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Macro filter */}
+                <div className="flex flex-col gap-0.5 min-w-[100px]">
+                  <span className="text-[6.5px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Classificação</span>
+                  <select
+                    value={filterMacro}
+                    onChange={(e) => setFilterMacro(e.target.value)}
+                    className="bg-zinc-200/10 dark:bg-black/35 border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
+                  >
+                    <option value="Todos">🏷️ Todas</option>
+                    {availableMacros.map(m => (
+                      <option key={m} value={m}>🏷️ {m}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Balance Header Card */}
             <div className="relative p-5 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 border border-blue-400/20 text-white shadow-lg overflow-hidden flex flex-col gap-4 select-none">
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-6 -mt-6 blur-lg" />
               <div>
-                <span className="text-[9px] uppercase tracking-widest font-extrabold text-blue-200">Seu Saldo Mensal</span>
+                <span className="text-[9px] uppercase tracking-widest font-extrabold text-blue-200">Saldo Filtrado do Período</span>
                 <h3 className="text-2xl font-black mt-0.5 flex items-center">
                   R$ {currentBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h3>
@@ -262,7 +695,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[8px] text-blue-200 uppercase font-bold tracking-wider">Entradas</span>
-                    <span className="text-xs font-black">R$ {totalIncome}</span>
+                    <span className="text-xs font-black">R$ {totalIncome.toLocaleString('pt-BR')}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -271,15 +704,17 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[8px] text-blue-200 uppercase font-bold tracking-wider">Saídas</span>
-                    <span className="text-xs font-black">R$ {totalExpenses}</span>
+                    <span className="text-xs font-black">R$ {totalExpenses.toLocaleString('pt-BR')}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Screen 2: Expense Gauge Arc Chart */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="md:col-span-1 p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center justify-center text-center gap-2 select-none">
+            {/* Visual Gauges and Breakdowns Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+              
+              {/* Gauges Side card */}
+              <div className="md:col-span-4 p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col items-center justify-center text-center gap-2 select-none">
                 <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-extrabold">Foco Despesas</span>
                 
                 {/* Visual Gauge Component */}
@@ -292,59 +727,125 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                     style={{ transform: `rotate(${Math.min(180, Math.max(0, (totalExpenses > 0 ? (totalPaidExpenses / totalExpenses) : 0) * 180 - 45))}deg)` }}
                   />
                   <div className="z-10 flex flex-col items-center">
-                    <span className="text-xs font-black">R$ {totalExpenses}</span>
+                    <span className="text-xs font-black">R$ {totalExpenses.toLocaleString('pt-BR')}</span>
                     <span className="text-[7px] text-zinc-555 font-bold uppercase tracking-wider mt-0.5">Total Gasto</span>
                   </div>
                 </div>
                 
                 <span className="text-[8px] text-zinc-400 font-bold block mt-2">
-                  Pago: R$ {totalPaidExpenses} ({totalExpenses > 0 ? Math.round((totalPaidExpenses / totalExpenses) * 100) : 0}%)
+                  Pago: R$ {totalPaidExpenses.toLocaleString('pt-BR')} ({totalExpenses > 0 ? Math.round((totalPaidExpenses / totalExpenses) * 100) : 0}%)
                 </span>
                 {remainingToPay > 0 && (
                   <span className="text-[8px] text-amber-500 font-bold block">
-                    Pendente: R$ {remainingToPay}
+                    Pendente: R$ {remainingToPay.toLocaleString('pt-BR')}
                   </span>
                 )}
               </div>
 
-              {/* Progress categories list */}
-              <div className="md:col-span-2 p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-3">
+              {/* Macro Classifications Progress bars */}
+              <div className="md:col-span-8 p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-3">
                 <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-extrabold border-b border-white/5 pb-1">
-                  Distribuição do Orçamento
+                  Divisão por Classificação de Custos
                 </span>
                 
-                <div className="flex flex-col gap-2.5 text-[10px]">
-                  {/* Category bars */}
+                <div className="flex flex-col gap-2 text-[10px]">
                   {[
-                    { label: 'Contas Fixas', value: totalFixed, percent: fixedPercent, color: 'bg-blue-500', icon: '📅' },
-                    { label: 'Contas Parceladas', value: totalInstallments, percent: installmentsPercent, color: 'bg-orange-500', icon: '💳' },
-                    { label: 'Dívidas Atrasadas', value: totalArrears, percent: arrearsPercent, color: 'bg-red-500', icon: '⚠️' },
-                    { label: 'Contas Novas/Variáveis', value: totalVariable, percent: variablePercent, color: 'bg-emerald-500', icon: '💸' },
-                    { label: 'Compras BuJo Integradas', value: totalBujoShopping, percent: shoppingPercent, color: 'bg-purple-500', icon: '🛒' }
-                  ].map(cat => (
-                    <div key={cat.label} className="flex flex-col gap-1">
-                      <div className="flex items-center justify-between text-zinc-300 font-bold">
-                        <span className="flex items-center gap-1">
-                          <span>{cat.icon}</span> {cat.label}
-                        </span>
-                        <span>R$ {cat.value} ({cat.percent}%)</span>
+                    { key: 'Essenciais', label: 'Essenciais (Casa, Saúde, Alimentação, Educação, Veículo)', color: 'bg-emerald-500', icon: '⚡' },
+                    { key: 'Estilo de Vida', label: 'Estilo de Vida (Lazer, Cuidados, Vestuário, Serviços)', color: 'bg-blue-500', icon: '🎨' },
+                    { key: 'Investimentos/Dívidas', label: 'Investimentos/Dívidas', color: 'bg-rose-500', icon: '⚠️' },
+                    { key: 'Outros', label: 'Outros (Geral & Compras Bujo)', color: 'bg-zinc-500', icon: '🛒' }
+                  ].map(m => {
+                    const total = getMacroCategoryTotal(m.key);
+                    const percent = totalExpenses > 0 ? Math.round((total / totalExpenses) * 100) : 0;
+                    return (
+                      <div key={m.key} className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between text-zinc-300 font-bold">
+                          <span className="flex items-center gap-1">
+                            <span>{m.icon}</span> {m.key}
+                          </span>
+                          <span>R$ {total.toLocaleString('pt-BR')} ({percent}%)</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-zinc-200/10 dark:bg-white/5 overflow-hidden">
+                          <div className={`h-full rounded-full ${m.color}`} style={{ width: `${percent}%` }} />
+                        </div>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-zinc-200/10 dark:bg-white/5 overflow-hidden">
-                        <div className={`h-full rounded-full ${cat.color}`} style={{ width: `${cat.percent}%` }} />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
+            </div>
+
+            {/* Category and Member Breakdown card list */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              
+              {/* Category Breakdown (only showing categories with expenses > 0) */}
+              <div className="p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-2.5">
+                <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-extrabold border-b border-white/5 pb-1">
+                  Gasto por Categoria
+                </span>
+                <div className="flex flex-col gap-2 text-[10px] max-h-[180px] overflow-y-auto pr-1">
+                  {availableCategories
+                    .map(cat => ({ name: cat, val: getCategoryTotal(cat) }))
+                    .filter(c => c.val > 0)
+                    .map(c => {
+                      const pct = totalExpenses > 0 ? Math.round((c.val / totalExpenses) * 100) : 0;
+                      return (
+                        <div key={c.name} className="flex items-center justify-between border-b border-white/5 pb-1">
+                          <span className="text-zinc-300 font-bold flex items-center gap-1.5">
+                            <Folder className="w-3 h-3 text-bujo-highlight shrink-0" />
+                            {c.name}
+                          </span>
+                          <span className="font-extrabold">
+                            R$ {c.val.toLocaleString('pt-BR')} ({pct}%)
+                          </span>
+                        </div>
+                      );
+                    })}
+                  {availableCategories.every(cat => getCategoryTotal(cat) === 0) && (
+                    <span className="text-[9px] text-zinc-550 italic block py-4 text-center">Nenhum gasto registrado neste período</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Owner/Member Breakdown (only showing members with expenses > 0) */}
+              <div className="p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-2.5">
+                <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-extrabold border-b border-white/5 pb-1">
+                  Gasto por Membro / Responsável
+                </span>
+                <div className="flex flex-col gap-2 text-[10px] max-h-[180px] overflow-y-auto pr-1">
+                  {availableOwners
+                    .map(owner => ({ name: owner, val: getOwnerTotal(owner) }))
+                    .filter(o => o.val > 0)
+                    .map(o => {
+                      const pct = totalExpenses > 0 ? Math.round((o.val / totalExpenses) * 100) : 0;
+                      return (
+                        <div key={o.name} className="flex items-center justify-between border-b border-white/5 pb-1">
+                          <span className="text-zinc-300 font-bold flex items-center gap-1.5">
+                            <User className="w-3 h-3 text-indigo-400 shrink-0" />
+                            {o.name}
+                          </span>
+                          <span className="font-extrabold">
+                            R$ {o.val.toLocaleString('pt-BR')} ({pct}%)
+                          </span>
+                        </div>
+                      );
+                    })}
+                  {availableOwners.every(o => getOwnerTotal(o) === 0) && (
+                    <span className="text-[9px] text-zinc-555 italic block py-4 text-center">Nenhum gasto registrado neste período</span>
+                  )}
+                </div>
+              </div>
+
             </div>
 
             {/* Quick Status Info */}
             <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[9px] text-amber-500/80 leading-normal flex gap-2">
               <span className="text-xs shrink-0">💡</span>
               <p>
-                <strong>Dica Neuro-Adaptativa:</strong> Contas atrasadas (`Dívidas Atrasadas`) geram atrito cognitivo. Priorize eliminá-las primeiro para liberar dopamina e energia mental para o resto da sua semana.
+                <strong>Priorização TDAH:</strong> Custos classificados como `Investimentos/Dívidas` e `Essenciais` devem ser pagos primeiro para reduzir a ansiedade mental. Tente reservar parte dos `Ganhos` para lazer e autocuidado (`Estilo de Vida`).
               </p>
             </div>
+
           </div>
         )}
 
@@ -354,7 +855,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
             {/* Entry List */}
             <div className="flex flex-col gap-2">
               <span className="text-[9px] text-zinc-555 font-bold uppercase tracking-widest border-b border-white/5 pb-1">
-                Lançamentos cadastrados
+                Lançamentos cadastrados ({activeTab === 'income' ? 'Ganhos' : 'Custos'})
               </span>
               
               {(() => {
@@ -367,59 +868,247 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                 if (list.length === 0) {
                   return (
                     <div className="text-center py-8 text-zinc-650 italic text-[10px]">
-                      Nenhum item cadastrado nesta categoria.
+                      Nenhum lançamento cadastrado nesta categoria.
                     </div>
                   );
                 }
 
                 return (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2.5">
                     {list.map(item => (
-                      <div 
-                        key={item.id}
-                        className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
-                          item.isPaid 
-                            ? 'bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-60' 
-                            : 'bg-zinc-200/10 dark:bg-white/5 border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/30'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {activeTab !== 'income' && (
-                            <button
-                              onClick={() => handleTogglePaid(item.id, item.type)}
-                              className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border cursor-pointer transition-all ${
-                                item.isPaid 
-                                  ? 'bg-emerald-500 border-emerald-500 text-white' 
-                                  : 'border-zinc-200/40 dark:border-white/20 hover:border-emerald-500'
-                              }`}
-                            >
-                              {item.isPaid && <Check className="w-3 h-3 stroke-[3]" />}
-                            </button>
-                          )}
-                          <div className="min-w-0 flex flex-col gap-0.5">
-                            <span className={`text-xs font-bold truncate ${item.isPaid ? 'line-through text-zinc-550' : 'text-zinc-200'}`}>
-                              {item.description}
-                            </span>
-                            {item.type === 'installment' && (
-                              <span className="text-[8px] font-bold text-zinc-500">
-                                Parcela: {item.currentInstallment}/{item.totalInstallments}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span className={`text-xs font-black ${activeTab === 'income' ? 'text-emerald-400' : 'text-zinc-300'}`}>
-                            {activeTab === 'income' ? '+' : '-'} R$ {item.value}
-                          </span>
-                          <button
-                            onClick={() => handleDeleteItem(item.id, item.type)}
-                            className="p-1 text-zinc-500 hover:text-red-500 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
-                            title="Remover lançamento"
+                      <div key={item.id} className="flex flex-col">
+                        {editingItemId === item.id ? (
+                          /* Inline Editing Form */
+                          <form 
+                            onSubmit={(e) => handleSaveEdit(e, item.type)}
+                            className="p-3.5 rounded-xl border border-bujo-highlight/40 bg-zinc-950/80 space-y-3 animate-fade-in"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                            <span className="text-[8px] text-bujo-highlight font-extrabold uppercase tracking-widest block">
+                              Editar Lançamento
+                            </span>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {/* Descrição */}
+                              <div className="flex flex-col gap-0.5">
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Descrição</label>
+                                <input
+                                  type="text"
+                                  value={editDesc}
+                                  onChange={(e) => setEditDesc(e.target.value)}
+                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                />
+                              </div>
+
+                              {/* Valor */}
+                              <div className="flex flex-col gap-0.5">
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Valor (R$)</label>
+                                <input
+                                  type="text"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                />
+                              </div>
+
+                              {/* Data de Transação */}
+                              <div className="flex flex-col gap-0.5">
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Data de Criação/Lançamento</label>
+                                <input
+                                  type="date"
+                                  value={editDate}
+                                  onChange={(e) => setEditDate(e.target.value)}
+                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                />
+                              </div>
+
+                              {/* Data de Vencimento */}
+                              <div className="flex flex-col gap-0.5">
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Data de Vencimento (Opcional)</label>
+                                <input
+                                  type="date"
+                                  value={editDueDate}
+                                  onChange={(e) => setEditDueDate(e.target.value)}
+                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                />
+                              </div>
+
+                              {/* Membro */}
+                              <div className="flex flex-col gap-0.5">
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Responsável / Membro</label>
+                                <select
+                                  value={editOwner}
+                                  onChange={(e) => setEditOwner(e.target.value as any)}
+                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
+                                >
+                                  {availableOwners.map(o => (
+                                    <option key={o} value={o}>{o}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              {/* Categoria */}
+                              <div className="flex flex-col gap-0.5">
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Categoria</label>
+                                <select
+                                  value={editCategory}
+                                  onChange={(e) => handleEditCategoryChange(e.target.value)}
+                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
+                                >
+                                  {availableCategories.map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              {/* Classificação */}
+                              <div className="flex flex-col gap-0.5">
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Classificação de Custos</label>
+                                <select
+                                  value={editMacroCategory}
+                                  onChange={(e) => setEditMacroCategory(e.target.value as any)}
+                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
+                                >
+                                  {availableMacros.map(m => (
+                                    <option key={m} value={m}>{m}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              {/* Parcelas se aplicável */}
+                              {item.type === 'installment' && (
+                                <div className="flex gap-2 w-full col-span-1 sm:col-span-2">
+                                  <div className="flex-1 flex flex-col gap-0.5">
+                                    <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Parc. Atual</label>
+                                    <input
+                                      type="number"
+                                      value={editCurrInstallment}
+                                      onChange={(e) => setEditCurrInstallment(e.target.value)}
+                                      className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                    />
+                                  </div>
+                                  <div className="flex-1 flex flex-col gap-0.5">
+                                    <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Total Parc.</label>
+                                    <input
+                                      type="number"
+                                      value={editTotInstallments}
+                                      onChange={(e) => setEditTotInstallments(e.target.value)}
+                                      className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-1.5 justify-end pt-1">
+                              <button
+                                type="button"
+                                onClick={() => setEditingItemId(null)}
+                                className="px-2.5 py-1 text-[9px] bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded-lg cursor-pointer transition-colors font-bold"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-3 py-1 text-[9px] bg-bujo-highlight text-white rounded-lg cursor-pointer hover:opacity-90 transition-opacity font-bold shadow-sm shadow-bujo-highlight/10"
+                              >
+                                Salvar
+                              </button>
+                            </div>
+
+                          </form>
+                        ) : (
+                          /* Standard Item Row */
+                          <div 
+                            className={`flex flex-col p-3 rounded-xl border transition-all ${
+                              item.isPaid 
+                                ? 'bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-60' 
+                                : 'bg-zinc-200/10 dark:bg-white/5 border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/30'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                {activeTab !== 'income' && (
+                                  <button
+                                    onClick={() => handleTogglePaid(item.id, item.type)}
+                                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border cursor-pointer transition-all ${
+                                      item.isPaid 
+                                        ? 'bg-emerald-500 border-emerald-500 text-white scale-105 shadow' 
+                                        : 'border-zinc-200/40 dark:border-white/20 hover:border-emerald-500'
+                                    }`}
+                                  >
+                                    {item.isPaid && <Check className="w-3 h-3 stroke-[3]" />}
+                                  </button>
+                                )}
+                                <div className="min-w-0 flex flex-col">
+                                  <span className={`text-xs font-bold truncate ${item.isPaid ? 'line-through text-zinc-550' : 'text-zinc-150'}`}>
+                                    {item.description}
+                                  </span>
+                                  {item.type === 'installment' && (
+                                    <span className="text-[7.5px] font-bold text-zinc-550 mt-0.5">
+                                      Parcela: {item.currentInstallment}/{item.totalInstallments}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs font-black shrink-0 ${activeTab === 'income' ? 'text-emerald-400' : 'text-zinc-250'}`}>
+                                  {activeTab === 'income' ? '+' : '-'} R$ {item.value.toLocaleString('pt-BR')}
+                                </span>
+                                
+                                <button
+                                  onClick={() => handleStartEdit(item)}
+                                  className="p-1 text-zinc-500 hover:text-bujo-highlight rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                                  title="Editar lançamento"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+
+                                <button
+                                  onClick={() => handleDeleteItem(item.id, item.type)}
+                                  className="p-1 text-zinc-500 hover:text-red-500 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                                  title="Remover lançamento"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Additional metadata row (badges and dates) */}
+                            <div className="flex flex-wrap gap-1.5 items-center mt-2 pt-1.5 border-t border-zinc-250/20 dark:border-white/5 text-[7.5px] text-zinc-500 font-bold select-none">
+                              {/* Dates */}
+                              <span className="flex items-center gap-0.5">
+                                <Calendar className="w-2.5 h-2.5 text-zinc-650" /> 
+                                Criado: {item.date ? item.date.split('-').reverse().join('/') : item.createdAt.split('-').reverse().join('/')}
+                              </span>
+                              
+                              {item.dueDate && (
+                                <span className={`flex items-center gap-0.5 ${!item.isPaid && new Date(item.dueDate) < new Date() ? 'text-red-500' : ''}`}>
+                                  <Calendar className="w-2.5 h-2.5 text-zinc-650" /> 
+                                  Vencimento: {item.dueDate.split('-').reverse().join('/')}
+                                </span>
+                              )}
+
+                              <div className="flex-1" />
+
+                              {/* Owner Badge */}
+                              <span className="px-1.5 py-0.5 rounded bg-zinc-200/10 dark:bg-white/5 border border-zinc-250/20 text-zinc-450 uppercase flex items-center gap-0.5">
+                                <User className="w-2 h-2" /> {item.owner}
+                              </span>
+
+                              {/* Category Badge */}
+                              <span className="px-1.5 py-0.5 rounded bg-zinc-200/10 dark:bg-white/5 border border-zinc-250/20 text-zinc-450 uppercase flex items-center gap-0.5">
+                                <Folder className="w-2 h-2" /> {item.category}
+                              </span>
+
+                              {/* Macro badge */}
+                              <span className="px-1.5 py-0.5 rounded bg-bujo-highlight/10 text-bujo-highlight border border-bujo-highlight/25 uppercase flex items-center gap-0.5">
+                                <Tag className="w-2 h-2" /> {item.macroCategory}
+                              </span>
+
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -428,86 +1117,197 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
             </div>
 
             {/* Add New Entry Form */}
-            <form onSubmit={handleAddNewItem} className="p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-3">
-              <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-extrabold flex items-center gap-1.5">
-                <PlusCircle className="w-3.5 h-3.5 text-bujo-highlight" />
-                Adicionar Lançamento
-              </span>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Descrição</label>
-                  <input
-                    type="text"
-                    value={descInput}
-                    onChange={(e) => setDescInput(e.target.value)}
-                    placeholder="Ex: Conta de Luz, Aluguel..."
-                    className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
-                  />
-                </div>
+            {editingItemId === null && (
+              <form onSubmit={handleAddNewItem} className="p-4 rounded-2xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-3">
+                <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-extrabold flex items-center gap-1.5 border-b border-white/5 pb-1">
+                  <PlusCircle className="w-3.5 h-3.5 text-bujo-highlight" />
+                  Cadastrar Novo Lançamento
+                </span>
                 
-                <div className="flex flex-col gap-1">
-                  <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Valor (R$)</label>
-                  <input
-                    type="text"
-                    value={valueInput}
-                    onChange={(e) => setValueInput(e.target.value)}
-                    placeholder="Ex: 150.00"
-                    className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
-                  />
-                </div>
-              </div>
-
-              {activeTab === 'installment' && (
-                <div className="grid grid-cols-2 gap-3 border-t border-white/5 pt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px]">
+                  
+                  {/* Descrição */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Parcela Atual</label>
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Descrição</label>
                     <input
-                      type="number"
-                      value={currInstallment}
-                      onChange={(e) => setCurrInstallment(e.target.value)}
-                      className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      type="text"
+                      value={descInput}
+                      onChange={(e) => setDescInput(e.target.value)}
+                      placeholder="Ex: Conta de Luz, Aluguel..."
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
                     />
                   </div>
+                  
+                  {/* Valor */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Total de Parcelas</label>
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Valor (R$)</label>
                     <input
-                      type="number"
-                      value={totInstallments}
-                      onChange={(e) => setTotInstallments(e.target.value)}
-                      className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      type="text"
+                      value={valueInput}
+                      onChange={(e) => setValueInput(e.target.value)}
+                      placeholder="Ex: 150.00"
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
                     />
                   </div>
-                </div>
-              )}
 
-              <button
-                type="submit"
-                className="mt-1 px-4 py-2 bg-bujo-highlight hover:opacity-90 text-white text-[10px] font-bold rounded-xl flex items-center justify-center gap-1.5 transition-opacity cursor-pointer shadow-sm shadow-bujo-highlight/10 w-full"
-              >
-                <Plus className="w-3.5 h-3.5" /> Adicionar Lançamento
-              </button>
-            </form>
+                  {/* Data Lançamento */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Data Lançamento/Criação</label>
+                    <input
+                      type="date"
+                      value={dateInput}
+                      onChange={(e) => setDateInput(e.target.value)}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Data Vencimento */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Data Vencimento (Opcional)</label>
+                    <input
+                      type="date"
+                      value={dueDateInput}
+                      onChange={(e) => setDueDateInput(e.target.value)}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Membro */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Responsável / Membro</label>
+                    <select
+                      value={ownerInput}
+                      onChange={(e) => setOwnerInput(e.target.value as any)}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                    >
+                      {availableOwners.map(o => (
+                        <option key={o} value={o}>{o}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Categoria */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Categoria</label>
+                    <select
+                      value={categoryInput}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                    >
+                      {availableCategories.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Classificação */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Classificação de Custos</label>
+                    <select
+                      value={macroCategoryInput}
+                      onChange={(e) => setMacroCategoryInput(e.target.value as any)}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                    >
+                      {availableMacros.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {activeTab === 'installment' && (
+                  <div className="grid grid-cols-2 gap-3 border-t border-white/5 pt-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Parcela Atual</label>
+                      <input
+                        type="number"
+                        value={currInstallment}
+                        onChange={(e) => setCurrInstallment(e.target.value)}
+                        className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Total de Parcelas</label>
+                      <input
+                        type="number"
+                        value={totInstallments}
+                        onChange={(e) => setTotInstallments(e.target.value)}
+                        className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="mt-1 px-4 py-2 bg-bujo-highlight hover:opacity-90 text-white text-[10px] font-bold rounded-xl flex items-center justify-center gap-1.5 transition-opacity cursor-pointer shadow-sm shadow-bujo-highlight/10 w-full"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Adicionar Lançamento
+                </button>
+              </form>
+            )}
           </div>
         )}
 
         {/* Bujo Shopping Tasks Tab */}
         {activeTab === 'bujo_tasks' && (
           <div className="flex flex-col gap-3 animate-fade-in">
-            <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[9px] text-purple-400 leading-normal">
-              <strong>Integração Inteligente BuJo:</strong> Esta área exibe automaticamente todas as tarefas de compras/pagamentos concluídas no mês corrente no seu Diário de Foco, extraindo os valores numéricos.
+            {/* Swiper Anchor Label & Date switcher */}
+            <div className="flex flex-col md:flex-row gap-3 items-stretch justify-between p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/60 border border-zinc-250/20 select-none">
+              <div className="flex items-center gap-1.5 bg-zinc-200/10 dark:bg-black/25 p-0.5 rounded-xl border border-zinc-250/20">
+                {[
+                  { id: 'year', label: 'Ano' },
+                  { id: 'month', label: 'Mês' },
+                  { id: 'week', label: 'Semana' },
+                  { id: 'day', label: 'Dia' }
+                ].map(mode => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setViewMode(mode.id as any)}
+                    className={`px-2.5 py-1 rounded-lg text-[8.5px] font-bold uppercase transition-all cursor-pointer ${
+                      viewMode === mode.id 
+                        ? 'bg-bujo-highlight text-white shadow' 
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between md:justify-center gap-2">
+                <button
+                  onClick={handlePrevPeriod}
+                  className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-[10px] font-extrabold uppercase text-white min-w-[140px] text-center">
+                  {formatPeriodLabel()}
+                </span>
+                <button
+                  onClick={handleNextPeriod}
+                  className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[9px] text-purple-400 leading-normal">
+              <strong>Integração Inteligente BuJo:</strong> Esta área exibe automaticamente todas as tarefas de compras/pagamentos concluídas no período selecionado, extraindo valores numéricos.
             </div>
 
             <div className="flex flex-col gap-2">
-              {bujoShoppingTasks.length === 0 ? (
+              {filteredBujoShopping.length === 0 ? (
                 <div className="text-center py-8 text-zinc-650 italic text-[10px]">
-                  Nenhuma tarefa de compra concluída encontrada este mês.
+                  Nenhuma tarefa de compra concluída encontrada no período selecionado.
                 </div>
               ) : (
-                bujoShoppingTasks.map(task => (
+                filteredBujoShopping.map(task => (
                   <div 
                     key={task.id}
-                    className="flex items-center justify-between p-2.5 rounded-xl border bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-80"
+                    className="flex items-center justify-between p-2.5 rounded-xl border bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-85"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-xs">🛒</span>
@@ -516,12 +1316,12 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                           {task.description}
                         </span>
                         <span className="text-[8px] font-bold text-zinc-500">
-                          Concluído em: {task.date.split('-').reverse().slice(0, 2).join('/')}
+                          Concluído em: {task.date.split('-').reverse().join('/')}
                         </span>
                       </div>
                     </div>
                     <span className="text-xs font-black text-purple-400 shrink-0">
-                      - R$ {task.value}
+                      - R$ {task.value.toLocaleString('pt-BR')}
                     </span>
                   </div>
                 ))
