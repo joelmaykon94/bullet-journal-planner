@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Sparkles, Trophy, Plus, Trash2, Award, Filter, Check } from 'lucide-react';
+import { Sparkles, Trophy, Plus, Trash2, Award, Filter, Check, GripVertical } from 'lucide-react';
+import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 import { useBujo } from '../../../context/BujoContext';
 
 export const DreamBoardTab = () => {
@@ -8,8 +11,16 @@ export const DreamBoardTab = () => {
     handleAddDream,
     handleToggleDreamConquered,
     handleDeleteDream,
+    handleReorderDreams,
     askConfirmation
   } = useBujo();
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      handleReorderDreams(active.id as string, over.id as string);
+    }
+  };
 
   // Local Form state
   const [title, setTitle] = useState('');
@@ -298,121 +309,131 @@ export const DreamBoardTab = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredDreams.map(dream => {
-            const isCelebrating = celebratingId === dream.id;
-            return (
-              <div
-                key={dream.id}
-                className={`p-5 rounded-3xl border flex flex-col justify-between gap-4 transition-all duration-300 relative overflow-hidden group ${
-                  dream.conquered 
-                    ? 'gold-border-glow scale-[1.01]' 
-                    : 'bg-zinc-200/15 dark:bg-white/5 border-zinc-200/30 dark:border-white/10 hover:border-zinc-350 dark:hover:border-white/20'
-                }`}
-              >
-                {/* Float Emojis Animation on Conquer */}
-                {isCelebrating && (
-                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-10">
-                    <span className="absolute text-2xl animate-float-1 left-[15%] bottom-0">✨</span>
-                    <span className="absolute text-2xl animate-float-2 left-[35%] bottom-0">🏆</span>
-                    <span className="absolute text-2xl animate-float-3 left-[55%] bottom-0">🎉</span>
-                    <span className="absolute text-2xl animate-float-4 left-[75%] bottom-0">🌟</span>
-                    <span className="absolute text-2xl animate-float-5 left-[45%] bottom-0">❤️</span>
-                  </div>
-                )}
-
-                <div className="space-y-3 relative z-2">
-                  <div className="flex items-start justify-between gap-2">
-                    {/* Emoji Avatar */}
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow-inner ${
-                      dream.conquered
-                        ? 'bg-amber-500/25 border border-amber-500/30'
-                        : 'bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/20 dark:border-white/5'
-                    }`}>
-                      {dream.icon || '🏆'}
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase select-none ${
-                        dream.conquered
-                          ? 'bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/20'
-                          : 'bg-zinc-200/60 dark:bg-white/10 text-zinc-500 dark:text-zinc-400'
-                      }`}>
-                        {dream.category}
-                      </span>
-
-                      <button
-                        onClick={() => {
-                          askConfirmation({
-                            title: 'Remover Sonho?',
-                            message: `Deseja realmente remover o sonho "${dream.title}" do seu Quadro dos Sonhos?`,
-                            confirmText: 'Remover',
-                            cancelText: 'Cancelar',
-                            isDanger: true,
-                            onConfirm: () => {
-                              handleDeleteDream(dream.id);
-                            }
-                          });
-                        }}
-                        className="p-1.5 rounded-lg text-zinc-500 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                        title="Remover sonho"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <h4 className={`text-base font-bold tracking-tight break-words ${
-                      dream.conquered ? 'text-amber-600 dark:text-amber-400' : 'text-bujo-text'
-                    }`}>
-                      {dream.title}
-                    </h4>
-                    {dream.description && (
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-3 leading-relaxed break-words">
-                        {dream.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-zinc-200/40 dark:border-white/5 flex items-center justify-between gap-3 relative z-2">
-                  <div className="text-[10px] text-zinc-500 font-mono">
-                    {dream.conquered && dream.conqueredAt ? (
-                      <span className="text-amber-500 dark:text-amber-400 flex items-center gap-1">
-                        <Award className="w-3 h-3" />
-                        Conquistado em: {new Date(dream.conqueredAt + 'T00:00:00').toLocaleDateString('pt-BR')}
-                      </span>
-                    ) : (
-                      <span>Ativo</span>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => handleConquerClick(dream.id, dream.conquered)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                      dream.conquered
-                        ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20'
-                        : 'bg-zinc-200/50 dark:bg-white/10 text-bujo-text hover:bg-bujo-highlight hover:text-white border border-zinc-300/30 dark:border-white/10'
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={filteredDreams.map(d => d.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredDreams.map(dream => {
+                const isCelebrating = celebratingId === dream.id;
+                return (
+                  <SortableItem
+                    key={dream.id}
+                    id={dream.id}
+                    className={`p-5 rounded-3xl border flex flex-col justify-between gap-4 transition-all duration-300 relative overflow-hidden group ${
+                      dream.conquered 
+                        ? 'gold-border-glow scale-[1.01]' 
+                        : 'bg-zinc-200/15 dark:bg-white/5 border-zinc-200/30 dark:border-white/10 hover:border-zinc-350 dark:hover:border-white/20'
                     }`}
                   >
-                    {dream.conquered ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
-                        Conquistado!
-                      </>
-                    ) : (
-                      <>
-                        <span>Conquistar</span>
-                        <span>🏆</span>
-                      </>
+                    {/* Float Emojis Animation on Conquer */}
+                    {isCelebrating && (
+                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-10">
+                        <span className="absolute text-2xl animate-float-1 left-[15%] bottom-0">✨</span>
+                        <span className="absolute text-2xl animate-float-2 left-[35%] bottom-0">🏆</span>
+                        <span className="absolute text-2xl animate-float-3 left-[55%] bottom-0">🎉</span>
+                        <span className="absolute text-2xl animate-float-4 left-[75%] bottom-0">🌟</span>
+                        <span className="absolute text-2xl animate-float-5 left-[45%] bottom-0">❤️</span>
+                      </div>
                     )}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+
+                    <div className="space-y-3 relative z-2">
+                      <div className="flex items-start justify-between gap-2">
+                        {/* Emoji Avatar */}
+                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow-inner ${
+                          dream.conquered
+                            ? 'bg-amber-500/25 border border-amber-500/30'
+                            : 'bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/20 dark:border-white/5'
+                        }`}>
+                          {dream.icon || '🏆'}
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {/* Drag Handle */}
+                          <DragHandle id={dream.id} className="p-1 text-zinc-400/60 dark:text-zinc-500/60 hover:text-bujo-highlight dark:hover:text-bujo-highlight transition-colors">
+                            <GripVertical className="w-3.5 h-3.5" />
+                          </DragHandle>
+
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase select-none ${
+                            dream.conquered
+                              ? 'bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/20'
+                              : 'bg-zinc-200/60 dark:bg-white/10 text-zinc-500 dark:text-zinc-400'
+                          }`}>
+                            {dream.category}
+                          </span>
+
+                          <button
+                            onClick={() => {
+                              askConfirmation({
+                                title: 'Remover Sonho?',
+                                message: `Deseja realmente remover o sonho "${dream.title}" do seu Quadro dos Sonhos?`,
+                                confirmText: 'Remover',
+                                cancelText: 'Cancelar',
+                                isDanger: true,
+                                onConfirm: () => {
+                                  handleDeleteDream(dream.id);
+                                }
+                              });
+                            }}
+                            className="p-1.5 rounded-lg text-zinc-500 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                            title="Remover sonho"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <h4 className={`text-base font-bold tracking-tight break-words ${
+                          dream.conquered ? 'text-amber-600 dark:text-amber-400' : 'text-bujo-text'
+                        }`}>
+                          {dream.title}
+                        </h4>
+                        {dream.description && (
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-3 leading-relaxed break-words">
+                            {dream.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-zinc-200/40 dark:border-white/5 flex items-center justify-between gap-3 relative z-2">
+                      <div className="text-[10px] text-zinc-500 font-mono">
+                        {dream.conquered && dream.conqueredAt ? (
+                          <span className="text-amber-500 dark:text-amber-400 flex items-center gap-1">
+                            <Award className="w-3 h-3" />
+                            Conquistado em: {new Date(dream.conqueredAt + 'T00:00:00').toLocaleDateString('pt-BR')}
+                          </span>
+                        ) : (
+                          <span>Ativo</span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleConquerClick(dream.id, dream.conquered)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          dream.conquered
+                            ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20'
+                            : 'bg-zinc-200/50 dark:bg-white/10 text-bujo-text hover:bg-bujo-highlight hover:text-white border border-zinc-300/30 dark:border-white/10'
+                        }`}
+                      >
+                        {dream.conquered ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            Conquistado!
+                          </>
+                        ) : (
+                          <>
+                            <span>Conquistar</span>
+                            <span>🏆</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </SortableItem>
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
