@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2, X, GraduationCap, Zap, Activity, Shield, Plus, Award, DollarSign } from 'lucide-react';
+import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2, X, GraduationCap, Zap, Activity, Shield, Plus, Award, DollarSign, GripVertical } from 'lucide-react';
+import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 import { BudgetPlanner } from './BudgetPlanner';
 import { EnergyChart } from '../../adhd/components/EnergyChart';
 import { HabitTracker } from './HabitTracker';
@@ -40,13 +43,21 @@ export const IndexTab = () => {
     setAmbientVolume,
     dreams,
     handleAddDream,
-    handleToggleDreamConquered
+    handleToggleDreamConquered,
+    handleReorderDreams
   } = useBujo();
 
   // Modal states for dashboard cards
   const [activeModal, setActiveModal] = useState<'knowledge' | 'energy' | 'habits' | 'focus' | 'budget' | null>(null);
 
   const [newGoalText, setNewGoalText] = useState('');
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      handleReorderDreams(active.id as string, over.id as string);
+    }
+  };
   const [sessionConqueredIds, setSessionConqueredIds] = useState<string[]>([]);
 
   const handleAddQuickGoal = (e: React.FormEvent) => {
@@ -339,60 +350,72 @@ export const IndexTab = () => {
                 Nenhum objetivo ativo. Adicione um sonho para começar!
               </div>
             ) : (
-              displayedGoals.map(dream => {
-                const isConquered = dream.conquered || sessionConqueredIds.includes(dream.id);
-                // Category color gradient map
-                const cat = (dream.category || '').toLowerCase();
-                let gradient = 'from-sky-400 to-blue-600';
-                if (cat.includes('viagem')) gradient = 'from-pink-500 to-rose-600';
-                else if (cat.includes('carreira') || cat.includes('trabalho') || cat.includes('estudo')) gradient = 'from-indigo-500 to-violet-600';
-                else if (cat.includes('saúde') || cat.includes('saude') || cat.includes('esporte')) gradient = 'from-emerald-400 to-teal-600';
-                else if (cat.includes('bens') || cat.includes('dinheiro') || cat.includes('financeiro')) gradient = 'from-amber-400 to-orange-500';
+              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={displayedGoals.map(d => d.id)} strategy={verticalListSortingStrategy}>
+                  <div className="flex flex-col gap-2.5">
+                    {displayedGoals.map(dream => {
+                      const isConquered = dream.conquered || sessionConqueredIds.includes(dream.id);
+                      // Category color gradient map
+                      const cat = (dream.category || '').toLowerCase();
+                      let gradient = 'from-sky-400 to-blue-600';
+                      if (cat.includes('viagem')) gradient = 'from-pink-500 to-rose-600';
+                      else if (cat.includes('carreira') || cat.includes('trabalho') || cat.includes('estudo')) gradient = 'from-indigo-500 to-violet-600';
+                      else if (cat.includes('saúde') || cat.includes('saude') || cat.includes('esporte')) gradient = 'from-emerald-400 to-teal-600';
+                      else if (cat.includes('bens') || cat.includes('dinheiro') || cat.includes('financeiro')) gradient = 'from-amber-400 to-orange-500';
 
-                return (
-                  <div
-                    key={dream.id}
-                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
-                      isConquered
-                        ? 'bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-60'
-                        : 'bg-zinc-200/10 dark:bg-white/5 border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/30 hover:bg-zinc-200/20 dark:hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* Icon Circle */}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white bg-gradient-to-br ${gradient} shadow-sm shadow-black/10`}>
-                        <span className="text-sm">{dream.icon || '🎯'}</span>
-                      </div>
-                      
-                      {/* Text */}
-                      <div className="min-w-0 flex flex-col gap-0.5">
-                        <span className={`text-xs font-bold truncate leading-tight text-zinc-150 ${isConquered ? 'line-through text-zinc-550' : ''}`}>
-                          {dream.title}
-                        </span>
-                        <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">
-                          {dream.category || 'Geral'}
-                        </span>
-                      </div>
-                    </div>
+                      return (
+                        <SortableItem
+                          key={dream.id}
+                          id={dream.id}
+                          className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
+                            isConquered
+                              ? 'bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-60'
+                              : 'bg-zinc-200/10 dark:bg-white/5 border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/30 hover:bg-zinc-200/20 dark:hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            {/* Drag Handle */}
+                            <DragHandle id={dream.id} className="p-0.5 text-zinc-400/60 dark:text-zinc-500/60 hover:text-bujo-highlight dark:hover:text-bujo-highlight transition-colors shrink-0">
+                              <GripVertical className="w-3.5 h-3.5" />
+                            </DragHandle>
 
-                    {/* Checkbox */}
-                    <button
-                      onClick={() => handleToggleGoal(dream.id, dream.conquered)}
-                      className={`w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                        isConquered
-                          ? 'bg-bujo-highlight text-white scale-105'
-                          : 'border-2 border-zinc-200/40 dark:border-white/20 hover:border-bujo-highlight'
-                      }`}
-                    >
-                      {isConquered && (
-                        <svg className="w-3 h-3 stroke-current stroke-[3]" fill="none" viewBox="0 0 24 24">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </button>
+                            {/* Icon Circle */}
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white bg-gradient-to-br ${gradient} shadow-sm shadow-black/10`}>
+                              <span className="text-sm">{dream.icon || '🎯'}</span>
+                            </div>
+                            
+                            {/* Text */}
+                            <div className="min-w-0 flex flex-col gap-0.5 flex-1">
+                              <span className={`text-xs font-bold truncate leading-tight text-zinc-150 ${isConquered ? 'line-through text-zinc-550' : ''}`}>
+                                {dream.title}
+                              </span>
+                              <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">
+                                {dream.category || 'Geral'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Checkbox */}
+                          <button
+                            onClick={() => handleToggleGoal(dream.id, dream.conquered)}
+                            className={`w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 ml-2 ${
+                              isConquered
+                                ? 'bg-bujo-highlight text-white scale-105'
+                                : 'border-2 border-zinc-200/40 dark:border-white/20 hover:border-bujo-highlight'
+                            }`}
+                          >
+                            {isConquered && (
+                              <svg className="w-3 h-3 stroke-current stroke-[3]" fill="none" viewBox="0 0 24 24">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </button>
+                        </SortableItem>
+                      );
+                    })}
                   </div>
-                );
-              })
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </div>
