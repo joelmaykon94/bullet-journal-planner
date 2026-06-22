@@ -4,7 +4,7 @@ import {
   Search, Folder, Pin, Clock, Tag, ChevronDown, ChevronUp,
   BookOpen, Edit3, X, Inbox, AlertCircle
 } from 'lucide-react';
-import { getLinkDomain } from '../../../utils/plannerUtils';
+import { getLinkDomain, getTaskDelayInfo } from '../../../utils/plannerUtils';
 import { useBujo } from '../../../context/BujoContext';
 import { BujoItem } from '../../../types';
 import { DateInput } from '../../../components/common/DateInput';
@@ -347,10 +347,36 @@ export const SomedayMaybeTab = () => {
                   const stickyRot = getStickyRotation(item.id);
                   const stickyCol = getStickyColor(item);
                   
+                  // Calculate aging for Someday/Maybe tasks
+                  const showsAging = item.type === 'task' && !isCompleted;
+                  const delayInfo = showsAging ? getTaskDelayInfo(item.date, item.time, item.createdAt) : null;
+                  const agingClass = delayInfo ? (
+                    delayInfo.hasHourDelay ? (
+                      delayInfo.totalHours >= 48 ? 'aged-paper-3' :
+                      delayInfo.totalHours >= 24 ? 'aged-paper-2' :
+                      delayInfo.totalHours >= 6 ? 'aged-paper-1' : ''
+                    ) : (
+                      delayInfo.days >= 10 ? 'aged-paper-3' :
+                      delayInfo.days >= 5 ? 'aged-paper-2' :
+                      delayInfo.days >= 2 ? 'aged-paper-1' : ''
+                    )
+                  ) : '';
+                  const pendingBadgeClass = delayInfo ? (
+                    delayInfo.hasHourDelay ? (
+                      delayInfo.totalHours >= 48 ? 'pending-days-3' :
+                      delayInfo.totalHours >= 24 ? 'pending-days-2' :
+                      delayInfo.totalHours >= 6 ? 'pending-days-1' : ''
+                    ) : (
+                      delayInfo.days >= 10 ? 'pending-days-3' :
+                      delayInfo.days >= 5 ? 'pending-days-2' :
+                      delayInfo.days >= 2 ? 'pending-days-1' : ''
+                    )
+                  ) : '';
+                  
                   return (
                     <div
                       key={item.id}
-                      className={`relative p-4 rounded-xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:rotate-0 hover:shadow-md ${stickyRot} ${stickyCol} flex flex-col justify-between min-h-[120px] group`}
+                      className={`relative p-4 rounded-xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:rotate-0 hover:shadow-md ${stickyRot} ${stickyCol} ${agingClass} flex flex-col justify-between min-h-[120px] group`}
                     >
                       {/* Realistic Washi Tape Sticker effect */}
                       <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-12 h-3.5 bg-white/30 dark:bg-white/10 backdrop-blur-sm border-x border-zinc-200/40 rotate-1 shadow-[0_1px_2px_rgba(0,0,0,0.03)] select-none"></div>
@@ -361,6 +387,11 @@ export const SomedayMaybeTab = () => {
                           <span className="text-[8.5px] font-mono tracking-widest uppercase opacity-60">
                             {item.type === 'task' ? 'Tarefa' : item.type === 'event' ? 'Evento' : 'Nota'}
                           </span>
+                          {delayInfo && (delayInfo.hasHourDelay ? delayInfo.totalHours >= 6 : delayInfo.days >= 2) && (
+                            <span className={`px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold leading-none inline-flex items-center gap-0.5 ${pendingBadgeClass}`}>
+                              📅 {delayInfo.displayString}
+                            </span>
+                          )}
                           {item.type === 'task' && (
                             <button
                               onClick={() => handleToggleSomedayItem(item.id)}
@@ -536,8 +567,33 @@ export const SomedayMaybeTab = () => {
                       <div className="space-y-[6px] pt-1">
                         {catItems.map(item => {
                           const isCompleted = item.status === 'completed';
+                          const showsAging = item.type === 'task' && !isCompleted;
+                          const delayInfo = showsAging ? getTaskDelayInfo(item.date, item.time, item.createdAt) : null;
+                          const agingClass = delayInfo ? (
+                            delayInfo.hasHourDelay ? (
+                              delayInfo.totalHours >= 48 ? 'aged-paper-3' :
+                              delayInfo.totalHours >= 24 ? 'aged-paper-2' :
+                              delayInfo.totalHours >= 6 ? 'aged-paper-1' : ''
+                            ) : (
+                              delayInfo.days >= 10 ? 'aged-paper-3' :
+                              delayInfo.days >= 5 ? 'aged-paper-2' :
+                              delayInfo.days >= 2 ? 'aged-paper-1' : ''
+                            )
+                          ) : '';
+                          const pendingBadgeClass = delayInfo ? (
+                            delayInfo.hasHourDelay ? (
+                              delayInfo.totalHours >= 48 ? 'pending-days-3' :
+                              delayInfo.totalHours >= 24 ? 'pending-days-2' :
+                              delayInfo.totalHours >= 6 ? 'pending-days-1' : ''
+                            ) : (
+                              delayInfo.days >= 10 ? 'pending-days-3' :
+                              delayInfo.days >= 5 ? 'pending-days-2' :
+                              delayInfo.days >= 2 ? 'pending-days-1' : ''
+                            )
+                          ) : '';
+
                           return (
-                            <div key={item.id} className="flex items-start justify-between gap-1 text-[11px] group/item min-h-[18px]">
+                            <div key={item.id} className={`flex items-start justify-between gap-1 text-[11px] group/item min-h-[18px] px-1 rounded transition-colors ${agingClass}`}>
                               {/* Classic Bujo Signifiers & Content */}
                               <div className="flex items-start gap-1.5 min-w-0 flex-1">
                                 {item.type === 'task' ? (
@@ -572,27 +628,32 @@ export const SomedayMaybeTab = () => {
                                     autoFocus
                                   />
                                 ) : (
-                                  <span
-                                    onDoubleClick={() => handleStartEdit(item)}
-                                    className={`truncate cursor-text hover:text-bujo-highlight font-sans leading-tight ${
-                                      isCompleted ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-zinc-800 dark:text-zinc-300'
-                                    }`}
-                                    title="Double-click para editar"
-                                  >
-                                    {item.content}
-                                    {item.link && (
-                                      <a
-                                        href={item.link.startsWith('http') ? item.link : `https://${item.link}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="ml-1.5 inline-flex items-center gap-0.5 text-[9.5px] text-bujo-highlight hover:underline bg-bujo-highlight/10 px-1 py-0.5 rounded border border-bujo-highlight/20 align-middle font-sans font-normal"
-                                        title={item.link}
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        🔗 {getLinkDomain(item.link)}
-                                      </a>
-                                    )}
-                                  </span>
+                                    <span
+                                      onDoubleClick={() => handleStartEdit(item)}
+                                      className={`truncate cursor-text hover:text-bujo-highlight font-sans leading-tight ${
+                                        isCompleted ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-zinc-800 dark:text-zinc-300'
+                                      }`}
+                                      title="Double-click para editar"
+                                    >
+                                      {item.content}
+                                      {item.link && (
+                                        <a
+                                          href={item.link.startsWith('http') ? item.link : `https://${item.link}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="ml-1.5 inline-flex items-center gap-0.5 text-[9.5px] text-bujo-highlight hover:underline bg-bujo-highlight/10 px-1 py-0.5 rounded border border-bujo-highlight/20 align-middle font-sans font-normal"
+                                          title={item.link}
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          🔗 {getLinkDomain(item.link)}
+                                        </a>
+                                      )}
+                                      {delayInfo && (delayInfo.hasHourDelay ? delayInfo.totalHours >= 6 : delayInfo.days >= 2) && (
+                                        <span className={`ml-1.5 px-1 py-px rounded text-[8px] font-mono font-bold align-middle inline-flex items-center gap-0.5 ${pendingBadgeClass}`}>
+                                          📅 {delayInfo.displayString}
+                                        </span>
+                                      )}
+                                    </span>
                                 )}
                               </div>
 

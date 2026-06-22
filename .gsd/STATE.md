@@ -5,16 +5,16 @@ updated: 2026-06-22T15:02:00Z
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 14 - Task Links Input & Clean Domain Rendering
-**Status:** complete
+**Phase:** 15 - Migration Duplication Fix & Unified Delay Tracking
+**Status:** in_progress
 
 ## Last Action
 
-Completed Phase 14 by adding collapsible task link inputs to all feature forms (open by default in the Daily Log, closed everywhere else) and rendering clean, short domain name badges as clickable links inline instead of showing raw URL addresses.
+Created Plan 15.1 and started fixing TypeScript compilation error and implementing direct task migration to prevent duplication.
 
 ## Next Steps
 
-Review Roadmap for any further UX requirements or enhancements.
+Complete Plan 15.1 execution, commit tasks, compile, and document the results.
 
 ## Active Decisions
 

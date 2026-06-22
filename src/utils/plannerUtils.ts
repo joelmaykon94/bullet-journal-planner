@@ -264,3 +264,103 @@ export const getLinkDomain = (url?: string): string => {
   }
 };
 
+export interface TaskDelayInfo {
+  totalHours: number;
+  days: number;
+  hours: number;
+  displayString: string;
+  hasHourDelay: boolean;
+}
+
+export const getTaskDelayInfo = (itemDate: string, itemTime?: string, itemCreatedAt?: string): TaskDelayInfo => {
+  const now = new Date();
+  
+  let referenceTime: Date | null = null;
+  let hasHourDelay = false;
+
+  // 1. If it has date and time, check if scheduled time is in the past
+  if (itemDate && itemTime && itemDate !== 'someday_maybe') {
+    try {
+      const dateParts = itemDate.split('-');
+      const timeParts = itemTime.split(':');
+      if (dateParts.length === 3 && timeParts.length >= 2) {
+        const year = Number(dateParts[0]);
+        const month = Number(dateParts[1]) - 1;
+        const day = Number(dateParts[2]);
+        const hour = Number(timeParts[0]);
+        const minute = Number(timeParts[1]);
+        
+        const scheduled = new Date(year, month, day, hour, minute, 0, 0);
+        if (!isNaN(scheduled.getTime()) && now.getTime() > scheduled.getTime()) {
+          referenceTime = scheduled;
+          hasHourDelay = true;
+        }
+      }
+    } catch {
+      // Ignore parsing errors
+    }
+  }
+
+  // 2. If no valid past scheduled time with time, check createdAt or fall back to itemDate at midnight
+  if (!referenceTime) {
+    if (itemCreatedAt) {
+      const created = new Date(itemCreatedAt);
+      if (!isNaN(created.getTime())) {
+        referenceTime = created;
+      }
+    }
+    
+    if (!referenceTime && itemDate && itemDate !== 'someday_maybe') {
+      const dateParts = itemDate.split('-').map(Number);
+      if (dateParts.length === 3) {
+        referenceTime = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 0, 0, 0, 0);
+      }
+    }
+  }
+
+  if (!referenceTime) {
+    return {
+      totalHours: 0,
+      days: 0,
+      hours: 0,
+      displayString: '',
+      hasHourDelay: false
+    };
+  }
+
+  const diffMs = now.getTime() - referenceTime.getTime();
+  if (diffMs <= 0) {
+    return {
+      totalHours: 0,
+      days: 0,
+      hours: 0,
+      displayString: '',
+      hasHourDelay: false
+    };
+  }
+
+  const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+
+  let displayString = '';
+  if (hasHourDelay) {
+    if (days > 0) {
+      displayString = `${days}d ${hours}h`;
+    } else {
+      displayString = `${hours}h`;
+    }
+  } else {
+    displayString = `${days}d`;
+  }
+
+  return {
+    totalHours,
+    days,
+    hours,
+    displayString,
+    hasHourDelay
+  };
+};
+
+

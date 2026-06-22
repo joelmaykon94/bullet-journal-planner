@@ -17,7 +17,7 @@ import { Edit, Trash2, ChevronUp, ChevronDown, Check, ChevronRight, ChevronLeft,
 import { BujoItem } from '../../../types';
 import { useBujo } from '../../../context/BujoContext';
 import { BUJO_ICONS, CTX_SUGGESTIONS } from '../../../utils/constants';
-import { getTaskPendingDays, getAgingTier, getPendingBadgeClass, getLinkDomain } from '../../../utils/plannerUtils';
+import { getLinkDomain, getTaskDelayInfo } from '../../../utils/plannerUtils';
 import { DateInput } from '../../../components/common/DateInput';
 import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 
@@ -203,12 +203,32 @@ export const BulletItem = ({ item }: BulletItemProps) => {
   const hasSubtasks = item.subtasks && item.subtasks.length > 0;
   const isExpanded = expandedTaskId === item.id;
 
-  // Calculate aging for pending/migrated tasks.
-  // Migrated tasks are historical records of the same task — they carry the aging too.
-  const showsAging = item.type === 'task' && (item.status === 'open' || item.status === 'migrated');
-  const pendingDays = showsAging ? getTaskPendingDays(item.date, item.createdAt) : 0;
-  const agingClass = showsAging ? getAgingTier(pendingDays) : '';
-  const pendingBadgeClass = showsAging ? getPendingBadgeClass(pendingDays) : '';
+  // Calculate aging for tasks.
+  // Overdue status can be scheduled, open, or migrated.
+  const showsAging = item.type === 'task' && (item.status === 'open' || item.status === 'migrated' || item.status === 'scheduled');
+  const delayInfo = showsAging ? getTaskDelayInfo(item.date, item.time, item.createdAt) : null;
+  const agingClass = delayInfo ? (
+    delayInfo.hasHourDelay ? (
+      delayInfo.totalHours >= 48 ? 'aged-paper-3' :
+      delayInfo.totalHours >= 24 ? 'aged-paper-2' :
+      delayInfo.totalHours >= 6 ? 'aged-paper-1' : ''
+    ) : (
+      delayInfo.days >= 10 ? 'aged-paper-3' :
+      delayInfo.days >= 5 ? 'aged-paper-2' :
+      delayInfo.days >= 2 ? 'aged-paper-1' : ''
+    )
+  ) : '';
+  const pendingBadgeClass = delayInfo ? (
+    delayInfo.hasHourDelay ? (
+      delayInfo.totalHours >= 48 ? 'pending-days-3' :
+      delayInfo.totalHours >= 24 ? 'pending-days-2' :
+      delayInfo.totalHours >= 6 ? 'pending-days-1' : ''
+    ) : (
+      delayInfo.days >= 10 ? 'pending-days-3' :
+      delayInfo.days >= 5 ? 'pending-days-2' :
+      delayInfo.days >= 2 ? 'pending-days-1' : ''
+    )
+  ) : '';
 
   const renderContentWithTags = (content: string) => {
     const contextRegex = /(@computador|@online|@rua|@casa|@trabalhando|@mestrado|@programando|@aguardando)\b/gi;
@@ -502,9 +522,9 @@ export const BulletItem = ({ item }: BulletItemProps) => {
                       👥 Delegado: <strong className="text-bujo-highlight">{item.delegatedTo}</strong>
                     </span>
                   )}
-                  {pendingDays >= 2 && (
-                    <span className={`pending-days-badge ${pendingBadgeClass} select-none`} title={`Pendente há ${pendingDays} dias`}>
-                      📅 {pendingDays}d pendente
+                  {delayInfo && (delayInfo.hasHourDelay ? delayInfo.totalHours >= 6 : delayInfo.days >= 2) && (
+                    <span className={`pending-days-badge ${pendingBadgeClass} select-none`} title={delayInfo.hasHourDelay ? `Atrasada há ${delayInfo.displayString}` : `Pendente há ${delayInfo.days} dias`}>
+                      📅 {delayInfo.displayString} atraso
                     </span>
                   )}
                 </div>

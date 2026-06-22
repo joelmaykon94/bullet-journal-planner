@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, CheckSquare, Sparkles, AlertCircle } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { DayTasksModal } from './DayTasksModal';
-import { getLocalDateString, getTaskPendingDays } from '../../../utils/plannerUtils';
+import { getLocalDateString, getTaskDelayInfo } from '../../../utils/plannerUtils';
 
 export const WeeklyLogTab = () => {
   const {
@@ -151,13 +151,16 @@ export const WeeklyLogTab = () => {
                     {/* Content logs preview */}
                     <div className="space-y-1.5 mb-4">
                       {dayTasks.slice(0, 3).map(t => {
-                        const tPendingDays = t.type === 'task' && (t.status === 'open' || t.status === 'migrated') ? getTaskPendingDays(t.date, t.createdAt) : 0;
+                        const showsAging = t.type === 'task' && (t.status === 'open' || t.status === 'migrated' || t.status === 'scheduled');
+                        const delayInfo = showsAging ? getTaskDelayInfo(t.date, t.time, t.createdAt) : null;
+                        const isAged = delayInfo ? (delayInfo.hasHourDelay ? delayInfo.totalHours >= 24 : delayInfo.days >= 5) : false;
+                        const hasBadge = delayInfo ? (delayInfo.hasHourDelay ? delayInfo.totalHours >= 6 : delayInfo.days >= 2) : false;
                         return (
                         <div key={t.id} className="flex items-center gap-1.5 text-[10px] text-zinc-400">
-                          <CheckSquare className={`w-3 h-3 shrink-0 ${t.status === 'completed' ? 'text-emerald-500' : tPendingDays >= 5 ? 'text-amber-500' : 'text-zinc-650'}`} />
+                          <CheckSquare className={`w-3 h-3 shrink-0 ${t.status === 'completed' ? 'text-emerald-500' : isAged ? 'text-amber-500' : 'text-zinc-650'}`} />
                           <span className={`truncate ${t.status === 'completed' ? 'line-through text-zinc-600' : ''}`}>{t.content}</span>
-                          {tPendingDays >= 2 && (
-                            <span className="text-[8px] font-bold text-amber-500/80 whitespace-nowrap ml-auto shrink-0">{tPendingDays}d</span>
+                          {hasBadge && delayInfo && (
+                            <span className="text-[8px] font-bold text-amber-500/80 whitespace-nowrap ml-auto shrink-0">{delayInfo.displayString}</span>
                           )}
                         </div>
                         );

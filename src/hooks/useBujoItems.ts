@@ -89,33 +89,18 @@ export function useBujoItems(
           item.status !== 'migrated';
 
         if (isPastPending) {
-          if (!item.time) {
-            // If it has no time (only date), move it to today (so it is deleted from the previous day)
-            newItems.push({
-              ...item,
-              date: todayStr,
-              status: 'open' as const
-            });
-          } else {
-            // If it has date and time, mark the original on the previous day as migrated
-            newItems.push({
-              ...item,
-              status: 'migrated' as const
-            });
-            // Create a copy for today
-            copiesToCreate.push({
-              ...item,
-              id: `task-auto-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-              date: todayStr,
-              status: 'open' as const
-            });
-          }
+          // Move the task to today
+          newItems.push({
+            ...item,
+            date: todayStr,
+            status: item.status === 'scheduled' ? 'open' as const : item.status
+          });
         } else {
           newItems.push(item);
         }
       });
 
-      setItems([...newItems, ...copiesToCreate]);
+      setItems(newItems);
       showToast(`🔄 Auto-migração: ${pastPendingTasks.length} tarefas pendentes trazidas para hoje!`);
     };
 
@@ -711,7 +696,7 @@ export function useBujoItems(
     d.setDate(d.getDate() + 1);
     const nextDayStr = getLocalDateString(d);
 
-    // Mark current tasks as migrated
+    // Move tasks to next day
     const updatedItems = items.map(item => {
       if (
         item.date === dateStr &&
@@ -720,20 +705,16 @@ export function useBujoItems(
         item.status !== 'cancelled' &&
         item.status !== 'migrated'
       ) {
-        return { ...item, status: 'migrated' as const };
+        return { 
+          ...item, 
+          date: nextDayStr,
+          status: item.status === 'scheduled' ? 'open' as const : item.status
+        };
       }
       return item;
     });
 
-    // Duplicate tasks to next day
-    const duplicated = targetItems.map(item => ({
-      ...item,
-      id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      date: nextDayStr,
-      status: 'open' as const
-    }));
-
-    setItems([...duplicated, ...updatedItems]);
+    setItems(updatedItems);
     showToast(`${targetItems.length} tarefas migradas para amanhã (${nextDayStr.split('-').reverse().slice(0, 2).join('/')})!`);
   };
 
