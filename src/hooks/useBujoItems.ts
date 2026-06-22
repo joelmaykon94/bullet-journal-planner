@@ -112,6 +112,35 @@ export function useBujoItems(
     return () => clearInterval(intervalId);
   }, []);
 
+  // One-time session check to restore mistakenly migrated tasks from tomorrow back to today
+  useEffect(() => {
+    const todayStr = getLocalDateString();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = getLocalDateString(tomorrow);
+
+    setItems(prev => {
+      let changed = false;
+      const updated = prev.map(item => {
+        if (
+          item.type === 'task' &&
+          item.date === tomorrowStr &&
+          item.status !== 'completed' &&
+          item.status !== 'cancelled'
+        ) {
+          changed = true;
+          return { ...item, date: todayStr };
+        }
+        return item;
+      });
+      if (changed) {
+        showToast("🔄 Sucesso: Tarefas migradas por engano voltaram para hoje!");
+        return updated;
+      }
+      return prev;
+    });
+  }, []);
+
   // Handle standard log item quick save
   const handleSaveStandardInput = (
     standardInput: string,

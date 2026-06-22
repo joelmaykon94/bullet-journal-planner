@@ -39,7 +39,6 @@ export const DailyLogTab = () => {
     setStandardInput,
     handleStandardInputChange,
     handleStandardInputKeyDown,
-    migrateUncompletedTasksToNextDay,
     handleReorderItems
   } = useBujo();
 
@@ -254,13 +253,7 @@ export const DailyLogTab = () => {
             )}
           </div>
 
-          <button
-            onClick={() => migrateUncompletedTasksToNextDay(selectedDate)}
-            className="p-2.5 rounded-xl bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-            title="Migrar tarefas não concluídas para amanhã"
-          >
-            <ChevronRight className="w-3.5 h-3.5 text-bujo-highlight" /> <span className="hidden sm:inline">Migrar Pendentes</span>
-          </button>
+
           <button
             onClick={exportToPDF}
             className="p-2.5 rounded-xl bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10 text-xs font-semibold flex items-center gap-1.5 transition-colors"
