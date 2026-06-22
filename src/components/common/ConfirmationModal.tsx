@@ -5,6 +5,16 @@ import { useBujo } from '../../context/BujoContext';
 export const ConfirmationModal = () => {
   const { confirmModal, setConfirmModal } = useBujo();
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && confirmModal) {
+        setConfirmModal(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [confirmModal, setConfirmModal]);
+
   if (!confirmModal) return null;
 
   const {

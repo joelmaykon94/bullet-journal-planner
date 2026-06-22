@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Plus, X, Sparkles } from 'lucide-react';
 import { Collection } from '../../types';
 
@@ -35,7 +36,16 @@ export const RapidLogModal = ({
   handleSaveRapidLog,
   renderRealTimeSuggestions,
   createRapidTaskWithSuggestions
-}: RapidLogModalProps) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showRapidLog) {
+        setShowRapidLog(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showRapidLog, setShowRapidLog]);
+
   if (!showRapidLog) return null;
 
   return (

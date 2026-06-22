@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { X, Sparkles, Lightbulb, Zap, HelpCircle } from 'lucide-react';
 import { useBujo } from '../../context/BujoContext';
 
@@ -149,6 +150,16 @@ const helpDictionary: Record<string, HelpContent> = {
 
 export const FeatureHelpModal = () => {
   const { activeTab, showFeatureHelpModal, setShowFeatureHelpModal } = useBujo();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showFeatureHelpModal) {
+        setShowFeatureHelpModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showFeatureHelpModal, setShowFeatureHelpModal]);
 
   if (!showFeatureHelpModal) return null;
 
