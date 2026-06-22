@@ -6,7 +6,7 @@ updated: 2026-06-16T11:20:00Z
 
 # Roadmap
 
-> **Current Phase:** 15 - Migration Duplication Fix & Unified Delay Tracking
+> **Current Phase:** 16 - Drag-and-Drop Reordering for Dreams and Achievements
 > **Status:** ✅ Complete
 
 ## Must-Haves (from SPEC)
@@ -112,6 +112,13 @@ updated: 2026-06-16T11:20:00Z
 - [x] Plan 15.1: Migration Duplication Fix & Unified Delay Tracking.
 - [x] Plan 15.2: NLP Direct Link Extraction & Layout Alignment.
 
+### Phase 16: Drag-and-Drop Reordering for Dreams and Achievements
+**Status**: ✅ Complete
+**Objective**: Enable drag-and-drop reordering for dreams and achievements in both the DreamBoardTab and the IndexTab, ensuring that reordering in one view is perfectly reflected in the other.
+
+**Plans**:
+- [x] Plan 16.1: Drag-and-Drop Reordering for Dreams and Achievements.
+
 ---
 
 ## Progress Summary
@@ -133,6 +140,7 @@ updated: 2026-06-16T11:20:00Z
 | 13    | ✅     | 1/1   | 2026-06-16 |
 | 14    | ✅     | 2/2   | 2026-06-22 |
 | 15    | ✅     | 2/2   | 2026-06-22 |
+| 16    | ✅     | 1/1   | 2026-06-22 |
 
 ---
 
@@ -144,4 +152,6 @@ updated: 2026-06-16T11:20:00Z
 | 6-13  | 2026-06-16 | 2026-06-16 | 1 day |
 | 14    | 2026-06-22 | 2026-06-22 | 1 day |
 | 15    | 2026-06-22 | 2026-06-22 | 1 day |
+| 16    | 2026-06-22 | 2026-06-22 | 1 day |
+
 
