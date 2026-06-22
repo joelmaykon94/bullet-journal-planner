@@ -5,16 +5,17 @@ updated: 2026-06-22T20:42:00Z
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 17 - Close Modals on Escape Key Press
+**Phase:** 18 - Keep Rapid Capture Open & Standardize Task Creation Capabilities
 **Status:** complete
 
 ## Last Action
 
-Completed Phase 17. Integrated Escape keydown event listeners on all modal and popover overlays inside the application, ensuring a seamless user experience when closing dialogs via keyboard.
+Completed Phase 18. Updated the Rapid Capture Modal to remain open after save. Added Date, Time, and Icon selector fields to the Rapid Capture Modal. Standardized all task registration flows across standard, someday, future, and rapid capture entry points to default the task icon to 🎯 and automatically parse inline URL links into subtasks.
 
 ## Next Steps
 
 Awaiting user feedback.
+
 
 
 

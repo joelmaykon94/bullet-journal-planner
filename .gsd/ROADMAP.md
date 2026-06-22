@@ -6,7 +6,7 @@ updated: 2026-06-16T11:20:00Z
 
 # Roadmap
 
-> **Current Phase:** 17 - Close Modals on Escape Key Press
+> **Current Phase:** 18 - Keep Rapid Capture Open & Standardize Task Creation Capabilities
 > **Status:** ✅ Complete
 
 ## Must-Haves (from SPEC)
@@ -126,6 +126,13 @@ updated: 2026-06-16T11:20:00Z
 **Plans**:
 - [x] Plan 17.1: Close Modals on Escape Key Press.
 
+### Phase 18: Keep Rapid Capture Open & Standardize Task Creation Capabilities
+**Status**: ✅ Complete
+**Objective**: Keep the Rapid Capture Modal open after task save. Incorporate icon, date, and time inputs inside the Rapid Capture Modal UI. Standardize all task creation forms to support icon, date, time, and link-to-subtask parser capabilities, defaulting standard task icons to 🎯.
+
+**Plans**:
+- [x] Plan 18.1: Keep Rapid Capture Open & Standardize Task Creation Capabilities.
+
 ---
 
 ## Progress Summary
@@ -149,6 +156,7 @@ updated: 2026-06-16T11:20:00Z
 | 15    | ✅     | 2/2   | 2026-06-22 |
 | 16    | ✅     | 1/1   | 2026-06-22 |
 | 17    | ✅     | 1/1   | 2026-06-22 |
+| 18    | ✅     | 1/1   | 2026-06-22 |
 
 ---
 
@@ -162,5 +170,6 @@ updated: 2026-06-16T11:20:00Z
 | 15    | 2026-06-22 | 2026-06-22 | 1 day |
 | 16    | 2026-06-22 | 2026-06-22 | 1 day |
 | 17    | 2026-06-22 | 2026-06-22 | 1 day |
+| 18    | 2026-06-22 | 2026-06-22 | 1 day |
 
 
