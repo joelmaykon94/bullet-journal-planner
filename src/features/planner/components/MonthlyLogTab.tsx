@@ -4,7 +4,7 @@ import { useBujo } from '../../../context/BujoContext';
 import { DayTasksModal } from './DayTasksModal';
 import { BulletItem } from './BulletItem';
 import { BUJO_ICONS } from '../../../utils/constants';
-import { getLocalDateString } from '../../../utils/plannerUtils';
+import { getLocalDateString, compareBujoItems } from '../../../utils/plannerUtils';
 import { DateInput } from '../../../components/common/DateInput';
 
 interface QuickAddFormProps {
@@ -347,7 +347,7 @@ export const MonthlyLogTab = () => {
 
 
 
-  const activeDateItems = items.filter(item => item.date === activeCalendarDate);
+  const activeDateItems = items.filter(item => item.date === activeCalendarDate).sort(compareBujoItems);
   const activeDateTasks = activeDateItems.filter(item => item.type === 'task');
   const activeDateEvents = activeDateItems.filter(item => item.type === 'event');
   const activeDateNotes = activeDateItems.filter(item => item.type === 'note');
