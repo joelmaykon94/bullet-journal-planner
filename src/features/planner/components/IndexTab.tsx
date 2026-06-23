@@ -129,8 +129,8 @@ export const IndexTab = () => {
       
       {/* 1. Welcomer Banner & KPI Metrics */}
       <div className="p-4 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-4 w-full">
-        {/* Header Row */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-zinc-200/10 dark:border-white/5 pb-3">
+        {/* Header Row - Text stacked above metrics cards */}
+        <div className="flex flex-col items-start gap-3 border-b border-zinc-200/10 dark:border-white/5 pb-3 w-full">
           <div className="flex flex-col gap-1 min-w-0">
             <span className="text-[9px] uppercase font-bold text-bujo-highlight tracking-widest leading-none">
               Central de Foco Neuro-Adaptativa
@@ -141,7 +141,7 @@ export const IndexTab = () => {
           </div>
 
           {/* Compact Metrics Row */}
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap w-full">
             {/* Carga Cognitiva */}
             <div 
               id="tutorial-cognitive-load"
