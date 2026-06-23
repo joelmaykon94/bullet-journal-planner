@@ -36,6 +36,24 @@ export const Sidebar = () => {
         </button>
 
         <button
+          id="sidebar-tab-daily_spread"
+          onClick={() => {
+            const today = getLocalDateString();
+            setSelectedDate(today);
+            setStandardDate(today);
+            setActiveTab('daily_spread');
+          }}
+          className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'daily_spread' 
+              ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
+              : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
+          }`}
+        >
+          <Calendar className="w-3.5 h-3.5" />
+          <span>Agenda Diária</span>
+        </button>
+
+        <button
           id="sidebar-tab-daily_log"
           onClick={() => {
             const today = getLocalDateString();
@@ -77,24 +95,6 @@ export const Sidebar = () => {
         >
           <CalendarDays className="w-3.5 h-3.5" />
           <span>Log Mensal</span>
-        </button>
-
-        <button
-          id="sidebar-tab-daily_spread"
-          onClick={() => {
-            const today = getLocalDateString();
-            setSelectedDate(today);
-            setStandardDate(today);
-            setActiveTab('daily_spread');
-          }}
-          className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'daily_spread' 
-              ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
-              : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
-          }`}
-        >
-          <Calendar className="w-3.5 h-3.5" />
-          <span>Agenda Diária</span>
         </button>
 
         <button
