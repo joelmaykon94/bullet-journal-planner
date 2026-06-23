@@ -225,6 +225,44 @@ export const extractLinksFromText = (text: string): ParsedTaskLinks => {
   };
 };
 
+export const compareBujoItems = (a: BujoItem, b: BujoItem): number => {
+  // 1. Check if they have a date
+  const aHasDate = !!a.date;
+  const bHasDate = !!b.date;
+  
+  if (!aHasDate && bHasDate) return -1; // No date first
+  if (aHasDate && !bHasDate) return 1;
+  
+  // 2. Check if they have a time
+  const aHasTime = !!a.time;
+  const bHasTime = !!b.time;
+  
+  if (!aHasTime && bHasTime) return -1; // No time first
+  if (aHasTime && !bHasTime) return 1;
+  
+  // 3. If both have date and time, compare times chronologically
+  if (aHasDate && bHasDate && aHasTime && bHasTime) {
+    if (a.date !== b.date) {
+      return a.date.localeCompare(b.date);
+    }
+    return a.time!.localeCompare(b.time!);
+  }
+  
+  // 4. If both have dates but no times, compare dates chronologically
+  if (aHasDate && bHasDate && !aHasTime && !bHasTime) {
+    if (a.date !== b.date) {
+      return a.date.localeCompare(b.date);
+    }
+  }
+  
+  // 5. Fallback to createdAt (most recent first)
+  const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+  const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+  if (aTime !== bTime) return bTime - aTime;
+  
+  return b.id.localeCompare(a.id);
+};
+
 
 export interface TaskDelayInfo {
   totalHours: number;
