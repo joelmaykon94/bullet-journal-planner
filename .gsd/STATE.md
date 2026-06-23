@@ -19,6 +19,7 @@ Completed Phase 19 implementation and layout adjustments:
 - Reordered the Menu de Acesso Rápido (Quick Access Menu) items into the requested sequence: Agenda Diária, Log Semanal, Log Mensal, Finanças, Coleções, Sonhos, Ajustes, and Lixeira.
 - Allowed editing and deleting any habit (whether linked to a dream or not) inside `DreamBoardTab.tsx`. Added a "✏️" edit button next to habits, enabling inline renaming. Rendered a new "Hábitos Gerais (Sem Sonhos)" management dashboard at the bottom of the Dream Board page to edit, delete, or create unlinked habits.
 - Fixed a state updater race condition in `toggleHabitDate` within `src/hooks/useHabits.ts` which caused XP to decrement and display unchecking toasts on every click.
+- Enabled closing all remaining modals via keyboard interactions by adding event listeners for the `Escape` key (the parent dashboard card modals in `IndexTab.tsx` and the study collection creation modal in `CollectionsLibrary.tsx`).
 - Resolved TypeScript type missing signatures for `habitDreamMap` and `updateHabitDreamLink` in `BujoContextType`.
 - Validated that the production build compiles with zero errors or warnings.
 
