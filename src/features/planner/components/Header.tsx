@@ -82,12 +82,12 @@ export const Header = () => {
               {/* Global Search Trigger */}
               <button
                 onClick={() => setShowGlobalSearch(true)}
-                className="flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 hover:text-bujo-text transition-all cursor-pointer group"
+                className="flex items-center gap-2 text-xs font-bold px-5 py-2 rounded-full bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 hover:text-bujo-text transition-all cursor-pointer group"
                 title="Pesquisa Global (Ctrl+K)"
               >
-                <Search className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                <Search className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 <span className="hidden sm:inline">Pesquisar</span>
-                <div className="hidden lg:flex items-center gap-0.5 ml-1 opacity-50">
+                <div className="hidden lg:flex items-center gap-0.5 ml-1.5 opacity-50">
                   <span className="text-[8px] border border-white/20 px-1 rounded">⌘</span>
                   <span className="text-[8px] border border-white/20 px-1 rounded">K</span>
                 </div>
@@ -138,15 +138,7 @@ export const Header = () => {
                 <span className="hidden sm:inline">Instalar App</span>
               </button>
 
-              {/* Lixeira Button */}
-              <button
-                onClick={() => setActiveTab('trash')}
-                className="flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 hover:text-bujo-text transition-all cursor-pointer"
-                title="Ir para a Lixeira"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Lixeira</span>
-              </button>
+
 
 
             </>
