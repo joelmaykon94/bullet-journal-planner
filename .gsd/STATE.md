@@ -17,6 +17,7 @@ Completed Phase 19 implementation and layout adjustments:
 - Cleaned up the tutorial overlay in `TutorialOverlay.tsx` to match the new dream-linked habits behavior.
 - Unified the habits display in the Indice tab under the `🚀 Hábitos de Hoje` card, showing check-in checkmarks, legend badge references for contributing dreams, and total overall completed days.
 - Modified the flat habits list on the index tab to make the entire habit card clickable, allowing toggling the habit state by clicking anywhere on the card, and changing the card color to emerald green on completion.
+- Fixed a state updater race condition in `toggleHabitDate` within `src/hooks/useHabits.ts` which caused XP to decrement and display unchecking toasts on every click.
 - Resolved TypeScript type missing signatures for `habitDreamMap` and `updateHabitDreamLink` in `BujoContextType`.
 - Validated that the production build compiles with zero errors or warnings.
 
