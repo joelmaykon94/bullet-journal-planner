@@ -272,8 +272,13 @@ export const BulletItem = ({ item }: BulletItemProps) => {
   const renderTextAndBadges = (content: string, legacyLink?: string) => {
     const urlRegex = /(https?:\/\/[^\s,;]+)/g;
     const links: string[] = Array.from(content.match(urlRegex) || []);
-    if (legacyLink && !links.includes(legacyLink)) {
-      links.push(legacyLink);
+    if (legacyLink) {
+      const legacyUrls = legacyLink.match(urlRegex) || [legacyLink];
+      legacyUrls.forEach(url => {
+        if (!links.includes(url)) {
+          links.push(url);
+        }
+      });
     }
     const cleanContent = content.replace(urlRegex, '').replace(/[\s,;]+/g, ' ').trim();
     
