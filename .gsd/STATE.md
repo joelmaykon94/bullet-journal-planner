@@ -1,24 +1,23 @@
 ---
-updated: 2026-06-23T03:17:00Z
+updated: 2026-06-23T03:24:00Z
 ---
 
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 21 - Mostrar lista de links como badges em vez de subtarefas
+**Phase:** 22 - Ordenar as tarefas por padrão (sem horário/data primeiro)
 **Status:** completed
 
 ## Last Action
 
-Completed Phase 21 (Mostrar lista de links como badges em vez de subtarefas):
-- Removed URL-to-subtask mapping inside `handleSaveStandardInput` (standard log) and `handleSaveRapidLog` (Rapid Capture log).
-- Stored all extracted links joined with a space in the `link` property of `BujoItem` instead of generating subtasks.
-- Updated `renderTextAndBadges` in `BulletItem.tsx` to parse and display multiple links from the space-separated `link` string as individual clickable badges.
+Completed Phase 22 (Ordenar as tarefas por padrão (sem horário/data primeiro)):
+- Created `compareBujoItems` sorting comparator to group items without time/date first and sort items with date/time chronologically.
+- Used `compareBujoItems` to sort items in `DailyLogTab.tsx`, `DayTasksModal.tsx`, and `MonthlyLogTab.tsx`.
 - Verified compilation and build succeeds with zero errors.
 
 ## Next Steps
 
-Gather feedback from the user on link lists/badges formatting.
+Gather feedback from the user on default task ordering.
 
 
 
