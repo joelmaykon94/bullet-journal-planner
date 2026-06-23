@@ -377,30 +377,31 @@ export const IndexTab = () => {
                 : 0;
 
               return (
-                <div 
+                <button 
                   key={habit} 
-                  className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
+                  type="button"
+                  onClick={() => toggleHabitDate(habit, today)}
+                  className={`w-full text-left font-mono flex items-center justify-between p-2.5 rounded-2xl border transition-all cursor-pointer group select-none ${
                     isChecked
-                      ? 'bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-85'
+                      ? 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/30 dark:border-emerald-500/25 hover:bg-emerald-500/15 dark:hover:bg-emerald-950/30 hover:border-emerald-500/40'
                       : 'bg-zinc-200/10 dark:bg-white/5 border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/20 hover:bg-zinc-200/20 dark:hover:bg-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    {/* Checkbox button */}
-                    <button
-                      onClick={() => toggleHabitDate(habit, today)}
-                      className={`w-4.5 h-4.5 rounded-lg border transition-all flex items-center justify-center cursor-pointer shrink-0 ${
+                    {/* Visual Checkbox Indicator */}
+                    <div
+                      className={`w-4.5 h-4.5 rounded-lg border transition-all flex items-center justify-center shrink-0 ${
                         isChecked
-                          ? 'bg-bujo-accent border-bujo-accent text-white'
-                          : 'border-zinc-250 dark:border-white/20 hover:border-bujo-highlight'
+                          ? 'bg-emerald-500 border-emerald-500 text-white'
+                          : 'border-zinc-300 dark:border-white/20 group-hover:border-bujo-highlight'
                       }`}
                     >
                       {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                    </button>
+                    </div>
 
                     {/* Text & Legend */}
                     <div className="min-w-0 flex flex-col gap-0.5">
-                      <span className={`text-[10px] font-bold truncate leading-tight ${isChecked ? 'line-through text-zinc-550 font-normal' : 'text-zinc-150'}`}>
+                      <span className={`text-[10px] font-bold truncate leading-tight ${isChecked ? 'line-through text-zinc-400 dark:text-zinc-500 font-normal' : 'text-zinc-150'}`}>
                         {habit}
                       </span>
                       {dream ? (
@@ -420,7 +421,7 @@ export const IndexTab = () => {
                   <div className="text-[9px] font-mono font-bold text-zinc-450 shrink-0 ml-2 bg-zinc-250/30 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-zinc-200/25 dark:border-white/5">
                     {completedDaysCount} {completedDaysCount === 1 ? 'dia' : 'dias'}
                   </div>
-                </div>
+                </button>
               );
             })
           )}
