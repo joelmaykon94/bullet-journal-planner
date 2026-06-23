@@ -16,7 +16,7 @@ import {
 import { Download, Printer, ChevronLeft, ChevronRight, X, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
-import { getLocalDateString } from '../../../utils/plannerUtils';
+import { getLocalDateString, compareBujoItems } from '../../../utils/plannerUtils';
 import { BUJO_ICONS, CTX_SUGGESTIONS } from '../../../utils/constants';
 import { DateInput } from '../../../components/common/DateInput';
 import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
@@ -179,13 +179,8 @@ export const DailyLogTab = () => {
 
   const dateItems = items.filter(i => i.date === selectedDate);
   
-  // Sort items: Most recent first (based on createdAt)
-  const sortedDateItems = [...dateItems].sort((a, b) => {
-    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    if (aTime !== bTime) return bTime - aTime;
-    return b.id.localeCompare(a.id);
-  });
+  // Sort items: default order (no time/date first, then by scheduled time)
+  const sortedDateItems = [...dateItems].sort(compareBujoItems);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
