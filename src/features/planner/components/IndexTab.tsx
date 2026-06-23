@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2, X, GraduationCap, Zap, Activity, Shield, Plus, Award, DollarSign, GripVertical, Settings, Link2, Unlink, Check } from 'lucide-react';
 import { BudgetPlanner } from './BudgetPlanner';
 import { EnergyChart } from '../../adhd/components/EnergyChart';
@@ -48,6 +48,21 @@ export const IndexTab = () => {
 
   // Modal states for dashboard cards
   const [activeModal, setActiveModal] = useState<'knowledge' | 'energy' | 'budget' | null>(null);
+
+  // Close activeModal on Escape press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveModal(null);
+      }
+    };
+    if (activeModal) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeModal]);
 
   const level = Math.floor(userXp / 100) + 1;
   const currentLevelXp = userXp % 100;

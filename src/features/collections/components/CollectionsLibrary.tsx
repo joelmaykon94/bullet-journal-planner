@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   DndContext, 
   closestCenter,
@@ -79,6 +79,21 @@ export const CollectionsLibrary = () => {
     setNewColIcon('📚');
     setShowCreateCollectionModal(false);
   };
+
+  // Close create collection modal on ESC keypress
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCancelCreateCollection();
+      }
+    };
+    if (showCreateCollectionModal) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showCreateCollectionModal]);
 
   const activeCollection = collections.find(c => c.id === selectedCollectionId);
   const activeItem = activeCollection?.items.find((i: any) => i.id === selectedItemId);
