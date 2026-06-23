@@ -24,8 +24,6 @@ export const TimelineTab = () => {
 
   const today = getLocalDateString();
   const [now, setNow] = useState(new Date());
-  const [lineTop, setLineTop] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Update current time state every 15 seconds to keep the line moving
   useEffect(() => {
@@ -34,51 +32,6 @@ export const TimelineTab = () => {
     }, 15000);
     return () => clearInterval(timer);
   }, []);
-
-  const updateLinePosition = useCallback(() => {
-    if (selectedDate !== today) {
-      setLineTop(null);
-      return;
-    }
-
-    const h = now.getHours();
-    const m = now.getMinutes();
-
-    // The timeline tracks hours between 06:00 and 23:00 (6 to 23 inclusive)
-    if (h < 6 || h > 23) {
-      setLineTop(null);
-      return;
-    }
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Find the current hour row element by its data-hour attribute
-    const currentHourEl = container.querySelector(`[data-hour="${h}"]`) as HTMLDivElement | null;
-    if (currentHourEl) {
-      const offsetTop = currentHourEl.offsetTop;
-      const height = currentHourEl.offsetHeight;
-      const minuteFraction = m / 60;
-      // Calculate top position exactly relative to the current hour block container
-      const calculatedTop = offsetTop + (minuteFraction * height);
-      setLineTop(calculatedTop);
-    } else {
-      setLineTop(null);
-    }
-  }, [now, selectedDate, today]);
-
-  // Update positioning whenever relevant state changes
-  useEffect(() => {
-    // We add a tiny delay to allow the browser to complete layout paint/rendering
-    const timer = setTimeout(updateLinePosition, 50);
-    return () => clearTimeout(timer);
-  }, [updateLinePosition, items, timelineMobileView]);
-
-  // Recalculate on window resize since DOM element dimensions change
-  useEffect(() => {
-    window.addEventListener('resize', updateLinePosition);
-    return () => window.removeEventListener('resize', updateLinePosition);
-  }, [updateLinePosition]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -150,27 +103,10 @@ export const TimelineTab = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <div 
-          ref={containerRef}
           className={`lg:col-span-2 space-y-1 relative bg-zinc-200/15 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 rounded-3xl p-4 overflow-hidden ${
             timelineMobileView === 'timeline' ? 'block' : 'hidden lg:block'
           }`}
         >
-          
-          {selectedDate === today && lineTop !== null && (() => {
-            const h = now.getHours();
-            const m = now.getMinutes();
-            return (
-              <div 
-                className="absolute left-0 right-0 h-0.5 bg-bujo-highlight z-10 pointer-events-none opacity-80 transition-all duration-300 ease-out"
-                style={{ top: `${lineTop}px` }}
-              >
-                <span className="absolute right-2 -top-2 bg-bujo-highlight text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
-                  AGORA {h.toString().padStart(2, '0')}:{m.toString().padStart(2, '0')}
-                </span>
-              </div>
-            );
-          })()}
-
           {hours.map(hour => {
             const hourNum = parseInt(hour.split(':')[0]);
             const isCurrentHour = selectedDate === today && hourNum === now.getHours();
@@ -197,6 +133,17 @@ export const TimelineTab = () => {
                     : 'bg-transparent border-transparent hover:bg-zinc-200/20 dark:hover:bg-white/[0.02]'
                 }`}
               >
+                {/* Dynamic current time line indicator inside the active hour row block */}
+                {isCurrentHour && (
+                  <div 
+                    className="absolute left-0 right-0 h-0.5 bg-bujo-highlight z-10 pointer-events-none opacity-80"
+                    style={{ top: `${(now.getMinutes() / 60) * 100}%` }}
+                  >
+                    <span className="absolute right-2 -top-2 bg-bujo-highlight text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
+                      AGORA {now.getHours().toString().padStart(2, '0')}:{now.getMinutes().toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                )}
                 <div className={`text-xs font-mono w-10 ${isCurrentHour ? 'text-bujo-highlight font-bold' : 'text-zinc-400'}`}>
                   {hour}
                 </div>
