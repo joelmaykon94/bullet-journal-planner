@@ -133,6 +133,41 @@ updated: 2026-06-16T11:20:00Z
 **Plans**:
 - [x] Plan 18.1: Keep Rapid Capture Open & Standardize Task Creation Capabilities.
 
+### Phase 19: Layout Refinements & Dream-linked Habit Tracking
+**Status**: ✅ Complete
+**Objective**: Refine dashboard layout, reorder quick access items, merge goals and habit trackers, make habit cards clickable, and handle modal escape listeners.
+
+**Plans**:
+- [x] Plan 19.1: Merge goals and habit tracker into a unified dream-linked habit tracking card and refine layouts.
+
+### Phase 20: Mostrar os links no card da tarefa
+**Status**: ✅ Complete
+**Objective**: Show and parse URLs as links inside the task card component and allow inline editing of links.
+
+**Plans**:
+- [x] Plan 20.1: Mostrar os links no card da tarefa.
+
+### Phase 21: Mostrar lista de links como badges em vez de subtarefas
+**Status**: ✅ Complete
+**Objective**: Convert task links to tags/badges inside the task card instead of parsing them into multiple subtasks.
+
+**Plans**:
+- [x] Plan 21.1: Mostrar lista de links como badges em vez de subtarefas.
+
+### Phase 22: Ordenar as tarefas por padrão
+**Status**: ✅ Complete
+**Objective**: Order task views Chronologically by date/time, but display tasks without time first by default.
+
+**Plans**:
+- [x] Plan 22.1: Ordenar as tarefas por padrão.
+
+### Phase 23: Ajustar o cálculo da posição da hora na linha do tempo
+**Status**: ✅ Complete
+**Objective**: Adjust the time line current position indicator on the timeline to use element measurements and prevent misalignment in varying block heights.
+
+**Plans**:
+- [x] Plan 23.1: Ajustar o cálculo da posição da hora na linha do tempo.
+
 ---
 
 ## Progress Summary
@@ -157,6 +192,11 @@ updated: 2026-06-16T11:20:00Z
 | 16    | ✅     | 1/1   | 2026-06-22 |
 | 17    | ✅     | 1/1   | 2026-06-22 |
 | 18    | ✅     | 1/1   | 2026-06-22 |
+| 19    | ✅     | 1/1   | 2026-06-23 |
+| 20    | ✅     | 1/1   | 2026-06-23 |
+| 21    | ✅     | 1/1   | 2026-06-23 |
+| 22    | ✅     | 1/1   | 2026-06-23 |
+| 23    | ✅     | 1/1   | 2026-06-23 |
 
 ---
 
@@ -171,5 +211,4 @@ updated: 2026-06-16T11:20:00Z
 | 16    | 2026-06-22 | 2026-06-22 | 1 day |
 | 17    | 2026-06-22 | 2026-06-22 | 1 day |
 | 18    | 2026-06-22 | 2026-06-22 | 1 day |
-
-
+| 19-23 | 2026-06-23 | 2026-06-23 | 1 day |

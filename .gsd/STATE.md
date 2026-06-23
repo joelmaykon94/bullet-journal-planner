@@ -1,23 +1,24 @@
 ---
-updated: 2026-06-23T03:24:00Z
+updated: 2026-06-23T14:40:00Z
 ---
 
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 22 - Ordenar as tarefas por padrão (sem horário/data primeiro)
+**Phase:** 23 - Ajustar o cálculo da posição da hora na linha do tempo
 **Status:** completed
 
 ## Last Action
 
-Completed Phase 22 (Ordenar as tarefas por padrão (sem horário/data primeiro)):
-- Created `compareBujoItems` sorting comparator to group items without time/date first and sort items with date/time chronologically.
-- Used `compareBujoItems` to sort items in `DailyLogTab.tsx`, `DayTasksModal.tsx`, and `MonthlyLogTab.tsx`.
-- Verified compilation and build succeeds with zero errors.
+Completed Phase 23 (Ajustar o cálculo da posição da hora na linha do tempo):
+- Bound timeline container with ref, implemented layout measurement of the active hour div (`offsetTop` & `offsetHeight`) and minutes interpolation.
+- Added timer state updating every 15s to keep the indicator moving in real time.
+- Standardized highlights using state values.
+- Verified build compiles successfully.
 
 ## Next Steps
 
-Gather feedback from the user on default task ordering.
+Gather feedback from user on timeline time indicator accuracy.
 
 
 
