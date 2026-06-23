@@ -1172,11 +1172,6 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     if (!rapidText.trim()) return;
 
     const { cleanContent, links } = extractLinksFromText(rapidText.trim());
-    const extractedSubtasks = links.map((lnk, lIdx) => ({
-      id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 11)}`,
-      content: lnk,
-      completed: false
-    }));
 
     const newItem: BujoItem = {
       id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
@@ -1186,9 +1181,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       date: rapidDate || getLocalDateString(),
       time: rapidTime || undefined,
       priority: rapidPriority,
-      subtasks: rapidType === 'task' ? extractedSubtasks : undefined,
+      subtasks: undefined,
       icon: rapidIcon || (rapidType === 'task' ? '🎯' : undefined),
-      link: links.length > 0 ? links[0] : undefined
+      link: links.length > 0 ? links.join(' ') : undefined
     };
 
     setItems(prev => [newItem, ...prev]);
