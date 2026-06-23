@@ -12,11 +12,10 @@ updated: 2026-06-23T02:21:00Z
 
 Completed Phase 19 implementation and layout adjustments:
 - Removed the habits tracker modal and the associated `HabitTracker.tsx` component.
-- Implemented a daily habit success counter (`Sucesso dos Hábitos`) on the IndexTab dashboard showing current habits completed/total.
-- Configured the habits dashboard counter to navigate directly to the Dream Board when clicked, reinforcing that habits are created and managed within dreams.
 - Cleaned up the tutorial overlay in `TutorialOverlay.tsx` to match the new dream-linked habits behavior.
 - Unified the habits display in the Indice tab under the `🚀 Hábitos de Hoje` card, showing check-in checkmarks, legend badge references for contributing dreams, and total overall completed days.
 - Modified the flat habits list on the index tab to make the entire habit card clickable, allowing toggling the habit state by clicking anywhere on the card, and changing the card color to emerald green on completion.
+- Removed the "Sucesso dos Hábitos" dashboard card from the index tab, and consolidated the study (`Estudos`), energy (`Energia`), and financial planning (`Finanças`) buttons directly inside the "Central de Foco" Compact Metrics Row as peer buttons next to `Diário` and `Tutorial`.
 - Allowed editing and deleting any habit (whether linked to a dream or not) inside `DreamBoardTab.tsx`. Added a "✏️" edit button next to habits, enabling inline renaming. Rendered a new "Hábitos Gerais (Sem Sonhos)" management dashboard at the bottom of the Dream Board page to edit, delete, or create unlinked habits.
 - Fixed a state updater race condition in `toggleHabitDate` within `src/hooks/useHabits.ts` which caused XP to decrement and display unchecking toasts on every click.
 - Resolved TypeScript type missing signatures for `habitDreamMap` and `updateHabitDreamLink` in `BujoContextType`.
