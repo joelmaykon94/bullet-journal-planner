@@ -17,6 +17,7 @@ Completed Phase 19, Plan 19.1 including additional layout adjustments:
 - Removed Trash Bin (Lixeira) button from the header navbar and increased search input size.
 - Standardized "Diário Bujo" and "Tutorial" buttons to look like metrics cards peers.
 - Moved welcoming title text above metrics cards inside the Welcomer Banner for full-width horizontal alignment.
+- Merged the "Objetivos de Hoje" (Today's Goals) card and the Habit Tracker into a unified dream-linked habit tracking card, letting the user associate daily habits with their active dreams.
 
 ## Next Steps
 
