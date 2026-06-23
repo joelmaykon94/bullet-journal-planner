@@ -127,10 +127,8 @@ export const IndexTab = () => {
   return (
     <div className="flex flex-col gap-4 animate-fade-in no-print max-w-7xl mx-auto p-1 w-full h-full select-none font-mono overflow-x-hidden">
       
-      {/* Top Grid: Welcomer & Goals */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-        {/* 1. Welcomer Banner & KPI Metrics */}
-        <div className="lg:col-span-2 p-4 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-4">
+      {/* 1. Welcomer Banner & KPI Metrics */}
+      <div className="p-4 rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 flex flex-col gap-4 w-full">
         {/* Header Row */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-zinc-200/10 dark:border-white/5 pb-3">
           <div className="flex flex-col gap-1 min-w-0">
@@ -324,7 +322,7 @@ export const IndexTab = () => {
       </div>
 
       {/* Goals Card */}
-      <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 flex flex-col justify-between h-full min-h-[220px]">
+      <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 flex flex-col justify-between w-full">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-zinc-200/20 dark:border-white/5 pb-2">
             <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
@@ -433,7 +431,6 @@ export const IndexTab = () => {
           </button>
         </form>
       </div>
-    </div>
 
       {/* 2. Menu de Acesso Rápido (Full width) - Moved to top */}
       <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 w-full">
