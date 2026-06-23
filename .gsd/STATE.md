@@ -16,6 +16,7 @@ Completed Phase 19 implementation and layout adjustments:
 - Configured the habits dashboard counter to navigate directly to the Dream Board when clicked, reinforcing that habits are created and managed within dreams.
 - Cleaned up the tutorial overlay in `TutorialOverlay.tsx` to match the new dream-linked habits behavior.
 - Unified the habits display in the Indice tab under the `🚀 Hábitos de Hoje` card, showing check-in checkmarks, legend badge references for contributing dreams, and total overall completed days.
+- Modified the flat habits list on the index tab to make the entire habit card clickable, allowing toggling the habit state by clicking anywhere on the card, and changing the card color to emerald green on completion.
 - Resolved TypeScript type missing signatures for `habitDreamMap` and `updateHabitDreamLink` in `BujoContextType`.
 - Validated that the production build compiles with zero errors or warnings.
 
