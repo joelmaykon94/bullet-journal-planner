@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2, X, GraduationCap, Zap, Activity, Shield, Plus, Award, DollarSign, GripVertical } from 'lucide-react';
+import { Target, Brain, Sliders, ListChecks, LayoutGrid, CalendarDays, Sparkles, Cloud, Trash2, X, GraduationCap, Zap, Activity, Shield, Plus, Award, DollarSign, GripVertical, Settings } from 'lucide-react';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
@@ -446,6 +446,7 @@ export const IndexTab = () => {
             { tab: 'collections', label: 'Coleções', icon: ListChecks },
             { tab: 'dream_board', label: 'Sonhos', icon: Sparkles },
             { tab: 'trash', label: 'Lixeira', icon: Trash2 },
+            { tab: 'settings', label: 'Ajustes', icon: Settings },
             { tab: 'budget', label: 'Finanças', icon: DollarSign, isModal: true }
           ].map(item => {
             const Icon = item.icon;

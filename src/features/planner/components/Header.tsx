@@ -148,15 +148,7 @@ export const Header = () => {
                 <span className="hidden sm:inline">Lixeira</span>
               </button>
 
-              {/* Settings/Configurações Button */}
-              <button
-                onClick={() => setActiveTab('settings')}
-                className="flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full bg-zinc-200/40 dark:bg-white/5 border border-zinc-200/40 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/10 hover:text-bujo-text transition-all cursor-pointer"
-                title="Ajustes / Configurações"
-              >
-                <Settings className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Ajustes</span>
-              </button>
+
             </>
           )}
 
