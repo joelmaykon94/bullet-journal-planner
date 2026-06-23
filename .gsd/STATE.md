@@ -11,7 +11,7 @@ updated: 2026-06-23T14:40:00Z
 ## Last Action
 
 Completed Phase 23 (Ajustar o cálculo da posição da hora na linha do tempo):
-- Bound timeline container with ref, implemented layout measurement of the active hour div (`offsetTop` & `offsetHeight`) and minutes interpolation.
+- Positioned time line indicator directly inside the active hour card block utilizing percentage heights (e.g. `(minutes / 60) * 100%`) instead of globally querying layout element heights and offsets, bypassing rendering delay offsets.
 - Added timer state updating every 15s to keep the indicator moving in real time.
 - Standardized highlights using state values.
 - Verified build compiles successfully.
