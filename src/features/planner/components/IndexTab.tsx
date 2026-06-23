@@ -181,17 +181,7 @@ export const IndexTab = () => {
               </span>
             </button>
 
-            {/* Planejador Financeiro Button */}
-            <button
-              onClick={() => setActiveModal('budget')}
-              className="px-3.5 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-blue-500/40 hover:bg-zinc-200/20 dark:hover:bg-white/10 cursor-pointer transition-all flex flex-col justify-center text-center min-w-[95px]"
-              title="Planejador Financeiro"
-            >
-              <span className="text-[8px] font-bold text-zinc-555 dark:text-zinc-500 uppercase tracking-wider">Finanças</span>
-              <span className="text-xs font-black mt-0.5 text-blue-400 flex items-center justify-center gap-1">
-                💰 Finanças
-              </span>
-            </button>
+
 
             {/* Tutorial Button */}
             <button
@@ -477,11 +467,11 @@ export const IndexTab = () => {
             { tab: 'daily_spread', label: 'Agenda Diária', icon: Sliders },
             { tab: 'weekly_log', label: 'Log Semanal', icon: LayoutGrid },
             { tab: 'monthly_log', label: 'Log Mensal', icon: CalendarDays },
+            { tab: 'budget', label: 'Finanças', icon: DollarSign, isModal: true },
             { tab: 'collections', label: 'Coleções', icon: ListChecks },
             { tab: 'dream_board', label: 'Sonhos', icon: Sparkles },
-            { tab: 'trash', label: 'Lixeira', icon: Trash2 },
             { tab: 'settings', label: 'Ajustes', icon: Settings },
-            { tab: 'budget', label: 'Finanças', icon: DollarSign, isModal: true }
+            { tab: 'trash', label: 'Lixeira', icon: Trash2 }
           ].map(item => {
             const Icon = item.icon;
             return (
