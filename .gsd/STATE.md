@@ -1,31 +1,24 @@
 ---
-updated: 2026-06-23T02:21:00Z
+updated: 2026-06-23T03:09:00Z
 ---
 
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 19 - Removal of AI, Brain Dump, ADHD Copilot, Focus Guide, and Someday/Maybe Features
+**Phase:** 20 - Mostrar os links no card da tarefa
 **Status:** completed
 
 ## Last Action
 
-Completed Phase 19 implementation and layout adjustments:
-- Removed the habits tracker modal and the associated `HabitTracker.tsx` component.
-- Cleaned up the tutorial overlay in `TutorialOverlay.tsx` to match the new dream-linked habits behavior.
-- Unified the habits display in the Indice tab under the `🚀 Hábitos de Hoje` card, showing check-in checkmarks, legend badge references for contributing dreams, and total overall completed days.
-- Modified the flat habits list on the index tab to make the entire habit card clickable, allowing toggling the habit state by clicking anywhere on the card, and changing the card color to emerald green on completion.
-- Removed the "Sucesso dos Hábitos" dashboard card from the index tab, and consolidated the study (`Estudos`) and energy (`Energia`) buttons directly inside the "Central de Foco" Compact Metrics Row as peer buttons next to `Diário` and `Tutorial`. Removed the duplicate `Finanças` button from the header row, keeping it exclusively in the Quick Access.
-- Reordered the Menu de Acesso Rápido (Quick Access Menu) items into the requested sequence: Agenda Diária, Log Semanal, Log Mensal, Finanças, Coleções, Sonhos, Ajustes, and Lixeira.
-- Allowed editing and deleting any habit (whether linked to a dream or not) inside `DreamBoardTab.tsx`. Added a "✏️" edit button next to habits, enabling inline renaming. Rendered a new "Hábitos Gerais (Sem Sonhos)" management dashboard at the bottom of the Dream Board page to edit, delete, or create unlinked habits.
-- Fixed a state updater race condition in `toggleHabitDate` within `src/hooks/useHabits.ts` which caused XP to decrement and display unchecking toasts on every click.
-- Enabled closing all remaining modals via keyboard interactions by adding event listeners for the `Escape` key (the parent dashboard card modals in `IndexTab.tsx` and the study collection creation modal in `CollectionsLibrary.tsx`).
-- Resolved TypeScript type missing signatures for `habitDreamMap` and `updateHabitDreamLink` in `BujoContextType`.
-- Validated that the production build compiles with zero errors or warnings.
+Completed Phase 20 (Mostrar os links no card da tarefa):
+- Persisted the `link` property inside single and recurring bullet items when creating them through standard daily log inputs.
+- Automatically saved extracted URLs to the task's `link` field during Rapid Capture log updates.
+- Added `localLink` state and inline input fields inside the `BulletItem.tsx` editing form to allow direct customization or clearing of task URLs.
+- Verified compilation and build succeeds with zero errors.
 
 ## Next Steps
 
-Gather feedback from the user on the dream-linked habit tracking UX.
+Gather feedback from the user on task links editing and rendering.
 
 
 
