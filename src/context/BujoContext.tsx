@@ -1187,7 +1187,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       time: rapidTime || undefined,
       priority: rapidPriority,
       subtasks: rapidType === 'task' ? extractedSubtasks : undefined,
-      icon: rapidIcon || (rapidType === 'task' ? '🎯' : undefined)
+      icon: rapidIcon || (rapidType === 'task' ? '🎯' : undefined),
+      link: links.length > 0 ? links[0] : undefined
     };
 
     setItems(prev => [newItem, ...prev]);
