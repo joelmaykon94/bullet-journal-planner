@@ -155,6 +155,44 @@ export const IndexTab = () => {
               </span>
             </button>
 
+            {/* Evolução Acadêmica Button */}
+            <button
+              id="tutorial-knowledge-chart"
+              onClick={() => setActiveModal('knowledge')}
+              className="px-3.5 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-indigo-500/40 hover:bg-zinc-200/20 dark:hover:bg-white/10 cursor-pointer transition-all flex flex-col justify-center text-center min-w-[95px]"
+              title="Ver Evolução Acadêmica"
+            >
+              <span className="text-[8px] font-bold text-zinc-555 dark:text-zinc-500 uppercase tracking-wider">Estudos</span>
+              <span className="text-xs font-black mt-0.5 text-indigo-400 flex items-center justify-center gap-1">
+                🎓 Estudos
+              </span>
+            </button>
+
+            {/* Ritmo Energético Button */}
+            <button
+              id="tutorial-energy-chart"
+              onClick={() => setActiveModal('energy')}
+              className="px-3.5 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-emerald-500/40 hover:bg-zinc-200/20 dark:hover:bg-white/10 cursor-pointer transition-all flex flex-col justify-center text-center min-w-[95px]"
+              title="Ver Curva de Foco TDAH"
+            >
+              <span className="text-[8px] font-bold text-zinc-555 dark:text-zinc-500 uppercase tracking-wider">Energia</span>
+              <span className="text-xs font-black mt-0.5 text-emerald-400 flex items-center justify-center gap-1">
+                ⚡ Energia
+              </span>
+            </button>
+
+            {/* Planejador Financeiro Button */}
+            <button
+              onClick={() => setActiveModal('budget')}
+              className="px-3.5 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-blue-500/40 hover:bg-zinc-200/20 dark:hover:bg-white/10 cursor-pointer transition-all flex flex-col justify-center text-center min-w-[95px]"
+              title="Planejador Financeiro"
+            >
+              <span className="text-[8px] font-bold text-zinc-555 dark:text-zinc-500 uppercase tracking-wider">Finanças</span>
+              <span className="text-xs font-black mt-0.5 text-blue-400 flex items-center justify-center gap-1">
+                💰 Finanças
+              </span>
+            </button>
+
             {/* Tutorial Button */}
             <button
               onClick={() => setShowTutorial(true)}
@@ -304,7 +342,7 @@ export const IndexTab = () => {
       </div>
 
       {/* 🚀 Hábitos de Hoje Card */}
-      <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 flex flex-col gap-3 w-full">
+      <div id="tutorial-habit-tracker" className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-4 flex flex-col gap-3 w-full">
         <div className="flex items-center justify-between border-b border-zinc-200/20 dark:border-white/5 pb-2">
           <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
             <Activity className="w-3.5 h-3.5 text-bujo-highlight" />
@@ -468,71 +506,7 @@ export const IndexTab = () => {
         </div>
       </div>
 
-      {/* 3. Dashboard Cards Grid — replaces full-width scrollable sections */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
-        {/* Card: Evolução Acadêmica */}
-        <button
-          id="tutorial-knowledge-chart"
-          onClick={() => setActiveModal('knowledge')}
-          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
-        >
-          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-110 transition-transform">
-            <GraduationCap className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-[11px] font-bold text-zinc-100 block">Evolução Acadêmica</span>
-            <span className="text-[9px] text-zinc-500 block mt-0.5">Progresso de estudos e XP</span>
-          </div>
-        </button>
 
-        {/* Card: Ritmo Energético */}
-        <button
-          id="tutorial-energy-chart"
-          onClick={() => setActiveModal('energy')}
-          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
-        >
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
-            <Zap className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-[11px] font-bold text-zinc-100 block">Ritmo Energético</span>
-            <span className="text-[9px] text-zinc-500 block mt-0.5">Curva de foco TDAH</span>
-          </div>
-        </button>
-
-        {/* Card: Contador de Sucesso de Hábitos */}
-        <button
-          id="tutorial-habit-tracker"
-          onClick={() => setActiveTab('dream_board')}
-          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-amber-500/40 hover:bg-amber-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
-        >
-          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
-            <Activity className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-[11px] font-bold text-zinc-100 block">Sucesso dos Hábitos</span>
-            <span className="text-xs font-black text-amber-500 font-mono block mt-1">
-              {habits.filter(h => habitLogs[h]?.[today]).length} / {habits.length}
-            </span>
-            <span className="text-[9px] text-zinc-500 block mt-0.5">Clique para gerenciar nos Sonhos</span>
-          </div>
-        </button>
-
-
-        {/* Card: Planejador Financeiro */}
-        <button
-          onClick={() => setActiveModal('budget')}
-          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-blue-500/40 hover:bg-blue-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
-        >
-          <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover:scale-110 transition-transform">
-            <DollarSign className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-[11px] font-bold text-zinc-100 block">Planejador Financeiro</span>
-            <span className="text-[9px] text-zinc-500 block mt-0.5">Gerenciar saldo e contas</span>
-          </div>
-        </button>
-      </div>
 
       {/* Full-screen Modals for each card */}
       {activeModal && (
