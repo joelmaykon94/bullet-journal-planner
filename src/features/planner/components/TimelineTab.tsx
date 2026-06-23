@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { getLocalDateString } from '../../../utils/plannerUtils';
@@ -22,6 +23,62 @@ export const TimelineTab = () => {
   } = useBujo();
 
   const today = getLocalDateString();
+  const [now, setNow] = useState(new Date());
+  const [lineTop, setLineTop] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Update current time state every 15 seconds to keep the line moving
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const updateLinePosition = useCallback(() => {
+    if (selectedDate !== today) {
+      setLineTop(null);
+      return;
+    }
+
+    const h = now.getHours();
+    const m = now.getMinutes();
+
+    // The timeline tracks hours between 06:00 and 23:00 (6 to 23 inclusive)
+    if (h < 6 || h > 23) {
+      setLineTop(null);
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Find the current hour row element by its data-hour attribute
+    const currentHourEl = container.querySelector(`[data-hour="${h}"]`) as HTMLDivElement | null;
+    if (currentHourEl) {
+      const offsetTop = currentHourEl.offsetTop;
+      const height = currentHourEl.offsetHeight;
+      const minuteFraction = m / 60;
+      // Calculate top position exactly relative to the current hour block container
+      const calculatedTop = offsetTop + (minuteFraction * height);
+      setLineTop(calculatedTop);
+    } else {
+      setLineTop(null);
+    }
+  }, [now, selectedDate, today]);
+
+  // Update positioning whenever relevant state changes
+  useEffect(() => {
+    // We add a tiny delay to allow the browser to complete layout paint/rendering
+    const timer = setTimeout(updateLinePosition, 50);
+    return () => clearTimeout(timer);
+  }, [updateLinePosition, items, timelineMobileView]);
+
+  // Recalculate on window resize since DOM element dimensions change
+  useEffect(() => {
+    window.addEventListener('resize', updateLinePosition);
+    return () => window.removeEventListener('resize', updateLinePosition);
+  }, [updateLinePosition]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -92,48 +149,31 @@ export const TimelineTab = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div className={`lg:col-span-2 space-y-1 relative bg-zinc-200/15 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 rounded-3xl p-4 overflow-hidden ${
-          timelineMobileView === 'timeline' ? 'block' : 'hidden lg:block'
-        }`}>
+        <div 
+          ref={containerRef}
+          className={`lg:col-span-2 space-y-1 relative bg-zinc-200/15 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 rounded-3xl p-4 overflow-hidden ${
+            timelineMobileView === 'timeline' ? 'block' : 'hidden lg:block'
+          }`}
+        >
           
-          {selectedDate === today && (() => {
-            const now = new Date();
+          {selectedDate === today && lineTop !== null && (() => {
             const h = now.getHours();
             const m = now.getMinutes();
-            // Start hour is 6, end hour is 23
-            if (h >= 6 && h <= 23) {
-              const hourIndex = h - 6;
-              const totalHours = 23 - 6 + 1;
-              
-              // Each hour row has a certain height. We need to calculate the position 
-              // relative to the start of the hour row and move it down as minutes pass.
-              // Percentage within the current hour (0-100)
-              const minutePct = m / 60;
-              
-              // Base percentage: which hour we are in
-              const basePct = (hourIndex / totalHours) * 100;
-              // Added percentage: how far through the current hour we are
-              const addedPct = (minutePct / totalHours) * 100;
-              
-              const finalPct = basePct + addedPct;
-
-              return (
-                <div 
-                  className="absolute left-0 right-0 h-0.5 bg-bujo-highlight z-10 pointer-events-none opacity-80"
-                  style={{ top: `calc(${finalPct}% + 16px)` }}
-                >
-                  <span className="absolute right-2 -top-2 bg-bujo-highlight text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
-                    AGORA {h.toString().padStart(2, '0')}:{m.toString().padStart(2, '0')}
-                  </span>
-                </div>
-              );
-            }
-            return null;
+            return (
+              <div 
+                className="absolute left-0 right-0 h-0.5 bg-bujo-highlight z-10 pointer-events-none opacity-80 transition-all duration-300 ease-out"
+                style={{ top: `${lineTop}px` }}
+              >
+                <span className="absolute right-2 -top-2 bg-bujo-highlight text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
+                  AGORA {h.toString().padStart(2, '0')}:{m.toString().padStart(2, '0')}
+                </span>
+              </div>
+            );
           })()}
 
           {hours.map(hour => {
             const hourNum = parseInt(hour.split(':')[0]);
-            const isCurrentHour = selectedDate === today && hourNum === new Date().getHours();
+            const isCurrentHour = selectedDate === today && hourNum === now.getHours();
             const hourItems = items.filter(item => {
               if (item.date !== selectedDate) return false;
               if (!item.time) return false;
@@ -144,6 +184,7 @@ export const TimelineTab = () => {
             return (
               <div 
                 key={hour}
+                data-hour={hourNum}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   const id = e.dataTransfer.getData('text/plain');
