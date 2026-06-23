@@ -72,6 +72,26 @@ export function useHabits() {
     showToast(`Hábito "${habitToDelete}" removido.`);
   };
 
+  const handleEditHabit = (oldName: string, newName: string, showToast: (msg: string) => void) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    if (trimmed === oldName) return;
+    if (habits.includes(trimmed)) {
+      showToast('Hábito já existe!');
+      return;
+    }
+    setHabits(prev => prev.map(h => h === oldName ? trimmed : h));
+    setHabitLogs(prev => {
+      const next = { ...prev };
+      if (next[oldName]) {
+        next[trimmed] = next[oldName];
+        delete next[oldName];
+      }
+      return next;
+    });
+    showToast(`Hábito renomeado para "${trimmed}"`);
+  };
+
   return {
     habits,
     setHabits,
@@ -79,6 +99,7 @@ export function useHabits() {
     setHabitLogs,
     toggleHabitDate,
     handleAddHabit,
-    handleDeleteHabit
+    handleDeleteHabit,
+    handleEditHabit
   };
 }

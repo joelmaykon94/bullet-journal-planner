@@ -16,11 +16,30 @@ export const DreamBoardTab = () => {
     habits,
     handleAddHabit,
     handleDeleteHabit,
+    handleEditHabit,
     habitDreamMap,
     updateHabitDreamLink
   } = useBujo();
 
   const unlinkedHabits = habits.filter(h => !habitDreamMap[h]);
+
+  const [editingHabitName, setEditingHabitName] = useState<string | null>(null);
+  const [newGeneralHabitName, setNewGeneralHabitName] = useState('');
+
+  const handleCreateGeneralHabit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newGeneralHabitName.trim();
+    if (!trimmed) return;
+    handleAddHabit(trimmed);
+    setNewGeneralHabitName('');
+  };
+
+  const handleSaveEdit = (oldName: string, newName: string) => {
+    setEditingHabitName(null);
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === oldName) return;
+    handleEditHabit(oldName, trimmed);
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -416,35 +435,60 @@ export const DreamBoardTab = () => {
                               ) : (
                                 <div className="space-y-1">
                                   {dreamHabits.map(habit => (
-                                    <div key={habit} className="flex items-center justify-between gap-2 p-1 rounded-xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5">
-                                      <span className="text-[10px] text-zinc-300 truncate font-medium flex-1 pl-1">{habit}</span>
-                                      <div className="flex items-center gap-1 shrink-0">
-                                        <button
-                                          type="button"
-                                          onClick={() => updateHabitDreamLink(habit, '')}
-                                          className="text-[8px] font-bold text-zinc-500 hover:text-amber-500 px-1 py-0.5 rounded hover:bg-zinc-200/20 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                                          title="Desvincular do Sonho"
-                                        >
-                                          Desvincular
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            askConfirmation({
-                                              title: 'Excluir Hábito?',
-                                              message: `Deseja realmente excluir permanentemente o hábito "${habit}"?`,
-                                              confirmText: 'Excluir',
-                                              cancelText: 'Cancelar',
-                                              isDanger: true,
-                                              onConfirm: () => handleDeleteHabit(habit)
-                                            });
+                                    <div key={habit} className="flex items-center justify-between gap-2 p-1 rounded-xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 group/row">
+                                      {editingHabitName === habit ? (
+                                        <input
+                                          type="text"
+                                          defaultValue={habit}
+                                          autoFocus
+                                          onBlur={(e) => handleSaveEdit(habit, e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleSaveEdit(habit, e.currentTarget.value);
+                                            if (e.key === 'Escape') setEditingHabitName(null);
                                           }}
-                                          className="p-1 rounded text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
-                                          title="Excluir Hábito"
-                                        >
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                      </div>
+                                          className="bg-zinc-250 dark:bg-zinc-950 border border-bujo-highlight text-[10px] text-zinc-150 px-1 py-0.5 rounded outline-none w-full font-sans"
+                                        />
+                                      ) : (
+                                        <span className="text-[10px] text-zinc-300 truncate font-medium flex-1 pl-1">{habit}</span>
+                                      )}
+                                      
+                                      {editingHabitName !== habit && (
+                                        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                                          <button
+                                            type="button"
+                                            onClick={() => setEditingHabitName(habit)}
+                                            className="p-1 rounded text-zinc-500 hover:text-bujo-highlight hover:bg-zinc-200/20 dark:hover:bg-white/10 transition-all cursor-pointer"
+                                            title="Editar Hábito"
+                                          >
+                                            <span className="text-[9px]">✏️</span>
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => updateHabitDreamLink(habit, '')}
+                                            className="text-[8px] font-bold text-zinc-500 hover:text-amber-500 px-1 py-0.5 rounded hover:bg-zinc-200/20 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                                            title="Desvincular do Sonho"
+                                          >
+                                            Desvincular
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              askConfirmation({
+                                                title: 'Excluir Hábito?',
+                                                message: `Deseja realmente excluir permanentemente o hábito "${habit}"?`,
+                                                confirmText: 'Excluir',
+                                                cancelText: 'Cancelar',
+                                                isDanger: true,
+                                                onConfirm: () => handleDeleteHabit(habit)
+                                              });
+                                            }}
+                                            className="p-1 rounded text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
+                                            title="Excluir Hábito"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      )}
                                     </div>
                                   ))}
                                 </div>
@@ -535,6 +579,94 @@ export const DreamBoardTab = () => {
           </SortableContext>
         </DndContext>
       )}
+
+      {/* 🔮 Hábitos Gerais / Não Vinculados */}
+      <div className="rounded-3xl bg-zinc-200/20 dark:bg-zinc-900/30 border border-zinc-200/30 dark:border-white/5 p-5 space-y-4">
+        <div className="flex items-center justify-between border-b border-zinc-200/20 dark:border-white/5 pb-3 flex-wrap gap-3">
+          <div>
+            <span className="text-[10px] text-zinc-400 uppercase font-mono tracking-widest">GERENCIAMENTO GERAL</span>
+            <h4 className="text-lg font-bold text-zinc-100 flex items-center gap-1.5 mt-0.5">
+              Hábitos Gerais (Sem Sonhos)
+            </h4>
+          </div>
+          
+          <form onSubmit={handleCreateGeneralHabit} className="flex gap-2 items-center w-full sm:w-auto">
+            <input
+              type="text"
+              placeholder="Criar hábito geral..."
+              value={newGeneralHabitName}
+              onChange={(e) => setNewGeneralHabitName(e.target.value)}
+              className="px-3 py-1.5 text-xs rounded-xl bg-zinc-250/20 dark:bg-white/5 border border-zinc-200/30 dark:border-white/10 text-bujo-text placeholder-zinc-500 focus:outline-none focus:border-bujo-highlight/50 transition-all font-sans flex-1 sm:w-48"
+            />
+            <button
+              type="submit"
+              className="p-2 rounded-xl bg-bujo-accent/20 hover:bg-bujo-accent/30 text-bujo-accent border border-bujo-accent/30 flex items-center justify-center transition-all cursor-pointer shrink-0"
+              title="Adicionar Hábito Geral"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            </button>
+          </form>
+        </div>
+
+        {unlinkedHabits.length === 0 ? (
+          <p className="text-xs text-zinc-500 italic py-2">Todos os seus hábitos estão vinculados a sonhos!</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {unlinkedHabits.map(habit => (
+              <div 
+                key={habit} 
+                className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5 group hover:border-bujo-highlight/30 hover:bg-zinc-200/40 dark:hover:bg-white/10 transition-all"
+              >
+                {editingHabitName === habit ? (
+                  <input
+                    type="text"
+                    defaultValue={habit}
+                    autoFocus
+                    onBlur={(e) => handleSaveEdit(habit, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveEdit(habit, e.currentTarget.value);
+                      if (e.key === 'Escape') setEditingHabitName(null);
+                    }}
+                    className="bg-zinc-250 dark:bg-zinc-950 border border-bujo-highlight text-xs text-zinc-150 px-2 py-1 rounded-lg outline-none w-full font-sans"
+                  />
+                ) : (
+                  <span className="text-xs font-bold text-zinc-200 truncate" title={habit}>{habit}</span>
+                )}
+                
+                {editingHabitName !== habit && (
+                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => setEditingHabitName(habit)}
+                      className="p-1 rounded text-zinc-500 hover:text-bujo-highlight hover:bg-zinc-200/20 dark:hover:bg-white/10 transition-all cursor-pointer"
+                      title="Editar Hábito"
+                    >
+                      <span className="text-[10px]">✏️</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        askConfirmation({
+                          title: 'Excluir Hábito?',
+                          message: `Deseja realmente excluir permanentemente o hábito "${habit}"?`,
+                          confirmText: 'Excluir',
+                          cancelText: 'Cancelar',
+                          isDanger: true,
+                          onConfirm: () => handleDeleteHabit(habit)
+                        });
+                      }}
+                      className="p-1 rounded text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
+                      title="Excluir Hábito"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

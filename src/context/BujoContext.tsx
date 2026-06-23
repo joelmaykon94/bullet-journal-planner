@@ -165,6 +165,7 @@ export interface BujoContextType {
   toggleHabitDate: (habit: string, dateStr: string) => void;
   handleAddHabit: (name: string) => void;
   handleDeleteHabit: (habit: string) => void;
+  handleEditHabit: (oldName: string, newName: string) => void;
   habitDreamMap: { [habitName: string]: string };
   updateHabitDreamLink: (habitName: string, dreamId: string) => void;
 
@@ -1571,6 +1572,20 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       toggleHabitDate: (habit: string, dateStr: string) => habitData.toggleHabitDate(habit, dateStr, setUserXp, showToast),
       handleAddHabit: (name: string) => habitData.handleAddHabit(name, showToast),
       handleDeleteHabit: (habit: string) => habitData.handleDeleteHabit(habit, showToast),
+      handleEditHabit: (oldName: string, newName: string) => {
+        const trimmed = newName.trim();
+        if (!trimmed || trimmed === oldName) return;
+        habitData.handleEditHabit(oldName, trimmed, showToast);
+        setHabitDreamMap(prev => {
+          const newMap = { ...prev };
+          if (newMap[oldName]) {
+            newMap[trimmed] = newMap[oldName];
+            delete newMap[oldName];
+          }
+          localStorage.setItem('bujo_habit_dream_map', JSON.stringify(newMap));
+          return newMap;
+        });
+      },
       habitDreamMap,
       updateHabitDreamLink,
 
