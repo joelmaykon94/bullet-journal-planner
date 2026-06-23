@@ -12,6 +12,7 @@ updated: 2026-06-23T14:40:00Z
 
 Completed Phase 23 (Ajustar o cálculo da posição da hora na linha do tempo):
 - Positioned time line indicator directly inside the active hour card block utilizing percentage heights (e.g. `(minutes / 60) * 100%`) instead of globally querying layout element heights and offsets, bypassing rendering delay offsets.
+- Added flex `min-w-0` classes and simplified text truncation logic to restrict task cards within the timeline column boundaries, preventing horizontal overflow.
 - Added timer state updating every 15s to keep the indicator moving in real time.
 - Standardized highlights using state values.
 - Verified build compiles successfully.
