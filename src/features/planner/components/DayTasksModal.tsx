@@ -17,6 +17,7 @@ import { X, Search, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
 import { BUJO_ICONS } from '../../../utils/constants';
+import { compareBujoItems } from '../../../utils/plannerUtils';
 import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
 
 interface DayTasksModalProps {
@@ -85,8 +86,8 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
 
   if (!isOpen || !dateStr) return null;
 
-  // Filter items matching the modal date
-  const dateItems = items.filter(item => item.date === dateStr);
+  // Filter items matching the modal date & sort by default order
+  const dateItems = items.filter(item => item.date === dateStr).sort(compareBujoItems);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
