@@ -386,19 +386,7 @@ export function useBujoItems(
     localStorage.setItem('bujo_focus_trash_items', JSON.stringify(trashItems));
   }, [trashItems]);
 
-  // Someday/Maybe state
-  const [somedayItems, setSomedayItems] = useState<BujoItem[]>(() => {
-    const saved = localStorage.getItem('bujo_focus_someday_items');
-    if (saved) return deduplicateBujoItems(JSON.parse(saved));
-    return [
-      { id: 'sd-1', type: 'task', status: 'open', content: 'Aprender tocar piano', date: 'someday_maybe' },
-      { id: 'sd-2', type: 'task', status: 'open', content: 'Planejar viagem para o Japão', date: 'someday_maybe' }
-    ];
-  });
 
-  useEffect(() => {
-    localStorage.setItem('bujo_focus_someday_items', JSON.stringify(somedayItems));
-  }, [somedayItems]);
 
   // Dream Board (Quadro dos Sonhos) state
   const [dreams, setDreams] = useState<DreamItem[]>(() => {
@@ -427,11 +415,7 @@ export function useBujoItems(
   const handleRestoreItem = (id: string) => {
     const itemToRestore = trashItems.find(item => item.id === id);
     if (itemToRestore) {
-      if (itemToRestore.date === 'someday_maybe') {
-        setSomedayItems(prev => [...prev, itemToRestore]);
-      } else {
-        setItems(prev => [...prev, itemToRestore]);
-      }
+      setItems(prev => [...prev, itemToRestore]);
       setTrashItems(prev => prev.filter(item => item.id !== id));
       showToast('Entrada restaurada');
     }
@@ -447,113 +431,7 @@ export function useBujoItems(
     showToast('Lixeira esvaziada');
   };
 
-  const handleAddSomedayItem = (
-    content: string,
-    type: 'task' | 'event' | 'note' = 'task',
-    category?: string,
-    icon?: string,
-    time?: string,
-    energy?: number,
-    complexity?: number,
-    executionTime?: number
-  ) => {
-    const { cleanContent, links } = extractLinksFromText(content);
-    const extractedSubtasks = links.map((lnk, lIdx) => ({
-      id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
-      content: lnk,
-      completed: false
-    }));
 
-    const newItem: BujoItem = {
-      id: 'sd-' + Math.random().toString(),
-      type,
-      status: 'open',
-      content: cleanContent,
-      date: 'someday_maybe',
-      category,
-      time: time || undefined,
-      icon: icon || (type === 'task' ? '🎯' : undefined),
-      energy: type === 'task' ? energy : undefined,
-      complexity: type === 'task' ? complexity : undefined,
-      executionTime: type === 'task' ? executionTime : undefined,
-      subtasks: type === 'task' ? extractedSubtasks : undefined,
-      createdAt: new Date().toISOString()
-    };
-    setSomedayItems(prev => [...prev, newItem]);
-    showToast('Adicionado a Algum Dia/Talvez');
-  };
-
-  const handleUpdateSomedayItemCategory = (id: string, category: string) => {
-    setSomedayItems(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, category: category || undefined };
-      }
-      return item;
-    }));
-    showToast('Categoria atualizada');
-  };
-
-  const handleEditSomedayItemContent = (id: string, newContent: string) => {
-    setSomedayItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const { cleanContent, links } = extractLinksFromText(newContent);
-        const newSubtasks = links.map((lnk, lIdx) => ({
-          id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
-          content: lnk,
-          completed: false
-        }));
-        return { 
-          ...item, 
-          content: cleanContent,
-          subtasks: item.type === 'task' ? [...(item.subtasks || []), ...newSubtasks] : undefined
-        };
-      }
-      return item;
-    }));
-    showToast('Item atualizado');
-  };
-
-  const handleDeleteSomedayItem = (id: string) => {
-    const itemToDelete = somedayItems.find(item => item.id === id);
-    if (itemToDelete) {
-      setTrashItems(prev => [...prev, itemToDelete]);
-    }
-    setSomedayItems(prev => prev.filter(item => item.id !== id));
-    showToast('Item enviado para a lixeira');
-  };
-
-  const handleScheduleSomedayItem = (id: string, date: string) => {
-    const item = somedayItems.find(item => item.id === id);
-    if (item) {
-      const scheduledItem: BujoItem = {
-        ...item,
-        id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-        date: date,
-        status: 'open',
-        createdAt: item.createdAt || new Date().toISOString()
-      };
-      setItems(prev => [...prev, scheduledItem]);
-      setSomedayItems(prev => prev.filter(item => item.id !== id));
-      showToast('Item agendado no Daily Log');
-    }
-  };
-
-  const handleToggleSomedayItem = (id: string) => {
-    setSomedayItems(prev => prev.map(item => {
-      if (item.id === id && item.type === 'task') {
-        const nextStatus = item.status === 'completed' ? 'open' : 'completed';
-        if (nextStatus === 'completed') {
-          setUserXp(p => p + 10);
-          showToast('Tarefa de Algum Dia concluída: +10 XP');
-        } else {
-          setUserXp(p => Math.max(0, p - 10));
-          showToast('Tarefa desmarcada: -10 XP');
-        }
-        return { ...item, status: nextStatus };
-      }
-      return item;
-    }));
-  };
 
   // Inline content edit save
   const handleSaveEditItem = (
@@ -680,23 +558,11 @@ export function useBujoItems(
       }
       return item;
     }));
-    setSomedayItems(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, delegatedTo: delegatedTo.trim() || undefined };
-      }
-      return item;
-    }));
     showToast('Responsável atualizado');
   };
 
   const handleUpdateItemIcon = (id: string, icon: string) => {
     setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, icon: icon || undefined };
-      }
-      return item;
-    }));
-    setSomedayItems(prev => prev.map(item => {
       if (item.id === id) {
         return { ...item, icon: icon || undefined };
       }
@@ -845,14 +711,6 @@ export function useBujoItems(
     handleRestoreItem,
     handleDeletePermanently,
     handleEmptyTrash,
-    somedayItems,
-    setSomedayItems,
-    handleAddSomedayItem,
-    handleDeleteSomedayItem,
-    handleScheduleSomedayItem,
-    handleToggleSomedayItem,
-    handleUpdateSomedayItemCategory,
-    handleEditSomedayItemContent,
     // Delegation & Icon
     handleUpdateItemDelegatedTo,
     handleUpdateItemIcon,

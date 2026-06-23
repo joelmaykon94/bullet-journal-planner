@@ -114,17 +114,7 @@ const helpDictionary: Record<string, HelpContent> = {
       'Completar sonhos dá um boost massivo na sua barra de XP e nível do sistema!'
     ]
   },
-  someday_maybe: {
-    title: 'Algum Dia / Talvez (GTD)',
-    description: 'Guarde ideias e projetos que você não vai fazer agora, mas não quer esquecer.',
-    howTo: [
-      'Adicione itens divididos em três categorias: Agora (Next Actions), Em Breve e Algum Dia.',
-      'Revise essa lista durante o planejamento semanal.'
-    ],
-    tips: [
-      'Isso ajuda a manter o seu Log Diário limpo, guardando "distrações promissoras" para o momento certo.'
-    ]
-  },
+
   trash: {
     title: 'Lixeira',
     description: 'Itens excluídos vêm parar aqui por segurança.',

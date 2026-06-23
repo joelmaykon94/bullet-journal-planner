@@ -162,69 +162,6 @@ export const getHarmonyRecommendation = (score: number): string => {
   return "Estado de Crise: Pare tudo e use o Alívio Cognitivo agora.";
 };
 
-export const getRealTimeSuggestions = (text: string) => {
-  if (!text || text.length < 3) return null;
-  const lower = text.toLowerCase();
-  let classification = '';
-  let category = '';
-  let subtasks: string[] = [];
-
-  if (lower.includes('médico') || lower.includes('consulta') || lower.includes('remédio') || lower.includes('saúde') || lower.includes('exame') || lower.includes('dentista') || lower.includes('psicólogo')) {
-    classification = 'saude';
-    category = '🩺 Saúde & Bem-estar';
-    subtasks = [
-      'Agendar no calendário com 2 alertas',
-      'Separar documentos/exames necessários',
-      'Definitir como chegar ao local (Uber/Carro/Ônibus)'
-    ];
-  } else if (lower.includes('estudar') || lower.includes('ler') || lower.includes('curso') || lower.includes('revisar') || lower.includes('livro') || lower.includes('pdf') || lower.includes('vídeo') || lower.includes('podcast') || lower.includes('aprender') || lower.includes('pesquisar')) {
-    classification = 'aprendizado';
-    category = '📚 Aprendizado (Novidade!)';
-    subtasks = [
-      'Definir um sub-tópico específico para consumir',
-      'Anotar os 3 principais insights em tópicos rápidos',
-      'Revisar anotações para reter na memória de trabalho'
-    ];
-  } else if (lower.includes('limpar') || lower.includes('descansar') || lower.includes('pausa') || lower.includes('dormir') || lower.includes('meditar') || lower.includes('alongar') || lower.includes('caminhar') || lower.includes('lavar') || lower.includes('organizar') || lower.includes('arrumar') || lower.includes('almoçar') || lower.includes('jantar') || lower.includes('comer')) {
-    classification = 'descanso';
-    category = '🧘 Revisão & Descanso';
-    subtasks = [
-      'Definir timer de 15 a 30 minutos',
-      'Fazer alongamento ou fechar os olhos',
-      'Refletir e anotar o que já concluiu hoje para consolidar'
-    ];
-  } else {
-    classification = 'foco';
-    category = '⚡ Foco Profundo (Proteger!)';
-    subtasks = [
-      'Proteger o bloco eliminando todas as notificações',
-      'Separar material necessário e fechar abas extras',
-      'Trabalhar focado por 25 minutos com timer Pomodoro'
-    ];
-  }
-
-  if (lower.includes('limpar') || lower.includes('arrumar') || lower.includes('casa') || lower.includes('quarto') || lower.includes('cozinha') || lower.includes('louça')) {
-    subtasks = [
-      'Recolher objetos jogados ou lixos visíveis',
-      'Varrer rápido o centro do cômodo',
-      'Passar um pano básico nas superfícies principais'
-    ];
-  } else if (lower.includes('relatório') || lower.includes('trabalho') || lower.includes('projeto') || lower.includes('escrever') || lower.includes('apresentação') || lower.includes('slide')) {
-    subtasks = [
-      'Abrir o arquivo principal do projeto',
-      'Escrever o título e sumário dos pontos principais',
-      'Escrever continuamente por 15 minutos sem editar nada'
-    ];
-  } else if (lower.includes('comprar') || lower.includes('mercado') || lower.includes('supermercado') || lower.includes('compras') || lower.includes('feira')) {
-    subtasks = [
-      'Olhar geladeira/despensa rápido e tirar fotos',
-      'Listar apenas os 5 itens de sobrevivência urgentes',
-      'Fazer o pedido no app para evitar distrações nos corredores'
-    ];
-  }
-
-  return { classification, category, subtasks };
-};
 
 export const getLocalDateString = (d: Date = new Date()): string => {
   const year = d.getFullYear();

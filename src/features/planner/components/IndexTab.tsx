@@ -6,7 +6,6 @@ import { SortableItem, DragHandle } from '../../../components/common/SortableIte
 import { BudgetPlanner } from './BudgetPlanner';
 import { EnergyChart } from '../../adhd/components/EnergyChart';
 import { HabitTracker } from './HabitTracker';
-import { UserPersonaCard } from './UserPersonaCard';
 import { KnowledgeEvolutionChart } from '../../education/components/KnowledgeEvolutionChart';
 import { useBujo } from '../../../context/BujoContext';
 import { BUJO_ICONS } from '../../../utils/constants';
@@ -29,9 +28,6 @@ export const IndexTab = () => {
     setSelectedDate,
     setStandardDate,
     setShowOverloadReliefModal,
-    aiEngine,
-    aiWorkerRef,
-    localLLMState,
     showToast,
     currentEnergy,
     anxietyLevel,
@@ -48,7 +44,7 @@ export const IndexTab = () => {
   } = useBujo();
 
   // Modal states for dashboard cards
-  const [activeModal, setActiveModal] = useState<'knowledge' | 'energy' | 'habits' | 'focus' | 'budget' | null>(null);
+  const [activeModal, setActiveModal] = useState<'knowledge' | 'energy' | 'habits' | 'budget' | null>(null);
 
   const [newGoalText, setNewGoalText] = useState('');
 
@@ -451,9 +447,7 @@ export const IndexTab = () => {
             { tab: 'weekly_log', label: 'Log Semanal', icon: LayoutGrid },
             { tab: 'monthly_log', label: 'Log Mensal', icon: CalendarDays },
             { tab: 'collections', label: 'Coleções', icon: ListChecks },
-            { tab: 'brain_dump', label: 'Despejo de Mente', icon: Brain },
             { tab: 'dream_board', label: 'Sonhos', icon: Sparkles },
-            { tab: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
             { tab: 'trash', label: 'Lixeira', icon: Trash2 },
             { tab: 'budget', label: 'Finanças', icon: DollarSign, isModal: true }
           ].map(item => {
@@ -527,19 +521,6 @@ export const IndexTab = () => {
           </div>
         </button>
 
-        {/* Card: Guia de Foco */}
-        <button
-          onClick={() => setActiveModal('focus')}
-          className="group p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/40 border border-zinc-200/30 dark:border-white/5 hover:border-red-500/40 hover:bg-red-500/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 min-h-[120px]"
-        >
-          <div className="p-2.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 group-hover:scale-110 transition-transform">
-            <Shield className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-[11px] font-bold text-zinc-100 block">Guia de Foco</span>
-            <span className="text-[9px] text-zinc-500 block mt-0.5">Persona, áudio e IA</span>
-          </div>
-        </button>
 
         {/* Card: Planejador Financeiro */}
         <button
@@ -580,14 +561,12 @@ export const IndexTab = () => {
                   {activeModal === 'knowledge' && <GraduationCap className="w-4 h-4" />}
                   {activeModal === 'energy' && <Zap className="w-4 h-4" />}
                   {activeModal === 'habits' && <Activity className="w-4 h-4" />}
-                  {activeModal === 'focus' && <Shield className="w-4 h-4" />}
                   {activeModal === 'budget' && <DollarSign className="w-4 h-4" />}
                 </div>
                 <h3 className="text-sm font-extrabold text-white tracking-tight">
                   {activeModal === 'knowledge' && 'Evolução Acadêmica'}
                   {activeModal === 'energy' && 'Ritmo Energético TDAH'}
                   {activeModal === 'habits' && 'Rastreador de Hábitos'}
-                  {activeModal === 'focus' && 'Guia de Foco & Persona'}
                   {activeModal === 'budget' && 'Planejador Financeiro'}
                 </h3>
               </div>
@@ -613,26 +592,7 @@ export const IndexTab = () => {
                 />
               )}
               {activeModal === 'habits' && <HabitTracker />}
-              {activeModal === 'focus' && (
-                <UserPersonaCard
-                  userXp={userXp}
-                  setUserXp={setUserXp}
-                  currentEnergy={currentEnergy}
-                  anxietyLevel={anxietyLevel}
-                  showToast={showToast}
-                  items={items}
-                  soundType={soundType}
-                  setSoundType={setSoundType}
-                  toggleAmbientAudio={toggleAmbientAudio}
-                  ambientPlaying={ambientPlaying}
-                  ambientVolume={ambientVolume}
-                  setAmbientVolume={setAmbientVolume}
-                  aiEngine={aiEngine}
-                  aiWorkerRef={aiWorkerRef}
-                  localLLMState={localLLMState}
-                  getCognitiveLoad={getCognitiveLoad}
-                />
-              )}
+
               {activeModal === 'budget' && <BudgetPlanner onClose={() => setActiveModal(null)} />}
             </div>
           </div>

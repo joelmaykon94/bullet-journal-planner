@@ -17,8 +17,7 @@ interface RapidLogModalProps {
   autocompleteIndexRapid: number;
   selectCollectionAutocompleteRapid: (name: string) => void;
   handleSaveRapidLog: (e: React.FormEvent) => void;
-  renderRealTimeSuggestions: (input: string, type: 'task' | 'event' | 'note', handler: any) => React.ReactNode;
-  createRapidTaskWithSuggestions: (subtasks: string[]) => void;
+
   rapidIcon: string;
   setRapidIcon: (icon: string) => void;
   rapidDate: string;
@@ -41,8 +40,7 @@ export const RapidLogModal = ({
   autocompleteIndexRapid,
   selectCollectionAutocompleteRapid,
   handleSaveRapidLog,
-  renderRealTimeSuggestions,
-  createRapidTaskWithSuggestions,
+
   rapidIcon,
   setRapidIcon,
   rapidDate,
@@ -202,7 +200,7 @@ export const RapidLogModal = ({
             </div>
           </div>
 
-          {renderRealTimeSuggestions(rapidInput, rapidType, createRapidTaskWithSuggestions)}
+
 
           <div className="flex gap-3 pt-2">
             <button

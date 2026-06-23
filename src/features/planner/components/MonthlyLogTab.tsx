@@ -262,8 +262,6 @@ export const MonthlyLogTab = () => {
     setEditingItemId,
     handleStartEditItem,
     handleDeleteItem,
-    handleAISplitTask,
-    breakingTaskIds,
     expandedTaskId,
     setExpandedTaskId,
     toggleSubtask,

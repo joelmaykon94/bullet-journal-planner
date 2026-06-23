@@ -4,7 +4,7 @@ import { X, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 interface TutorialStep {
   title: string;
   description: string;
-  tab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'someday_maybe' | 'dream_board' | 'trash';
+  tab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'settings' | 'collections' | 'dream_board' | 'trash';
   positionClass: string;
   selector?: string;
   arrowPlacement?: 'top' | 'bottom' | 'left' | 'right';
@@ -120,27 +120,11 @@ const tutorialSteps: TutorialStep[] = [
     arrowPlacement: "right"
   },
   {
-    title: "🧠 Brain Dump (Despejo de Mente)",
-    description: "Tem muitos pensamentos te distraindo? Digite tudo o que está na sua cabeça nesta estação e deixe a nossa inteligência artificial local organizar e extrair tarefas para você.",
-    tab: "brain_dump",
-    positionClass: "bottom-12 left-1/2 -translate-x-1/2",
-    selector: "#sidebar-tab-brain_dump",
-    arrowPlacement: "right"
-  },
-  {
     title: "🗂️ Coleções Personalizadas",
     description: "Organize listas temáticas personalizadas (livros para ler, metas de viagem, projetos). Adicione ícones customizados, crie sub-tarefas e gerencie tudo em um único lugar!",
     tab: "collections",
     positionClass: "bottom-12 left-1/2 -translate-x-1/2",
     selector: "#sidebar-tab-collections",
-    arrowPlacement: "right"
-  },
-  {
-    title: "🗓️ Algum Dia / Talvez (GTD)",
-    description: "Inspirado no método GTD. Guarde ideias, projetos ou tarefas que você gostaria de realizar no futuro, mas não tem data definida, tirando o peso da sua mente hoje.",
-    tab: "someday_maybe",
-    positionClass: "bottom-12 left-1/2 -translate-x-1/2",
-    selector: "#sidebar-tab-someday_maybe",
     arrowPlacement: "right"
   },
   {

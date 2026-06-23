@@ -37,8 +37,6 @@ export const BulletItem = ({ item }: BulletItemProps) => {
     setEditingItemId,
     handleStartEditItem,
     handleDeleteItem,
-    handleAISplitTask,
-    breakingTaskIds,
     expandedTaskId,
     setExpandedTaskId,
     toggleSubtask,
@@ -565,15 +563,6 @@ export const BulletItem = ({ item }: BulletItemProps) => {
             <>
               {item.type === 'task' && (
                 <>
-                  <button
-                    onClick={() => handleAISplitTask(item.id, item.content)}
-                    disabled={breakingTaskIds[item.id]}
-                    className="px-2 py-0.5 rounded-full bg-bujo-accent/15 text-bujo-accent text-[9px] font-bold hover:bg-bujo-accent/25 transition-colors flex items-center gap-0.5 disabled:opacity-50"
-                    title="Dividir com inteligência artificial"
-                  >
-                    <span>❄️</span>
-                    <span>{breakingTaskIds[item.id] ? 'Quebrando...' : 'IA'}</span>
-                  </button>
                   <button
                     onClick={() => setExpandedTaskId(isExpanded ? null : item.id)}
                     className="p-0.5 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors text-zinc-500"

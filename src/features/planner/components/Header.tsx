@@ -9,11 +9,8 @@ export const Header = () => {
     setFocoActive,
     setActiveTab,
     activeTab,
-    aiEngine,
-    localLLMState,
     setPomodoroRunning,
     showToast,
-    setShowAIDownloadModal,
     syncStatus,
     setShowGlobalSearch,
     deferredPrompt,
@@ -31,10 +28,8 @@ export const Header = () => {
     { id: 'monthly_log', label: 'Log Mensal', icon: CalendarDays },
     { id: 'daily_spread', label: 'Agenda Diária', icon: Calendar },
     { id: 'future_log', label: 'Log Futuro', icon: BookOpen },
-    { id: 'brain_dump', label: 'Despejo de Mente', icon: Brain },
     { id: 'collections', label: 'Coleções', icon: FolderOpen },
     { id: 'dream_board', label: 'Quadro dos Sonhos', icon: Sparkles },
-    { id: 'someday_maybe', label: 'Algum Dia', icon: Cloud },
   ];
 
   const triggerPWAInstall = async () => {
@@ -131,47 +126,6 @@ export const Header = () => {
                   {syncStatus === 'synced' ? 'Nuvem' : syncStatus === 'syncing' ? 'Sincronizando' : syncStatus === 'error' ? 'Erro Sync' : 'Offline'}
                 </span>
               </div>
-
-              {/* AI Status Badge Button */}
-              <button
-                id="tutorial-ai-badge"
-                onClick={() => {
-                  if (aiEngine === 'local') {
-                    setShowAIDownloadModal(true);
-                  } else {
-                    setActiveTab('settings');
-                    setTimeout(() => {
-                      const el = document.getElementById('local-llm-activation-center');
-                      if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }, 150);
-                  }
-                }}
-                className={`flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full border transition-all ${
-                  aiEngine === 'local_llm'
-                    ? localLLMState === 'ready'
-                      ? 'bg-emerald-600/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-600/20'
-                      : localLLMState === 'loading'
-                      ? 'bg-amber-600/10 text-amber-500 border-amber-500/20 hover:bg-amber-600/20 animate-pulse'
-                      : 'bg-zinc-200/40 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10'
-                    : 'bg-zinc-200/40 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 border-zinc-200/40 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-white/10'
-                }`}
-                title={
-                  aiEngine === 'local_llm'
-                    ? `IA no Browser: ${localLLMState === 'ready' ? 'Pronto' : localLLMState === 'loading' ? 'Carregando' : 'Não Carregado'}`
-                    : 'Motor Simples de Regras Ativo'
-                }
-              >
-                <Sparkles className={`w-3.5 h-3.5 ${aiEngine === 'local_llm' && localLLMState === 'ready' ? 'text-emerald-500 fill-emerald-500/10' : 'text-zinc-400'}`} />
-                <span className="hidden sm:inline">
-                  {aiEngine === 'local_llm'
-                    ? localLLMState === 'ready'
-                      ? 'IA Local: Pronta'
-                      : localLLMState === 'loading'
-                      ? 'Carregando IA...'
-                      : 'Ativar IA Avançada'
-                    : 'Motor IA Simples'}
-                </span>
-              </button>
 
               {/* Install PWA Button */}
               <button

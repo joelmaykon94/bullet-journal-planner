@@ -111,19 +111,6 @@ export const Sidebar = () => {
         </button>
 
         <button
-          id="sidebar-tab-brain_dump"
-          onClick={() => setActiveTab('brain_dump')}
-          className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'brain_dump' 
-              ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
-              : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
-          }`}
-        >
-          <Brain className="w-3.5 h-3.5" />
-          <span>Despejo de Mente</span>
-        </button>
-
-        <button
           id="sidebar-tab-collections"
           onClick={() => setActiveTab('collections')}
           className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -149,18 +136,6 @@ export const Sidebar = () => {
           <span>Quadro dos Sonhos</span>
         </button>
 
-        <button
-          id="sidebar-tab-someday_maybe"
-          onClick={() => setActiveTab('someday_maybe')}
-          className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'someday_maybe' 
-              ? 'bg-bujo-highlight text-white shadow-md shadow-bujo-highlight/10' 
-              : 'hover:bg-zinc-200/50 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400'
-          }`}
-        >
-          <Cloud className="w-3.5 h-3.5" />
-          <span>Algum Dia</span>
-        </button>
       </div>
 
       {/* User profile card at the bottom */}

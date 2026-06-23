@@ -1,7 +1,7 @@
 import { createContext, useContext, ReactNode, useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { BujoItem, BujoSettings, AISubtaskSuggestions, Collection, DreamItem, ConfirmationModalConfig } from '../types';
+import { BujoItem, BujoSettings, Collection, DreamItem, ConfirmationModalConfig } from '../types';
 import { useBujoItems } from '../hooks/useBujoItems';
 import { useBujoSettings } from '../hooks/useBujoSettings';
 import { useCollections } from '../hooks/useCollections';
@@ -9,8 +9,8 @@ import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useAmbientAudio, SoundType } from '../hooks/useAmbientAudio';
 import { useHabits, HabitLog } from '../hooks/useHabits';
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
-import { maxQuotes, getRealTimeSuggestions, adhdTriggers, getLocalDateString, getWeekdaysForDate, extractLinksFromText, deduplicateBujoItems } from '../utils/plannerUtils';
-import { HOURS, MONTHS, BRAIN_DUMP_KEYWORDS } from '../utils/constants';
+import { maxQuotes, getLocalDateString, getWeekdaysForDate, extractLinksFromText, deduplicateBujoItems } from '../utils/plannerUtils';
+import { HOURS, MONTHS } from '../utils/constants';
 
 import { useAuth } from './AuthContext';
 
@@ -85,27 +85,11 @@ export interface BujoContextType {
   deleteSubtask: (taskId: string, subtaskId: string) => void;
   migrateUncompletedTasksToNextDay: (dateStr: string) => void;
 
-  // Lixeira & Someday
+  // Lixeira
   trashItems: BujoItem[];
   handleRestoreItem: (id: string) => void;
   handleDeletePermanently: (id: string) => void;
   handleEmptyTrash: () => void;
-  somedayItems: BujoItem[];
-  handleAddSomedayItem: (
-    content: string,
-    type?: 'task' | 'event' | 'note',
-    category?: string,
-    icon?: string,
-    time?: string,
-    energy?: number,
-    complexity?: number,
-    executionTime?: number
-  ) => void;
-  handleDeleteSomedayItem: (id: string) => void;
-  handleScheduleSomedayItem: (id: string, date: string) => void;
-  handleToggleSomedayItem: (id: string) => void;
-  handleUpdateSomedayItemCategory: (id: string, category: string) => void;
-  handleEditSomedayItemContent: (id: string, newContent: string) => void;
   handleUpdateItemDelegatedTo: (id: string, delegatedTo: string) => void;
   handleUpdateItemIcon: (id: string, icon: string) => void;
 
@@ -140,8 +124,6 @@ export interface BujoContextType {
   setNewColItemTitle: React.Dispatch<React.SetStateAction<string>>;
   newColItemNotes: string;
   setNewColItemNotes: React.Dispatch<React.SetStateAction<string>>;
-  decomposingCollectionItemIds: { [key: string]: boolean };
-  setDecomposingCollectionItemIds: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   handleCreateCollection: (e: React.FormEvent) => void;
   handleDeleteCollection: (colId: string) => void;
   handleCreateCollectionItem: (colId: string, icon?: string) => void;
@@ -162,7 +144,6 @@ export interface BujoContextType {
   ) => void;
   handleDeleteCollectionItemMedia: (colId: string, itemId: string, mediaId: string) => void;
   migrateCollectionItemToDailyLog: (item: any, collectionName: string) => void;
-  handleAICollectionItemDecompose: (collectionId: string, itemId: string, content: string) => Promise<void>;
   handleReorderCollections: (activeId: string, overId: string) => void;
   handleReorderCollectionItems: (colId: string, activeId: string, overId: string) => void;
   handleReorderCollectionSubtasks: (colId: string, itemId: string, activeId: string, overId: string) => void;
@@ -217,8 +198,8 @@ export interface BujoContextType {
   setAnxietyLevel: React.Dispatch<React.SetStateAction<number>>;
   currentEnergy: 'high' | 'low' | 'exhausted';
   setCurrentEnergy: React.Dispatch<React.SetStateAction<'high' | 'low' | 'exhausted'>>;
-  activeTab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board' | 'landing_page';
-  setActiveTab: React.Dispatch<React.SetStateAction<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board' | 'landing_page'>>;
+  activeTab: 'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'settings' | 'collections' | 'trash' | 'dream_board' | 'landing_page';
+  setActiveTab: React.Dispatch<React.SetStateAction<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'settings' | 'collections' | 'trash' | 'dream_board' | 'landing_page'>>;
   selectedDate: string;
   setSelectedDate: React.Dispatch<React.SetStateAction<string>>;
   showOverloadReliefModal: boolean;
@@ -236,51 +217,11 @@ export interface BujoContextType {
   setConfirmModal: React.Dispatch<React.SetStateAction<ConfirmationModalConfig | null>>;
   askConfirmation: (config: ConfirmationModalConfig) => void;
 
-  // Local AI states
-  aiEngine: 'local_llm' | 'local';
-  setAiEngine: React.Dispatch<React.SetStateAction<'local_llm' | 'local'>>;
-  localLLMState: string;
-  setLocalLLMState: React.Dispatch<React.SetStateAction<string>>;
-  localLLMProgress: { [key: string]: number };
-  localLLMError: string;
-  initLocalLLMWorker: () => void;
-  aiWorkerRef: React.MutableRefObject<Worker | null>;
-  showAIDownloadModal: boolean;
-  setShowAIDownloadModal: React.Dispatch<React.SetStateAction<boolean>>;
-  handleConfirmAIDownload: () => void;
-  handleDeclineAIDownload: () => void;
-  breakingTaskIds: { [key: string]: boolean };
-  setBreakingTaskIds: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
-
-  activeLLMSplitTaskId: string | null;
-  setActiveLLMSplitTaskId: React.Dispatch<React.SetStateAction<string | null>>;
-  activeLLMCollectionItemId: string | null;
-  setActiveLLMCollectionItemId: React.Dispatch<React.SetStateAction<string | null>>;
-  aiSuggestions: { taskId: string; content: string; suggestions: AISubtaskSuggestions } | null;
-  setAiSuggestions: React.Dispatch<React.SetStateAction<{ taskId: string; content: string; suggestions: AISubtaskSuggestions } | null>>;
-  customSteps: { high: { text: string; enabled: boolean }[]; low: { text: string; enabled: boolean }[]; unlock: { text: string; enabled: boolean }[] } | null;
-  setCustomSteps: React.Dispatch<React.SetStateAction<{ high: { text: string; enabled: boolean }[]; low: { text: string; enabled: boolean }[]; unlock: { text: string; enabled: boolean }[] } | null>>;
-  isOptimizingTask: boolean;
-  setIsOptimizingTask: React.Dispatch<React.SetStateAction<boolean>>;
-  handleAISplitTask: (taskId: string, content: string, refinementText?: string) => Promise<void>;
-  handleAIOptimizeTask: (taskId: string, content: string) => Promise<void>;
-
   // Autocomplete, form, and dialog states relocated from App.tsx
   showTutorial: boolean;
   setShowTutorial: React.Dispatch<React.SetStateAction<boolean>>;
   showEnergyGuide: boolean;
   setShowEnergyGuide: React.Dispatch<React.SetStateAction<boolean>>;
-  brainDumpText: string;
-  setBrainDumpText: React.Dispatch<React.SetStateAction<string>>;
-  isProcessingBrainDump: boolean;
-  setIsProcessingBrainDump: React.Dispatch<React.SetStateAction<boolean>>;
-  brainDumpResult: {
-    tasks: BujoItem[];
-    events: BujoItem[];
-    notes: BujoItem[];
-    emotion: string;
-  } | null;
-  setBrainDumpResult: React.Dispatch<React.SetStateAction<any | null>>;
   standardInput: string;
   setStandardInput: React.Dispatch<React.SetStateAction<string>>;
   standardType: 'task' | 'event' | 'note';
@@ -336,20 +277,10 @@ export interface BujoContextType {
   selectCollectionAutocomplete: (colName: string) => void;
   selectCollectionAutocompleteRapid: (colName: string) => void;
   handleSaveRapidLog: (e: React.FormEvent) => void;
-  renderRealTimeSuggestions: (text: string, inputType: 'task' | 'event' | 'note', onSelectSuggestion: (subtasks: string[]) => void) => React.ReactNode;
-  createStandardTaskWithSuggestions: (subtasks: string[]) => void;
-  createRapidTaskWithSuggestions: (subtasks: string[]) => void;
   handleStartEditItem: (id: string, initialContent: string) => void;
   handleSaveEditItemForm: (id: string, energy?: number, complexity?: number, executionTime?: number, date?: string, time?: string) => void;
-  handleBrainDumpOrganize: () => void;
-  addBrainDumpItemsToBujo: () => void;
-  appendBrainDumpTrigger: (trigger: string) => void;
   getSubtaskCompletionString: (item: BujoItem) => string;
-  handleToggleCustomStep: (category: 'high' | 'low' | 'unlock', index: number) => void;
-  handleEditCustomStep: (category: 'high' | 'low' | 'unlock', index: number, text: string) => void;
-  handleRemoveCustomStep: (category: 'high' | 'low' | 'unlock', index: number) => void;
-  handleAddCustomStep: (category: 'high' | 'low' | 'unlock') => void;
-  handleApplyAISuggestion: (steps: string[]) => void;
+
 
   // Timeline & derived layouts
   timelineMobileView: 'timeline' | 'unscheduled';
@@ -419,7 +350,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     return (saved as any) || 'high';
   });
 
-  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'brain_dump' | 'settings' | 'collections' | 'trash' | 'someday_maybe' | 'dream_board' | 'landing_page'>(() => {
+  const [activeTab, setActiveTab] = useState<'indice' | 'daily_log' | 'weekly_log' | 'monthly_log' | 'daily_spread' | 'future_log' | 'settings' | 'collections' | 'trash' | 'dream_board' | 'landing_page'>(() => {
     const saved = localStorage.getItem('bujo_focus_settings');
     if (saved) {
       try {
@@ -532,9 +463,6 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     if (Array.isArray(merged.bujo_focus_items)) {
       merged.bujo_focus_items = deduplicateBujoItems(merged.bujo_focus_items);
     }
-    if (Array.isArray(merged.bujo_focus_someday_items)) {
-      merged.bujo_focus_someday_items = deduplicateBujoItems(merged.bujo_focus_someday_items);
-    }
 
     return merged;
   };
@@ -554,269 +482,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('bujo_focus_current_energy', currentEnergy);
   }, [currentEnergy]);
 
-  // AI states
-  const [aiEngine, setAiEngine] = useState<'local_llm' | 'local'>(() => {
-    const saved = localStorage.getItem('bujo_ai_engine');
-    if (saved) return saved as 'local_llm' | 'local';
-    return 'local'; // Default to simple rules engine for new users to avoid auto-download
-  });
 
-  const [showAIDownloadModal, setShowAIDownloadModal] = useState<boolean>(false);
-
-  const [localLLMState, setLocalLLMState] = useState<string>('idle');
-  const [localLLMProgress, setLocalLLMProgress] = useState<{ [key: string]: number }>({});
-  const [localLLMError, setLocalLLMError] = useState<string>('');
-  const aiWorkerRef = useRef<Worker | null>(null);
-
-  const [breakingTaskIds, setBreakingTaskIds] = useState<{ [key: string]: boolean }>({});
-  const [activeLLMSplitTaskId, setActiveLLMSplitTaskId] = useState<string | null>(null);
-  const [activeLLMCollectionItemId, setActiveLLMCollectionItemId] = useState<string | null>(null);
-
-  const [aiSuggestions, setAiSuggestions] = useState<{ taskId: string; content: string; suggestions: AISubtaskSuggestions } | null>(null);
-  const [customSteps, setCustomSteps] = useState<{ high: { text: string; enabled: boolean }[]; low: { text: string; enabled: boolean }[]; unlock: { text: string; enabled: boolean }[] } | null>(null);
-  const [isOptimizingTask, setIsOptimizingTask] = useState<boolean>(false);
-
-  useEffect(() => {
-    localStorage.setItem('bujo_ai_engine', aiEngine);
-    if (aiEngine === 'local_llm' && localLLMState === 'idle') {
-      initLocalLLMWorker();
-    }
-  }, [aiEngine]);
-
-  const initLocalLLMWorker = () => {
-    if (aiWorkerRef.current) return;
-
-    setLocalLLMState('loading');
-    setLocalLLMError('');
-    setLocalLLMProgress({});
-
-    try {
-      const worker = new Worker(new URL('../ai.worker.ts', import.meta.url), { type: 'module' });
-
-      worker.onmessage = (e: MessageEvent) => {
-        const { type, data } = e.data;
-
-        if (type === 'progress') {
-          setLocalLLMProgress(prev => ({
-            ...prev,
-            [data.file]: data.progress
-          }));
-        } else if (type === 'file_ready') {
-          setLocalLLMProgress(prev => ({
-            ...prev,
-            [data.file]: 100
-          }));
-        } else if (type === 'ready') {
-          setLocalLLMState('ready');
-          showToast('🤖 IA Local no Browser carregada com sucesso!');
-        } else if (type === 'error') {
-          setLocalLLMState('error');
-          setLocalLLMError(data);
-          showToast(`Erro na IA Local: ${data}`);
-          setBreakingTaskIds({});
-        } else if (type === 'result') {
-          const resultText = data;
-          const mode = e.data.mode || 'split';
-
-          if (mode === 'advise') {
-            return;
-          }
-
-          if (mode === 'braindump') {
-            const dumpTasks: any[] = [];
-            const dumpEvents: any[] = [];
-            const dumpNotes: any[] = [];
-            
-            const lines = resultText.split('\n').map((l: string) => l.trim()).filter(Boolean);
-            lines.forEach((line: string, index: number) => {
-              const cleanedLine = line.replace(/^[TEN]:\s*/i, '').trim();
-              if (line.toUpperCase().startsWith('T:')) {
-                dumpTasks.push({
-                  id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
-                  type: 'task',
-                  status: 'open',
-                  content: cleanedLine,
-                  date: getLocalDateString(),
-                  createdAt: new Date().toISOString()
-                });
-              } else if (line.toUpperCase().startsWith('E:')) {
-                const parts = cleanedLine.split('|');
-                const content = (parts[0] || '').trim();
-                const time = (parts[1] || '12:00').trim();
-                dumpEvents.push({
-                  id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
-                  type: 'event',
-                  status: 'open',
-                  content,
-                  date: getLocalDateString(),
-                  time,
-                  createdAt: new Date().toISOString()
-                });
-              } else if (line.toUpperCase().startsWith('N:')) {
-                dumpNotes.push({
-                  id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
-                  type: 'note',
-                  status: 'open',
-                  content: cleanedLine,
-                  date: getLocalDateString(),
-                  createdAt: new Date().toISOString()
-                });
-              }
-            });
-            
-            let emotion = 'Mente processada com sucesso pela IA Local.';
-            const textLower = brainDumpTextRef.current.toLowerCase();
-            const anxietyKeywords = BRAIN_DUMP_KEYWORDS.anxiety;
-            const fatigueKeywords = BRAIN_DUMP_KEYWORDS.fatigue;
-            const positiveKeywords = BRAIN_DUMP_KEYWORDS.positive;
-
-            if (anxietyKeywords.some(w => textLower.includes(w))) {
-              emotion = '⚠️ Identificamos ansiedade relacionada a prazos ou volume de tarefas.';
-            } else if (fatigueKeywords.some(w => textLower.includes(w))) {
-              emotion = '🔋 Identificamos fadiga física ou mental. Considere descansar.';
-            } else if (positiveKeywords.some(w => textLower.includes(w))) {
-              emotion = '✨ Foco otimista e positivo. Excelente momento para iniciar!';
-            }
-
-            setBrainDumpResult({ tasks: dumpTasks, events: dumpEvents, notes: dumpNotes, emotion });
-            setIsProcessingBrainDump(false);
-            showToast('Caos mental organizado pela IA com sucesso!');
-            return;
-          }
-
-          if (mode === 'optimize') {
-            setActiveLLMSplitTaskId(currentTaskId => {
-              if (currentTaskId) {
-                setItems(prev => prev.map(item => {
-                  if (item.id === currentTaskId) {
-                    return { ...item, content: resultText };
-                  }
-                  return item;
-                }));
-                setAiSuggestions(prev => prev ? { ...prev, content: resultText } : null);
-              }
-              return null;
-            });
-            setIsOptimizingTask(false);
-            setBreakingTaskIds({});
-            showToast('Descrição otimizada pela IA local!');
-            return;
-          }
-
-          setActiveLLMSplitTaskId(currentTaskId => {
-            if (currentTaskId) {
-              const originalItem = itemsRef.current.find(item => item.id === currentTaskId);
-              const originalContent = originalItem ? originalItem.content : '';
-
-              const rawSteps = resultText
-                .split('\n')
-                .map((l: string) => l.replace(/^[-*•\d.\s]+/, '').trim())
-                .filter(Boolean);
-              const steps = Array.from(new Set(rawSteps)) as string[];
-
-              const high = steps;
-              const low = steps.slice(0, Math.min(3, Math.max(1, Math.floor(steps.length / 2))));
-              const unlock = steps.length > 0 ? [steps[0]] : ['Apenas começar por 1 minuto'];
-
-              setAiSuggestions({
-                taskId: currentTaskId,
-                content: originalContent,
-                suggestions: { high, low, unlock }
-              });
-
-              setCustomSteps({
-                high: high.map((t: string) => ({ text: t, enabled: true })),
-                low: low.map((t: string) => ({ text: t, enabled: true })),
-                unlock: unlock.map((t: string) => ({ text: t, enabled: true }))
-              });
-
-              showToast('Sugestões geradas pela IA local no browser!');
-            }
-            return null;
-          });
-
-          setActiveLLMCollectionItemId(currentItemId => {
-            if (currentItemId) {
-              const rawSteps = resultText
-                .split('\n')
-                .map((l: string) => l.replace(/^[-*•\d.\s]+/, '').trim())
-                .filter(Boolean);
-              const steps = Array.from(new Set(rawSteps)) as string[];
-
-              setCollections(prevCollections => {
-                return prevCollections.map(col => {
-                  return {
-                    ...col,
-                    items: col.items.map((item: any) => {
-                      if (item.id === currentItemId) {
-                        const newSubtasks = [
-                          ...(item.subtasks || []),
-                          ...steps.map((step: string, idx: number) => ({
-                            id: `col-sub-${Date.now()}-${idx}-${Math.random()}`,
-                            content: step,
-                            completed: false
-                          }))
-                        ];
-                        return { ...item, subtasks: newSubtasks };
-                      }
-                      return item;
-                    })
-                  };
-                });
-              });
-              showToast('Micro-tarefas geradas pela IA local!');
-            }
-            return null;
-          });
-
-          setBreakingTaskIds({});
-          setDecomposingCollectionItemIds({});
-        }
-      };
-
-      worker.postMessage({ type: 'load' });
-      aiWorkerRef.current = worker;
-    } catch (err: any) {
-      setLocalLLMState('error');
-      setLocalLLMError(err.message || err);
-      showToast('Erro ao inicializar o Worker de IA.');
-      setBreakingTaskIds({});
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (aiWorkerRef.current) {
-        aiWorkerRef.current.terminate();
-        aiWorkerRef.current = null;
-      }
-    };
-  }, []);
-
-  const handleConfirmAIDownload = () => {
-    localStorage.setItem('bujo_asked_ai_download', 'true');
-    setAiEngine('local_llm');
-    setShowAIDownloadModal(false);
-    initLocalLLMWorker();
-  };
-
-  const handleDeclineAIDownload = () => {
-    localStorage.setItem('bujo_asked_ai_download', 'true');
-    setShowAIDownloadModal(false);
-  };
-
-  useEffect(() => {
-    const asked = localStorage.getItem('bujo_asked_ai_download');
-    const savedEngine = localStorage.getItem('bujo_ai_engine');
-    
-    // Only show if never asked before, and not already using local_llm
-    if (asked !== 'true' && savedEngine !== 'local_llm') {
-      const timer = setTimeout(() => {
-        setShowAIDownloadModal(true);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
 
   // Hook integrations
   const settingsData = useBujoSettings();
@@ -880,7 +546,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const { items, setItems, itemsRef } = itemsData;
 
   const handleDeleteItemWithConfirm = (id: string) => {
-    const itemToDelete = items.find(item => item.id === id) || itemsData.somedayItems.find(item => item.id === id);
+    const itemToDelete = items.find(item => item.id === id);
     if (!itemToDelete) return;
     
     askConfirmation({
@@ -900,12 +566,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     setCollections,
     setItems,
     showToast,
-    aiEngine,
-    localLLMState,
-    aiWorkerRef,
-    initLocalLLMWorker,
-    setActiveTab,
-    setActiveLLMCollectionItemId
+    setActiveTab
   );
 
   const {
@@ -925,8 +586,6 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     setNewColItemTitle,
     newColItemNotes,
     setNewColItemNotes,
-    decomposingCollectionItemIds,
-    setDecomposingCollectionItemIds,
     handleCreateCollection,
     handleCreateCollectionItem,
     handleDeleteCollectionItem,
@@ -936,8 +595,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     handleDeleteCollectionItemSubtask,
     handleUploadCollectionItemMedia,
     handleAddCollectionItemMediaLink,
-    handleDeleteCollectionItemMedia,
-    handleAICollectionItemDecompose
+    handleDeleteCollectionItemMedia
   } = collectionsData;
 
   // Resolve collections setItems circular ref & override default setCollections to sync with local storage
@@ -996,9 +654,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     if (mergedData.bujo_focus_items) {
       itemsData.setItems(mergedData.bujo_focus_items);
     }
-    if (mergedData.bujo_focus_someday_items) {
-      itemsData.setSomedayItems(mergedData.bujo_focus_someday_items);
-    }
+
     if (mergedData.bujo_focus_trash_items) {
       itemsData.setTrashItems(mergedData.bujo_focus_trash_items);
     }
@@ -1178,7 +834,6 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     const data = {
       items: itemsData.items,
       trashItems: itemsData.trashItems,
-      somedayItems: itemsData.somedayItems,
       dreams: itemsData.dreams,
       collections: collections,
       settings: settingsData.settings,
@@ -1222,9 +877,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           if (data.trashItems) {
             localStorage.setItem('bujo_focus_trash_items', JSON.stringify(data.trashItems));
           }
-          if (data.somedayItems) {
-             localStorage.setItem('bujo_focus_someday_items', JSON.stringify(data.somedayItems));
-          }
+
           if (data.dreams) {
              localStorage.setItem('bujo_focus_dreams', JSON.stringify(data.dreams));
           }
@@ -1301,13 +954,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const [showTutorial, setShowTutorial] = useState<boolean>(settings.firstTime);
   const [showEnergyGuide, setShowEnergyGuide] = useState<boolean>(false);
   
-  const [brainDumpText, setBrainDumpText] = useState<string>('');
-  const brainDumpTextRef = useRef<string>('');
-  useEffect(() => {
-    brainDumpTextRef.current = brainDumpText;
-  }, [brainDumpText]);
-  const [isProcessingBrainDump, setIsProcessingBrainDump] = useState<boolean>(false);
-  const [brainDumpResult, setBrainDumpResult] = useState<any | null>(null);
+
 
   const [standardInput, setStandardInput] = useState<string>('');
   const [standardType, setStandardType] = useState<'task' | 'event' | 'note'>('task');
@@ -1359,7 +1006,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     const completedTasks = todayItems.filter(i => i.type === 'task' && i.status === 'completed').length;
     
     const baseLoad = (openTasks * 20) + (openEvents * 15) + (anxietyLevel * 12);
-    const relief = (completedTasks * 25) + (pomodoroData.completedPomodoros * 10) + (brainDumpText ? 15 : 0);
+    const relief = (completedTasks * 25) + (pomodoroData.completedPomodoros * 10);
     const load = Math.max(10, Math.min(95, baseLoad - relief));
     return Math.round(load);
   };
@@ -1534,101 +1181,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     showToast('Entrada salva com sucesso!');
   };
 
-  const renderRealTimeSuggestions = (
-    text: string,
-    inputType: 'task' | 'event' | 'note',
-    onSelectSuggestion: (subtasks: string[]) => void
-  ) => {
-    const sug = getRealTimeSuggestions(text);
-    if (!sug || inputType !== 'task') return null;
 
-    return (
-      <div className="mt-1.5 p-2 rounded-xl border border-bujo-accent/20 bg-bujo-accent/[0.02] dark:bg-bujo-accent/[0.04] backdrop-blur-sm animate-fade-in text-[10.5px] space-y-1.5 text-bujo-text relative z-10 no-print shadow-sm">
-        <div className="flex items-center justify-between">
-          <span className="text-[9.5px] font-bold text-bujo-accent uppercase tracking-widest flex items-center gap-1">
-            <span>🧠</span> Copiloto TDAH ({sug.category})
-          </span>
-          <span className="text-[9px] text-zinc-500 font-mono">Micro-passos sugeridos</span>
-        </div>
-
-        <div className="flex flex-wrap gap-1.5 pl-0.5 text-[9.5px]">
-          {sug.subtasks.map((step: string, index: number) => (
-            <span key={index} className="inline-flex items-center gap-1 bg-zinc-200/40 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-zinc-200/50 dark:border-white/5 text-zinc-600 dark:text-zinc-350">
-              <span className="text-bujo-accent font-bold">•</span>
-              <span>{step}</span>
-            </span>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => onSelectSuggestion(sug.subtasks)}
-          className="w-full py-1 bg-bujo-accent/10 hover:bg-bujo-accent/20 text-bujo-accent text-[9.5px] font-bold rounded-lg transition-colors flex items-center justify-center gap-1 border border-bujo-accent/20 cursor-pointer"
-        >
-          <span>✨</span> Criar tarefa com estes {sug.subtasks.length} micro-passos
-        </button>
-      </div>
-    );
-  };
-
-  const createStandardTaskWithSuggestions = (subtasks: string[]) => {
-    if (!standardInput.trim()) return;
-    const { cleanContent, links } = extractLinksFromText(standardInput.trim());
-    const linkSubtasks = links.map((lnk, lIdx) => ({
-      id: `st-lnk-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
-      content: lnk,
-      completed: false
-    }));
-    const suggestionSubtasks = subtasks.map(s => ({
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      content: s,
-      completed: false
-    }));
-
-    const newItem: BujoItem = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      type: 'task',
-      status: 'open',
-      content: cleanContent,
-      date: getLocalDateString(),
-      subtasks: [...linkSubtasks, ...suggestionSubtasks],
-      createdAt: new Date().toISOString()
-    };
-    setItems(prev => [newItem, ...prev]);
-    setStandardInput('');
-    setExpandedTaskId(newItem.id);
-    showToast('Adicionado com micro-passos!');
-  };
-
-  const createRapidTaskWithSuggestions = (subtasks: string[]) => {
-    if (!rapidText.trim()) return;
-    const { cleanContent, links } = extractLinksFromText(rapidText.trim());
-    const linkSubtasks = links.map((lnk, lIdx) => ({
-      id: `st-lnk-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
-      content: lnk,
-      completed: false
-    }));
-    const suggestionSubtasks = subtasks.map(s => ({
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      content: s,
-      completed: false
-    }));
-
-    const newItem: BujoItem = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      type: 'task',
-      status: 'open',
-      content: cleanContent,
-      date: getLocalDateString(),
-      subtasks: [...linkSubtasks, ...suggestionSubtasks],
-      createdAt: new Date().toISOString()
-    };
-    setItems(prev => [newItem, ...prev]);
-    setRapidText('');
-    setShowRapidLog(false);
-    setExpandedTaskId(newItem.id);
-    showToast('Adicionado com micro-passos!');
-  };
 
   const handleStartEditItem = (id: string, initialContent: string) => {
     setEditingItemId(id);
@@ -1671,132 +1224,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     showToast('Item atualizado com sucesso!');
   };
 
-  // Brain Dump organizer functions
-  const handleBrainDumpOrganize = () => {
-    if (!brainDumpText.trim()) return;
-    setIsProcessingBrainDump(true);
-    showToast('IA analisando o despejo de pensamentos...');
 
-    if (aiEngine === 'local_llm') {
-      if (localLLMState !== 'ready') {
-        initLocalLLMWorker();
-        showToast('IA Local carregando... Aguarde.');
-        setIsProcessingBrainDump(false);
-        setActiveTab('settings');
-        return;
-      }
-      if (aiWorkerRef.current) {
-        aiWorkerRef.current.postMessage({
-          type: 'generate',
-          data: { text: brainDumpText, mode: 'braindump' }
-        });
-      }
-      return;
-    }
-
-    setTimeout(() => {
-      const text = brainDumpText;
-      
-      const cleanBujoContent = (str: string) => {
-        return str
-          .replace(/^[,.\s-]+/, '')
-          .replace(/^(?:preciso\s+(?:de\s+)?|tenho\s+(?:que|de)\s+|lembrar\s+(?:de|da|do)\s+|quero\s+|vou\s+|devo\s+)/i, '')
-          .trim()
-          .replace(/^\w/, (c) => c.toUpperCase());
-      };
-
-      const sentences = text
-        .split(/(?:[.\n!?]|\be\s+(?:também|preciso|tenho|vou|devo)\b)/i)
-        .map(s => s.trim())
-        .filter(s => s.length > 3);
-
-      const dumpTasks: BujoItem[] = [];
-      const dumpEvents: BujoItem[] = [];
-      const dumpNotes: BujoItem[] = [];
-      
-      let emotion = 'Estado neutro com tendência à reflexão';
-      const textLower = text.toLowerCase();
-      
-      const anxietyKeywords = BRAIN_DUMP_KEYWORDS.anxiety;
-      const fatigueKeywords = BRAIN_DUMP_KEYWORDS.fatigue;
-      const positiveKeywords = BRAIN_DUMP_KEYWORDS.positive;
-
-      if (anxietyKeywords.some(w => textLower.includes(w))) {
-        emotion = '⚠️ Identificamos ansiedade relacionada a prazos ou volume de tarefas.';
-      } else if (fatigueKeywords.some(w => textLower.includes(w))) {
-        emotion = '🔋 Identificamos fadiga física ou mental. Considere descansar.';
-      } else if (positiveKeywords.some(w => textLower.includes(w))) {
-        emotion = '✨ Foco otimista e positivo. Excelente momento para iniciar!';
-      }
-
-      sentences.forEach((sentence, index) => {
-        const cleaned = cleanBujoContent(sentence);
-        const lowerCleaned = cleaned.toLowerCase();
-        
-        const timeMatch = sentence.match(/(\d{1,2})h(\d{2})?|(\d{1,2}):(\d{2})/i);
-        const isEvent = BRAIN_DUMP_KEYWORDS.events.some(w => lowerCleaned.includes(w));
-        
-        if (timeMatch || isEvent) {
-          let time = '12:00';
-          if (timeMatch) {
-            const h = timeMatch[1] || timeMatch[3];
-            const m = timeMatch[2] || timeMatch[4] || '00';
-            time = `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
-          }
-          const eventContent = cleaned.replace(/(\d{1,2})h(\d{2})?|(\d{1,2}):(\d{2})/gi, '').trim();
-          dumpEvents.push({
-            id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
-            type: 'event',
-            status: 'open',
-            content: eventContent,
-            date: getLocalDateString(),
-            time: time,
-            createdAt: new Date().toISOString()
-          });
-        } else if (['sinto', 'estou', 'pensando', 'acho', 'triste', 'feliz', 'ansioso', 'cansado', 'bonito', 'legal'].some(w => lowerCleaned.includes(w))) {
-          dumpNotes.push({
-            id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
-            type: 'note',
-            status: 'open',
-            content: cleaned,
-            date: getLocalDateString(),
-            createdAt: new Date().toISOString()
-          });
-        } else {
-          dumpTasks.push({
-            id: `${Date.now() + index}-${Math.random().toString(36).substring(2, 11)}`,
-            type: 'task',
-            status: 'open',
-            content: cleaned,
-            date: getLocalDateString(),
-            createdAt: new Date().toISOString()
-          });
-        }
-      });
-
-      setBrainDumpResult({ tasks: dumpTasks, events: dumpEvents, notes: dumpNotes, emotion });
-      setIsProcessingBrainDump(false);
-      showToast('Mente organizada em blocos!');
-    }, 2000);
-  };
-
-  const addBrainDumpItemsToBujo = () => {
-    if (!brainDumpResult) return;
-    const all = [...brainDumpResult.tasks, ...brainDumpResult.events, ...brainDumpResult.notes];
-    setItems(prev => [...all, ...prev]);
-    setBrainDumpText('');
-    setBrainDumpResult(null);
-    showToast('Tudo adicionado ao seu Bullet Journal!');
-    setActiveTab('daily_log');
-  };
-
-  const appendBrainDumpTrigger = (trigger: string) => {
-    setBrainDumpText(prev => {
-      const trimmed = prev.trim();
-      return trimmed ? `${trimmed}\n${trigger}` : trigger;
-    });
-    showToast(`"${trigger}" adicionado ao despejo!`);
-  };
 
   const getSubtaskCompletionString = (item: BujoItem) => {
     if (!item.subtasks || item.subtasks.length === 0) return '';
@@ -1804,70 +1232,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     return `(${completed}/${item.subtasks.length})`;
   };
 
-  // AISuggestions steps handlers
-  const handleToggleCustomStep = (category: 'high' | 'low' | 'unlock', index: number) => {
-    if (!customSteps) return;
-    setCustomSteps(prev => {
-      if (!prev) return null;
-      const updated = [...prev[category]];
-      updated[index] = { ...updated[index], enabled: !updated[index].enabled };
-      return { ...prev, [category]: updated };
-    });
-  };
 
-  const handleEditCustomStep = (category: 'high' | 'low' | 'unlock', index: number, text: string) => {
-    if (!customSteps) return;
-    setCustomSteps(prev => {
-      if (!prev) return null;
-      const updated = [...prev[category]];
-      updated[index] = { ...updated[index], text };
-      return { ...prev, [category]: updated };
-    });
-  };
-
-  const handleRemoveCustomStep = (category: 'high' | 'low' | 'unlock', index: number) => {
-    if (!customSteps) return;
-    setCustomSteps(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        [category]: prev[category].filter((_, idx) => idx !== index)
-      };
-    });
-  };
-
-  const handleAddCustomStep = (category: 'high' | 'low' | 'unlock') => {
-    if (!customSteps) return;
-    setCustomSteps(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        [category]: [...prev[category], { text: '', enabled: true }]
-      };
-    });
-  };
-
-  const handleApplyAISuggestion = (steps: string[]) => {
-    if (!aiSuggestions) return;
-    setItems(prev => prev.map(item => {
-      if (item.id === aiSuggestions.taskId) {
-        const sub = steps.filter(s => s.trim().length > 0).map(s => ({
-          id: Math.random().toString(36).substr(2, 9),
-          content: s,
-          completed: false
-        }));
-        return { 
-          ...item, 
-          subtasks: sub 
-        };
-      }
-      return item;
-    }));
-    setExpandedTaskId(aiSuggestions.taskId);
-    setAiSuggestions(null);
-    setCustomSteps(null);
-    showToast('Sugestões aplicadas com sucesso!');
-  };
 
   // Future Log Add Event Form
   const handleAddFutureEvent = (
@@ -2103,145 +1468,6 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     window.print();
   };
 
-  // AI optimize task description to make it concrete and action-oriented
-  const handleAIOptimizeTask = async (taskId: string, content: string) => {
-    setIsOptimizingTask(true);
-    showToast('Otimizando descrição da tarefa...');
-
-    if (aiEngine === 'local_llm') {
-      if (localLLMState !== 'ready') {
-        initLocalLLMWorker();
-        showToast('IA Local carregando... Aguarde.');
-        setIsOptimizingTask(false);
-        setActiveTab('settings');
-        return;
-      }
-      setActiveLLMSplitTaskId(taskId);
-      if (aiWorkerRef.current) {
-        aiWorkerRef.current.postMessage({
-          type: 'generate',
-          data: { text: content, mode: 'optimize' }
-        });
-      }
-      return;
-    }
-
-    let optimized = '';
-    // Fallback
-    const lower = content.toLowerCase();
-    if (lower.includes('limpar') || lower.includes('arrumar')) {
-      optimized = 'Organizar um cômodo específico e recolher 5 itens espalhados';
-    } else if (lower.includes('estudar') || lower.includes('ler')) {
-      optimized = 'Revisar 1 tópico ou ler 3 páginas do material de estudo';
-    } else if (lower.includes('trabalhar') || lower.includes('fazer')) {
-      optimized = 'Escrever os tópicos principais ou rascunho de 1 item pendente';
-    } else {
-      optimized = `Focar nos primeiros 5 minutos de: ${content}`;
-    }
-
-    setItems(prev => prev.map(item => {
-      if (item.id === taskId) {
-        return { ...item, content: optimized };
-      }
-      return item;
-    }));
-
-    setAiSuggestions(prev => prev ? { ...prev, content: optimized } : null);
-    setIsOptimizingTask(false);
-    showToast('Descrição da tarefa otimizada com sucesso!');
-  };
-
-  // Local AI split microtasks (using Local LLM in browser worker first, fallback to dictionary)
-  const handleAISplitTask = async (taskId: string, content: string, refinementText?: string) => {
-    setBreakingTaskIds(prev => ({ ...prev, [taskId]: true }));
-    showToast('IA analisando e elaborando sugestões cognitivas...');
-
-    let promptInput = content;
-    if (refinementText && refinementText.trim()) {
-      promptInput = `${content} (Instrução especial: ${refinementText.trim()})`;
-    }
-
-    if (aiEngine === 'local_llm') {
-      if (localLLMState !== 'ready') {
-        initLocalLLMWorker();
-        showToast('IA Local carregando... Aguarde o download do modelo (~350MB, apenas na primeira vez).');
-        setBreakingTaskIds(prev => ({ ...prev, [taskId]: false }));
-        setActiveTab('settings');
-        setTimeout(() => {
-          const el = document.getElementById('local-llm-activation-center');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 150);
-        return;
-      }
-
-      setActiveLLMSplitTaskId(taskId);
-      if (aiWorkerRef.current) {
-        aiWorkerRef.current.postMessage({
-          type: 'generate',
-          data: { text: promptInput }
-        });
-      }
-      return;
-    }
-
-    let high: string[] = [];
-    let low: string[] = [];
-    let unlock: string[] = [];
-    const lower = content.toLowerCase();
-    const refLower = (refinementText || '').toLowerCase();
-    
-    let baseHigh: string[] = [];
-    let baseLow: string[] = [];
-    let baseUnlock: string[] = [];
-
-    if (lower.includes('limpar') || lower.includes('casa') || lower.includes('quarto') || lower.includes('cozinha') || lower.includes('arrumar')) {
-      baseHigh = ['Separar pano, vassoura e desinfetante', 'Recolher lixo e pratos sujos', 'Varrer o chão do cômodo', 'Passar pano úmido', 'Devolver objetos aos locais corretos'];
-      baseLow = ['Juntar todo o lixo visível em uma sacola', 'Varrer rápido o centro do cômodo', 'Passar um pano básico nas bancadas principais'];
-      baseUnlock = ['Apenas juntar as roupas jogadas no chão e colocar no cesto (2 min)'];
-    } else if (lower.includes('estudar') || lower.includes('revisar') || lower.includes('ler') || lower.includes('prova')) {
-      baseHigh = ['Desligar notificações do celular', 'Escolher um sub-tópico específico', 'Ler por 15 minutos focados', 'Escrever um resumo em 3 frases', 'Resolver 3 questões práticas'];
-      baseLow = ['Sentar na mesa de estudos com o caderno aberto', 'Ler 2 páginas do material de referência', 'Escrever 1 frase sobre o que lembrou'];
-      baseUnlock = ['Apenas abrir o livro ou PDF na página do assunto (1 min)'];
-    } else if (lower.includes('comprar') || lower.includes('mercado') || lower.includes('feira')) {
-      baseHigh = ['Olhar o que falta na despensa e geladeira', 'Anotar lista agrupada por corredor', 'Definir limite de gastos', 'Ir ao supermercado ou feira', 'Guardar tudo ao retornar'];
-      baseLow = ['Checar a geladeira rápido', 'Anotar 5 itens essenciais', 'Fazer o pedido rápido pelo aplicativo'];
-      baseUnlock = ['Abrir a geladeira e tirar foto das prateleiras para checar o que falta (1 min)'];
-    } else if (lower.includes('relatório') || lower.includes('trabalho') || lower.includes('enviar') || lower.includes('email') || lower.includes('projeto')) {
-      baseHigh = ['Abrir o arquivo principal do projeto', 'Escrever apenas o título e sumário', 'Preencher os pontos chaves em tópicos', 'Escrever uma introdução simples', 'Revisar e anexar/enviar'];
-      baseLow = ['Abrir o documento e escrever o título principal', 'Digitar 3 tópicos gerais sobre o assunto', 'Salvar o rascunho inicial'];
-      baseUnlock = ['Apenas abrir o Word/Docs e escrever a primeira frase do título (1 min)'];
-    } else {
-      baseHigh = ['Identificar o primeiro passo de 2 minutos', 'Preparar as ferramentas de trabalho', 'Trabalhar focado por 15 minutos', 'Revisar o rascunho', 'Organizar a mesa'];
-      baseLow = ['Fazer a tarefa por apenas 5 minutos com timer', 'Concluir a parte mais básica', 'Anotar o que falta para depois'];
-      baseUnlock = ['Colocar o objeto necessário para a tarefa em cima da mesa (1 min)'];
-    }
-
-    if (refLower) {
-      high = baseHigh.map(s => `${s} (Foco: ${refinementText})`);
-      low = baseLow.map(s => `${s} (Foco: ${refinementText})`);
-      unlock = baseUnlock.map(s => `${s} (Foco: ${refinementText})`);
-    } else {
-      high = baseHigh;
-      low = baseLow;
-      unlock = baseUnlock;
-    }
-
-    setAiSuggestions({
-      taskId,
-      content: content,
-      suggestions: { high, low, unlock }
-    });
-
-    setCustomSteps({
-      high: high.map(s => ({ text: s, enabled: true })),
-      low: low.map(s => ({ text: s, enabled: true })),
-      unlock: unlock.map(s => ({ text: s, enabled: true }))
-    });
-
-    setBreakingTaskIds(prev => ({ ...prev, [taskId]: false }));
-    showToast('Sugestões geradas! Selecione a que melhor se adapta à sua realidade.');
-  };
-
   // Wrapped assignItemToTime to auto-supply setSelectedHourToSchedule
   const assignItemToTime = (itemId: string, timeStr: string) => {
     itemsData.assignItemToTime(itemId, timeStr, setSelectedHourToSchedule);
@@ -2271,10 +1497,6 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         itemsData.handleSaveEditItem(...args);
         setEditingItemId(null);
         setEditingItemContent('');
-      },
-      handleEditSomedayItemContent: (id: string, newContent: string) => {
-        itemsData.handleEditSomedayItemContent(id, newContent);
-        setEditingItemId(null);
       },
       assignItemToTime,
       handleDeleteItem: handleDeleteItemWithConfirm,
@@ -2325,33 +1547,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       setConfirmModal,
       askConfirmation,
 
-      // AI States
-      aiEngine,
-      setAiEngine,
-      localLLMState,
-      setLocalLLMState,
-      localLLMProgress,
-      localLLMError,
-      initLocalLLMWorker,
-      aiWorkerRef,
-      showAIDownloadModal,
-      setShowAIDownloadModal,
-      handleConfirmAIDownload,
-      handleDeclineAIDownload,
-      breakingTaskIds,
-      setBreakingTaskIds,
-      activeLLMSplitTaskId,
-      setActiveLLMSplitTaskId,
-      activeLLMCollectionItemId,
-      setActiveLLMCollectionItemId,
-      aiSuggestions,
-      setAiSuggestions,
-      customSteps,
-      setCustomSteps,
-      isOptimizingTask,
-      setIsOptimizingTask,
-      handleAISplitTask,
-      handleAIOptimizeTask,
+
 
       // Habits
       ...habitData,
@@ -2376,12 +1572,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       setShowTutorial,
       showEnergyGuide,
       setShowEnergyGuide,
-      brainDumpText,
-      setBrainDumpText,
-      isProcessingBrainDump,
-      setIsProcessingBrainDump,
-      brainDumpResult,
-      setBrainDumpResult,
+
       standardInput,
       setStandardInput,
       standardType,
@@ -2435,20 +1626,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       selectCollectionAutocomplete,
       selectCollectionAutocompleteRapid,
       handleSaveRapidLog,
-      renderRealTimeSuggestions,
-      createStandardTaskWithSuggestions,
-      createRapidTaskWithSuggestions,
       handleStartEditItem,
       handleSaveEditItemForm,
-      handleBrainDumpOrganize,
-      addBrainDumpItemsToBujo,
-      appendBrainDumpTrigger,
       getSubtaskCompletionString,
-      handleToggleCustomStep,
-      handleEditCustomStep,
-      handleRemoveCustomStep,
-      handleAddCustomStep,
-      handleApplyAISuggestion,
 
       // Timeline Specific
       timelineMobileView,

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Sparkles, Check, Activity, Trash2, Plus, Flame, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { Check, Activity, Trash2, Plus, Flame, TrendingUp } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
 interface HabitLog {
@@ -11,9 +11,6 @@ interface HabitLog {
 export const HabitTracker = () => {
   const {
     items,
-    aiEngine,
-    aiWorkerRef,
-    localLLMState,
     showToast,
     setUserXp,
     habits,
@@ -25,7 +22,6 @@ export const HabitTracker = () => {
   } = useBujo();
 
   const [newHabitName, setNewHabitName] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Generate 8 days starting from the Sunday of the current week
   const get8DaysFromStartOfWeek = () => {
@@ -46,105 +42,6 @@ export const HabitTracker = () => {
   };
 
   const last8Days = get8DaysFromStartOfWeek();
-
-  // Listen to worker messages if running AI analysis
-  useEffect(() => {
-    const handleWorkerMessage = (e: MessageEvent) => {
-      const { type, data } = e.data;
-      if (type === 'result' && isAnalyzing) {
-        parseAndApplyAISuggestions(data);
-      } else if (type === 'error' && isAnalyzing) {
-        runSemanticFallbackAnalysis();
-      }
-    };
-
-    if (aiWorkerRef.current) {
-      aiWorkerRef.current.addEventListener('message', handleWorkerMessage);
-    }
-    return () => {
-      if (aiWorkerRef.current) {
-        aiWorkerRef.current.removeEventListener('message', handleWorkerMessage);
-      }
-    };
-  }, [isAnalyzing]);
-
-  const parseAndApplyAISuggestions = (text: string) => {
-    const list = text
-      .split(',')
-      .map(h => h.replace(/^[-*•\d.\s]+/, '').trim())
-      .filter(h => h.length > 2 && h.length < 30);
-    
-    if (list.length >= 2) {
-      const updated = list.slice(0, 4).map(h => h.charAt(0).toUpperCase() + h.slice(1));
-      setHabits(updated);
-      showToast('🎯 Hábitos identificados e atualizados pela IA!');
-    } else {
-      runSemanticFallbackAnalysis();
-    }
-    setIsAnalyzing(false);
-  };
-
-  const runSemanticFallbackAnalysis = () => {
-    const taskFrequency: { [key: string]: number } = {};
-    items.forEach(item => {
-      if (item.type !== 'task') return;
-      let content = item.content.toLowerCase().trim();
-      content = content.replace(/^\[.*?\]\s*/, ''); // Remove collections
-      content = content.replace(/\s+\d+.*$/, '');    // Remove numbers/times
-      
-      if (content.length > 3) {
-        taskFrequency[content] = (taskFrequency[content] || 0) + 1;
-      }
-    });
-
-    const sorted = Object.entries(taskFrequency)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name]) => name.charAt(0).toUpperCase() + name.slice(1))
-      .filter(name => name.length >= 3);
-
-    const defaults = ['Beber água', 'Estudar', 'Exercício físico', 'Meditar'];
-    const finalHabits = sorted.slice(0, 4);
-
-    while (finalHabits.length < 4) {
-      const nextDefault = defaults.find(d => !finalHabits.includes(d));
-      if (nextDefault) finalHabits.push(nextDefault);
-      else break;
-    }
-
-    setHabits(finalHabits);
-    showToast('💡 Hábitos identificados pela frequência de tarefas!');
-    setIsAnalyzing(false);
-  };
-
-  const handleAnalyzeHabits = () => {
-    setIsAnalyzing(true);
-    showToast('IA analisando histórico para extrair hábitos...');
-
-    const taskListString = items
-      .filter(i => i.type === 'task')
-      .map(i => i.content)
-      .slice(0, 40)
-      .join(', ');
-
-    if (!taskListString) {
-      showToast('Sem tarefas suficientes no histórico. Usando hábitos padrão!');
-      setIsAnalyzing(false);
-      return;
-    }
-
-    const habitsPrompt = `Identifique 4 hábitos recorrentes e importantes (curtos, com 1 a 3 palavras) da seguinte lista de tarefas de um usuário. Responda APENAS os 4 nomes separados por vírgula. Lista de tarefas: ${taskListString}`;
-
-    if (aiEngine === 'local_llm' && localLLMState === 'ready' && aiWorkerRef.current) {
-      aiWorkerRef.current.postMessage({
-        type: 'generate',
-        data: { text: habitsPrompt, maxTokens: 80, mode: 'advise' }
-      });
-    } else {
-      setTimeout(() => {
-        runSemanticFallbackAnalysis();
-      }, 500);
-    }
-  };
 
   const formatDayOfWeek = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -222,16 +119,6 @@ export const HabitTracker = () => {
           <Activity className="w-4 h-4 text-bujo-highlight" />
           <span className="text-[10px] font-bold text-zinc-550 uppercase tracking-widest">Rastreador de Hábitos</span>
         </div>
-
-        <button
-          type="button"
-          onClick={handleAnalyzeHabits}
-          disabled={isAnalyzing}
-          className="flex items-center gap-1.5 text-[9px] font-bold text-bujo-accent hover:text-bujo-highlight transition-all shrink-0 disabled:opacity-50 px-2.5 py-1 rounded-xl bg-bujo-accent/10 hover:bg-bujo-accent/20 border border-bujo-accent/20"
-        >
-          <Sparkles className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
-          {isAnalyzing ? 'Analisando...' : 'Identificar com IA'}
-        </button>
       </div>
 
       {/* 2. New Habit Input Form & Add Action */}

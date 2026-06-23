@@ -5,16 +5,17 @@ updated: 2026-06-22T20:42:00Z
 # Project State
 
 **Milestone:** v2.0
-**Phase:** 18 - Keep Rapid Capture Open & Standardize Task Creation Capabilities
-**Status:** complete
+**Phase:** 19 - Removal of AI, Brain Dump, ADHD Copilot, Focus Guide, and Someday/Maybe Features
+**Status:** in_progress
 
 ## Last Action
 
-Completed Phase 18. Updated the Rapid Capture Modal to remain open after save. Added Date, Time, and Icon selector fields to the Rapid Capture Modal. Standardized all task registration flows across standard, someday, future, and rapid capture entry points to default the task icon to 🎯 and automatically parse inline URL links into subtasks.
+Started Phase 19, Plan 19.1. Created 19.1-PLAN.md to coordinate the removal of all AI suggestions, brain dump, TDAH copilot, focus guides, and GTD Someday/Maybe tabs.
 
 ## Next Steps
 
-Awaiting user feedback.
+Remove unused files, states, and components across the codebase.
+
 
 
 

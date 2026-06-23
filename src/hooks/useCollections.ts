@@ -7,12 +7,7 @@ export function useCollections(
   setCollections: React.Dispatch<React.SetStateAction<any[]>>,
   setItems: React.Dispatch<React.SetStateAction<BujoItem[]>>,
   showToast: (msg: string) => void,
-  aiEngine: 'local_llm' | 'local',
-  localLLMState: string,
-  aiWorkerRef: React.MutableRefObject<Worker | null>,
-  initLocalLLMWorker: () => void,
-  setActiveTab: React.Dispatch<React.SetStateAction<any>>,
-  setActiveLLMCollectionItemId: React.Dispatch<React.SetStateAction<string | null>>
+  setActiveTab: React.Dispatch<React.SetStateAction<any>>
 ) {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -26,7 +21,6 @@ export function useCollections(
   // Form states for creating collection item
   const [newColItemTitle, setNewColItemTitle] = useState('');
   const [newColItemNotes, setNewColItemNotes] = useState('');
-  const [decomposingCollectionItemIds, setDecomposingCollectionItemIds] = useState<{ [key: string]: boolean }>({});
 
   const handleReorderCollections = (activeId: string, overId: string) => {
     setCollections(prev => {
@@ -315,98 +309,6 @@ export function useCollections(
     showToast(`"${item.title}" migrado para o Daily Log!`);
   };
 
-  const handleAICollectionItemDecompose = async (collectionId: string, itemId: string, content: string) => {
-    setDecomposingCollectionItemIds(prev => ({ ...prev, [itemId]: true }));
-    showToast('IA analisando e elaborando passos...');
-
-    if (aiEngine === 'local_llm') {
-      if (localLLMState !== 'ready') {
-        initLocalLLMWorker();
-        showToast('IA Local carregando... Aguarde o download do modelo (~350MB, apenas na primeira vez).');
-        setDecomposingCollectionItemIds(prev => ({ ...prev, [itemId]: false }));
-        setActiveTab('settings');
-        setTimeout(() => {
-          const el = document.getElementById('local-llm-activation-center');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 150);
-        return;
-      }
-
-      setActiveLLMCollectionItemId(itemId);
-      if (aiWorkerRef.current) {
-        aiWorkerRef.current.postMessage({
-          type: 'generate',
-          data: { text: content }
-        });
-      }
-      return;
-    }
-
-    let steps: string[] = [];
-    const lower = content.toLowerCase();
-    if (lower.includes('quarkus') || lower.includes('api') || lower.includes('backend') || lower.includes('programar')) {
-      steps = [
-        'Acessar code.quarkus.io para gerar o esqueleto',
-        'Importar o projeto na IDE (VS Code ou IntelliJ)',
-        'Configurar banco de dados no application.properties',
-        'Criar modelo/entidade de dados usando Panache',
-        'Implementar recurso/resource REST básico',
-        'Executar quarkus dev e testar no navegador ou Postman'
-      ];
-    } else if (lower.includes('tdah') || lower.includes('hiperfoco') || lower.includes('foco') || lower.includes('estudar')) {
-      steps = [
-        'Sentar confortavelmente e beber um copo de água',
-        'Silenciar notificações do celular por 25 minutos',
-        'Ler apenas o primeiro parágrafo/seção para começar',
-        'Escrever 3 palavras-chave sobre o que acabou de ler',
-        'Fazer uma pausa rápida de 5 minutos'
-      ];
-    } else if (lower.includes('design') || lower.includes('mockup') || lower.includes('arte') || lower.includes('falar')) {
-      steps = [
-        'Pesquisar 3 referências visuais no Dribbble ou Pinterest',
-        'Rascunhar a estrutura básica no papel em 2 minutos',
-        'Abrir ferramenta de design (Figma ou Canva)',
-        'Definir paleta de cores principal',
-        'Criar a primeira tela/componente principal'
-      ];
-    } else {
-      steps = [
-        'Definir o objetivo principal em uma única frase',
-        'Separar os materiais ou ferramentas necessárias',
-        'Executar a primeira ação simples de 2 minutos',
-        'Revisar o progresso inicial',
-        'Anotar o próximo passo curto'
-      ];
-    }
-
-    setCollections(prevCollections => {
-      return prevCollections.map(col => {
-        if (col.id === collectionId) {
-          return {
-            ...col,
-            items: col.items.map((item: any) => {
-              if (item.id === itemId) {
-                const newSubtasks = [
-                  ...(item.subtasks || []),
-                  ...steps.map((step: string, idx: number) => ({
-                    id: `col-sub-${Date.now()}-${idx}-${Math.random()}`,
-                    content: step,
-                    completed: false
-                  }))
-                ];
-                return { ...item, subtasks: newSubtasks };
-              }
-              return item;
-            })
-          };
-        }
-        return col;
-      });
-    });
-
-    setDecomposingCollectionItemIds(prev => ({ ...prev, [itemId]: false }));
-  };
-
   return {
     collections,
     setCollections,
@@ -426,8 +328,6 @@ export function useCollections(
     setNewColItemTitle,
     newColItemNotes,
     setNewColItemNotes,
-    decomposingCollectionItemIds,
-    setDecomposingCollectionItemIds,
     handleCreateCollection,
     handleCreateCollectionItem,
     handleDeleteCollectionItem,
@@ -439,7 +339,6 @@ export function useCollections(
     handleAddCollectionItemMediaLink,
     handleDeleteCollectionItemMedia,
     migrateCollectionItemToDailyLog,
-    handleAICollectionItemDecompose,
     handleReorderCollections,
     handleReorderCollectionItems,
     handleReorderCollectionSubtasks

@@ -17,11 +17,7 @@ export const OverloadReliefModal = () => {
     items,
     setItems,
     setShowOverloadReliefModal,
-    showToast,
-    aiEngine,
-    aiWorkerRef,
-    localLLMState,
-    initLocalLLMWorker
+    showToast
   } = useBujo();
 
   const onClose = () => setShowOverloadReliefModal(false);
@@ -46,29 +42,6 @@ export const OverloadReliefModal = () => {
 
   const pendingTasks = items.filter(i => i.status === 'open' && i.type === 'task');
 
-  // Trigger local worker message handler if needed
-  useEffect(() => {
-    const handleWorkerMessage = (e: MessageEvent) => {
-      const { type, data } = e.data;
-      if (type === 'result' && isGeneratingCounsel) {
-        setCounsel(data);
-        setIsGeneratingCounsel(false);
-      } else if (type === 'error' && isGeneratingCounsel) {
-        setIsGeneratingCounsel(false);
-        generateFallbackCounsel();
-      }
-    };
-
-    if (aiWorkerRef.current) {
-      aiWorkerRef.current.addEventListener('message', handleWorkerMessage);
-    }
-    return () => {
-      if (aiWorkerRef.current) {
-        aiWorkerRef.current.removeEventListener('message', handleWorkerMessage);
-      }
-    };
-  }, [isGeneratingCounsel]);
-
   const generateFallbackCounsel = () => {
     let text = '';
     if (anxiety >= 4 || energy === 'exhausted') {
@@ -86,20 +59,10 @@ export const OverloadReliefModal = () => {
     setIsGeneratingCounsel(true);
     setStep('proposal');
 
-    // 1. Generate local AI counsel letter
-    const counselPrompt = `Acalme um usuário com TDAH que está com ansiedade nível ${anxiety}/5 e energia mental "${energy}" (disponibilidade: ${availableHours}h). Dê um conselho amigável, acolhedor e pragmático em no máximo 3 frases em Português do Brasil.`;
-    
-    if (aiEngine === 'local_llm' && localLLMState === 'ready' && aiWorkerRef.current) {
-      aiWorkerRef.current.postMessage({
-        type: 'generate',
-        data: { text: counselPrompt, maxTokens: 120, mode: 'advise' }
-      });
-    } else {
-      // Use fallback counsel
-      setTimeout(() => {
-        generateFallbackCounsel();
-      }, 500);
-    }
+    // 1. Generate algorithmic counsel letter
+    setTimeout(() => {
+      generateFallbackCounsel();
+    }, 500);
 
     // 2. Algorithmically construct the rescheduling proposal
     // Decide max tasks for today based on energy & hours

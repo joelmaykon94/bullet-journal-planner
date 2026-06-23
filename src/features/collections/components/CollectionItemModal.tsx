@@ -28,9 +28,6 @@ interface CollectionItemModalProps {
 export const CollectionItemModal = ({ isOpen, onClose, collectionId, itemId }: CollectionItemModalProps) => {
   const {
     collections,
-    handleAICollectionItemDecompose,
-    decomposingCollectionItemIds,
-    activeLLMCollectionItemId,
     handleAddCollectionItemSubtask,
     handleToggleCollectionItemSubtask,
     handleDeleteCollectionItemSubtask,
@@ -99,18 +96,9 @@ export const CollectionItemModal = ({ isOpen, onClose, collectionId, itemId }: C
         <div className="flex-1 overflow-y-auto p-6 space-y-8 scroll-smooth">
           {/* Microtasks section */}
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
               <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-bujo-highlight" /> Micro-tarefas
               </h4>
-              <button
-                onClick={() => handleAICollectionItemDecompose(collectionId, activeItem.id, activeItem.title)}
-                disabled={decomposingCollectionItemIds[activeItem.id] || activeLLMCollectionItemId === activeItem.id}
-                className="text-[10px] font-bold text-bujo-highlight hover:bg-bujo-highlight/10 px-2 py-1 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1.5"
-              >
-                ⚡ Gerar passos com IA
-              </button>
-            </div>
 
             <div className="space-y-2">
               <DndContext

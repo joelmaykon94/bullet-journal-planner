@@ -37,8 +37,6 @@ export const DayTasksModal = ({ isOpen, onClose, dateStr }: DayTasksModalProps) 
     setEditingItemId,
     handleStartEditItem,
     handleDeleteItem,
-    handleAISplitTask,
-    breakingTaskIds,
     expandedTaskId,
     setExpandedTaskId,
     toggleSubtask,

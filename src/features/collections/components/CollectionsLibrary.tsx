@@ -43,8 +43,6 @@ export const CollectionsLibrary = () => {
     handleDeleteCollectionItem,
     handleUpdateCollectionItemStatus,
     migrateCollectionItemToDailyLog,
-    decomposingCollectionItemIds,
-    activeLLMCollectionItemId,
     handleReorderCollections,
     handleReorderCollectionItems
   } = useBujo();
