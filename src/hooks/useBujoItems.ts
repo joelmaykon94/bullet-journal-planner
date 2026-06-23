@@ -164,11 +164,6 @@ export function useBujoItems(
 
     // Extract links & clean content
     const { cleanContent, links } = extractLinksFromText(content);
-    const extractedSubtasks = links.map((lnk, lIdx) => ({
-      id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
-      content: lnk,
-      completed: false
-    }));
 
     // Delegation regex extraction
     let delegatedTo = undefined;
@@ -198,14 +193,14 @@ export function useBujoItems(
           content: cleanContent,
           date: wDate,
           time: finalTime,
-          subtasks: extractedSubtasks,
+          subtasks: undefined,
           icon: icon || '🎯',
           energy: finalEnergy,
           complexity: finalComplexity,
           executionTime: executionTime || undefined,
           delegatedTo: delegatedTo || undefined,
           priority: isPriority,
-          link: link || (links.length > 0 ? links[0] : undefined),
+          link: link || (links.length > 0 ? links.join(' ') : undefined),
           createdAt: new Date().toISOString()
         };
         itemsToCreate.push(item);
@@ -218,14 +213,14 @@ export function useBujoItems(
         content: cleanContent,
         date: targetDate,
         time: finalTime,
-        subtasks: standardType === 'task' ? extractedSubtasks : undefined,
+        subtasks: undefined,
         icon: icon || (standardType === 'task' ? '🎯' : undefined),
         energy: standardType === 'task' ? finalEnergy : undefined,
         complexity: standardType === 'task' ? finalComplexity : undefined,
         executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
         delegatedTo: delegatedTo || undefined,
         priority: standardType === 'task' ? isPriority : undefined,
-        link: link || (links.length > 0 ? links[0] : undefined),
+        link: link || (links.length > 0 ? links.join(' ') : undefined),
         createdAt: new Date().toISOString()
       };
       itemsToCreate.push(newItem);
@@ -451,11 +446,6 @@ export function useBujoItems(
     setItems(prev => prev.map(item => {
       if (item.id === id) {
         const { cleanContent, links } = extractLinksFromText(editingItemContent);
-        const newSubtasks = links.map((lnk, lIdx) => ({
-          id: `st-${Date.now()}-${lIdx}-${Math.random().toString(36).substring(2, 5)}`,
-          content: lnk,
-          completed: false
-        }));
 
         // Delegation regex extraction from content if not explicitly provided
         const delegationMatch = cleanContent.match(/#([a-zA-ZÀ-ÿ0-9_-]+)/);
@@ -471,10 +461,10 @@ export function useBujoItems(
           date: date ?? item.date,
           time: time !== undefined ? time : item.time,
           icon: icon ?? item.icon,
-          subtasks: item.type === 'task' ? [...(item.subtasks || []), ...newSubtasks] : undefined,
+          subtasks: item.subtasks,
           link: link !== undefined 
             ? (link.trim() === '' ? undefined : link.trim()) 
-            : (links.length > 0 ? links[0] : item.link)
+            : (links.length > 0 ? links.join(' ') : item.link)
         };
       }
       return item;
