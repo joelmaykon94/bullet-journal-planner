@@ -69,6 +69,7 @@ export const BulletItem = ({ item }: BulletItemProps) => {
   const [localExecutionTime, setLocalExecutionTime] = useState<number | ''>(item.executionTime || '');
   const [localDate, setLocalDate] = useState(item.date || '');
   const [localTime, setLocalTime] = useState(item.time || '');
+  const [localLink, setLocalLink] = useState(item.link || '');
   const [subtaskIcon, setSubtaskIcon] = useState<string>('');
   const [showSubtaskIconDropdown, setShowSubtaskIconDropdown] = useState<boolean>(false);
   const [subtaskMinutes, setSubtaskMinutes] = useState<string>('');
@@ -169,6 +170,7 @@ export const BulletItem = ({ item }: BulletItemProps) => {
       setLocalExecutionTime(item.executionTime || '');
       setLocalDate(item.date || '');
       setLocalTime(item.time || '');
+      setLocalLink(item.link || '');
     }
   }, [editingItemId, item.id]);
 
@@ -182,7 +184,8 @@ export const BulletItem = ({ item }: BulletItemProps) => {
       localDate,
       localTime,
       localDelegatedTo,
-      localIcon
+      localIcon,
+      localLink
     );
   };
 
@@ -487,6 +490,17 @@ export const BulletItem = ({ item }: BulletItemProps) => {
                       className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-350 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none"
                     />
                   </div>
+                </div>
+
+                <div className="flex flex-col gap-1 mt-1">
+                  <span className="text-[11px] text-zinc-400 font-bold">Link (Opcional):</span>
+                  <input
+                    type="text"
+                    placeholder="https://exemplo.com..."
+                    value={localLink}
+                    onChange={(e) => setLocalLink(e.target.value)}
+                    className="bg-zinc-150 dark:bg-zinc-900 border border-zinc-350 dark:border-white/10 text-xs text-bujo-text px-2.5 py-1.5 rounded-xl outline-none w-full"
+                  />
                 </div>
 
                 {/* Edit Form Actions */}
