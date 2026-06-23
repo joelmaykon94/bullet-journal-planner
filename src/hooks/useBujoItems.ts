@@ -205,6 +205,7 @@ export function useBujoItems(
           executionTime: executionTime || undefined,
           delegatedTo: delegatedTo || undefined,
           priority: isPriority,
+          link: link || (links.length > 0 ? links[0] : undefined),
           createdAt: new Date().toISOString()
         };
         itemsToCreate.push(item);
@@ -224,6 +225,7 @@ export function useBujoItems(
         executionTime: standardType === 'task' ? (executionTime || undefined) : undefined,
         delegatedTo: delegatedTo || undefined,
         priority: standardType === 'task' ? isPriority : undefined,
+        link: link || (links.length > 0 ? links[0] : undefined),
         createdAt: new Date().toISOString()
       };
       itemsToCreate.push(newItem);
@@ -469,7 +471,10 @@ export function useBujoItems(
           date: date ?? item.date,
           time: time !== undefined ? time : item.time,
           icon: icon ?? item.icon,
-          subtasks: item.type === 'task' ? [...(item.subtasks || []), ...newSubtasks] : undefined
+          subtasks: item.type === 'task' ? [...(item.subtasks || []), ...newSubtasks] : undefined,
+          link: link !== undefined 
+            ? (link.trim() === '' ? undefined : link.trim()) 
+            : (links.length > 0 ? links[0] : item.link)
         };
       }
       return item;
