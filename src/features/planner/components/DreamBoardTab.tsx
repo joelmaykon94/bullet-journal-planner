@@ -12,8 +12,15 @@ export const DreamBoardTab = () => {
     handleToggleDreamConquered,
     handleDeleteDream,
     handleReorderDreams,
-    askConfirmation
+    askConfirmation,
+    habits,
+    handleAddHabit,
+    handleDeleteHabit,
+    habitDreamMap,
+    updateHabitDreamLink
   } = useBujo();
+
+  const unlinkedHabits = habits.filter(h => !habitDreamMap[h]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -392,6 +399,99 @@ export const DreamBoardTab = () => {
                             {dream.description}
                           </p>
                         )}
+                      </div>
+
+                      {/* Habits section inside Dream card */}
+                      <div className="mt-3 pt-3 border-t border-zinc-200/20 dark:border-white/5 space-y-2 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Hábitos de Sucesso</span>
+                        </div>
+
+                        {(() => {
+                          const dreamHabits = habits.filter(h => habitDreamMap[h] === dream.id);
+                          return (
+                            <div className="space-y-2">
+                              {dreamHabits.length === 0 ? (
+                                <p className="text-[10px] text-zinc-500 italic">Nenhum hábito criado. Crie um abaixo!</p>
+                              ) : (
+                                <div className="space-y-1">
+                                  {dreamHabits.map(habit => (
+                                    <div key={habit} className="flex items-center justify-between gap-2 p-1 rounded-xl bg-zinc-200/30 dark:bg-white/5 border border-zinc-300/30 dark:border-white/5">
+                                      <span className="text-[10px] text-zinc-300 truncate font-medium flex-1 pl-1">{habit}</span>
+                                      <div className="flex items-center gap-1 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => updateHabitDreamLink(habit, '')}
+                                          className="text-[8px] font-bold text-zinc-500 hover:text-amber-500 px-1 py-0.5 rounded hover:bg-zinc-200/20 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                                          title="Desvincular do Sonho"
+                                        >
+                                          Desvincular
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            askConfirmation({
+                                              title: 'Excluir Hábito?',
+                                              message: `Deseja realmente excluir permanentemente o hábito "${habit}"?`,
+                                              confirmText: 'Excluir',
+                                              cancelText: 'Cancelar',
+                                              isDanger: true,
+                                              onConfirm: () => handleDeleteHabit(habit)
+                                            });
+                                          }}
+                                          className="p-1 rounded text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
+                                          title="Excluir Hábito"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Actions inline */}
+                              <div className="flex flex-col gap-1.5 pt-1">
+                                {unlinkedHabits.length > 0 && (
+                                  <select
+                                    onChange={(e) => {
+                                      if (e.target.value) {
+                                        updateHabitDreamLink(e.target.value, dream.id);
+                                        e.target.value = '';
+                                      }
+                                    }}
+                                    className="text-[9px] bg-zinc-200/50 dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg px-2 py-1 text-zinc-400 focus:outline-none w-full cursor-pointer font-sans"
+                                  >
+                                    <option value="" className="dark:bg-zinc-900">Vincular hábito existente...</option>
+                                    {unlinkedHabits.map(h => (
+                                      <option key={h} value={h} className="dark:bg-zinc-900">{h}</option>
+                                    ))}
+                                  </select>
+                                )}
+
+                                <div className="flex gap-1">
+                                  <input
+                                    type="text"
+                                    placeholder="Novo hábito para este sonho..."
+                                    className="px-2 py-1 text-[9px] rounded-lg bg-zinc-200/50 dark:bg-white/5 border border-zinc-300 dark:border-white/10 text-zinc-150 focus:outline-none focus:border-bujo-highlight flex-1 font-sans"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const input = e.currentTarget;
+                                        const val = input.value.trim();
+                                        if (val) {
+                                          handleAddHabit(val);
+                                          updateHabitDreamLink(val, dream.id);
+                                          input.value = '';
+                                        }
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 

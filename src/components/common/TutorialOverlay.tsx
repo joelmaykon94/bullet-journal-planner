@@ -40,8 +40,8 @@ const tutorialSteps: TutorialStep[] = [
     arrowPlacement: "top"
   },
   {
-    title: "📊 Rastreador de Hábitos Inteligente",
-    description: "Monitore seus hábitos diários aqui. Clique em 'Identificar com IA' para analisar suas tarefas anteriores e sugerir os hábitos ideais para você rastrear.",
+    title: "📊 Sucesso dos Hábitos",
+    description: "Acompanhe seu progresso de hábitos diários. Seus hábitos são criados dentro do Quadro de Sonhos e vinculados a um objetivo. Marque-os como concluídos aqui no Índice para avançar!",
     tab: "indice",
     positionClass: "top-1/4 right-6 md:right-24",
     selector: "#tutorial-habit-tracker",

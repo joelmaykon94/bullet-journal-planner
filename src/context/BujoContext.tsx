@@ -165,6 +165,8 @@ export interface BujoContextType {
   toggleHabitDate: (habit: string, dateStr: string) => void;
   handleAddHabit: (name: string) => void;
   handleDeleteHabit: (habit: string) => void;
+  habitDreamMap: { [habitName: string]: string };
+  updateHabitDreamLink: (habitName: string, dreamId: string) => void;
 
   // Data Management
   exportFullDataJSON: () => void;
@@ -644,6 +646,21 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const pomodoroData = usePomodoroTimer(setUserXp, showToast);
   const audioData = useAmbientAudio(showToast);
   const habitData = useHabits();
+
+  const [habitDreamMap, setHabitDreamMap] = useState<{ [habitName: string]: string }>(() => {
+    const saved = localStorage.getItem('bujo_habit_dream_map');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const updateHabitDreamLink = (habitName: string, dreamId: string) => {
+    const newMap = { ...habitDreamMap, [habitName]: dreamId };
+    if (!dreamId) {
+      delete newMap[habitName];
+    }
+    setHabitDreamMap(newMap);
+    localStorage.setItem('bujo_habit_dream_map', JSON.stringify(newMap));
+    showToast('Link do hábito atualizado! 🔗');
+  };
 
   // Task Notifications Hook
   useTaskNotifications(items);
@@ -1554,6 +1571,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       toggleHabitDate: (habit: string, dateStr: string) => habitData.toggleHabitDate(habit, dateStr, setUserXp, showToast),
       handleAddHabit: (name: string) => habitData.handleAddHabit(name, showToast),
       handleDeleteHabit: (habit: string) => habitData.handleDeleteHabit(habit, showToast),
+      habitDreamMap,
+      updateHabitDreamLink,
 
       // Data Management
       exportFullDataJSON,
