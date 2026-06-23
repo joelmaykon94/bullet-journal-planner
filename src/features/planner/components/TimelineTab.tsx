@@ -148,13 +148,13 @@ export const TimelineTab = () => {
                   {hour}
                 </div>
                 
-                <div className="flex-1 min-h-[30px] flex flex-col gap-2">
+                <div className="flex-1 min-w-0 min-h-[30px] flex flex-col gap-2">
                   {hourItems.map(item => (
                     <div 
                       key={item.id}
                       draggable={editingItemId !== item.id}
                       onDragStart={(e) => e.dataTransfer.setData('text/plain', item.id)}
-                      className={`flex items-center justify-between p-2 rounded-xl border shadow-sm text-xs cursor-grab transition-all relative group/item ${
+                      className={`flex items-center justify-between p-2 rounded-xl border shadow-sm text-xs cursor-grab transition-all relative group/item w-full min-w-0 ${
                         item.status === 'completed'
                           ? 'bg-emerald-600/10 dark:bg-emerald-500/5 border-emerald-500/25 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-600/15 dark:hover:bg-emerald-500/10'
                           : item.status === 'cancelled'
@@ -169,7 +169,7 @@ export const TimelineTab = () => {
                             type="text"
                             value={editingItemContent}
                             onChange={(e) => setEditingItemContent(e.target.value)}
-                            className="flex-1 bg-zinc-200/50 dark:bg-white/10 border border-bujo-highlight text-xs text-bujo-text px-2 py-1 rounded-lg outline-none font-medium"
+                            className="flex-1 bg-zinc-200/50 dark:bg-white/10 border border-bujo-highlight text-xs text-bujo-text px-2 py-1 rounded-lg outline-none font-medium min-w-0"
                             autoFocus
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') handleSaveEditItemForm(item.id);
@@ -211,7 +211,7 @@ export const TimelineTab = () => {
                                 {item.status === 'cancelled' && <X className="w-2.5 h-2.5 stroke-[4]" />}
                               </button>
                             )}
-                            <span className={`truncate max-w-[200px] sm:max-w-none ${
+                            <span className={`truncate ${
                               item.status === 'completed' ? 'line-through opacity-40' : 
                               item.status === 'cancelled' ? 'line-through opacity-40 text-red-750/80 dark:text-red-400/80' : ''
                             }`}>
