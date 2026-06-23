@@ -1,37 +1,33 @@
 ---
-updated: 2026-06-23T14:40:00Z
+updated: 2026-06-23T14:50:00Z
 ---
 
 # Project State
 
-**Milestone:** v2.0
-**Phase:** 23 - Ajustar o cálculo da posição da hora na linha do tempo
-**Status:** completed
+**Milestone:** v1.0-MVP
+**Phase:** 1 - Database Setup & Backend Architecture
+**Status:** planning-complete
 
 ## Last Action
 
-Completed Phase 23 (Ajustar o cálculo da posição da hora na linha do tempo):
-- Positioned time line indicator directly inside the active hour card block utilizing percentage heights (e.g. `(minutes / 60) * 100%`) instead of globally querying layout element heights and offsets, bypassing rendering delay offsets.
-- Added flex `min-w-0` classes and simplified text truncation logic to restrict task cards within the timeline column boundaries, preventing horizontal overflow.
-- Added timer state updating every 15s to keep the indicator moving in real time.
-- Standardized highlights using state values.
-- Verified build compiles successfully.
+- Completed workspace reconfiguration to support Angular (frontend) and NestJS (backend) inside a pnpm monorepo structure.
+- Created `apps/frontend` using Angular CLI (routing, strict mode, standalone components, tailwind CSS setup).
+- Created `apps/backend` using NestJS CLI (strict mode, boilerplate controller/module/service).
+- Configured root `pnpm-workspace.yaml` packages to map `apps/*`.
+- Rewrote `.gsd/SPEC.md`, `.gsd/ROADMAP.md`, `.gsd/STACK.md`, and `GEMINI.md` to reflect and optimize the new monorepo stack architecture for AI code generation.
 
 ## Next Steps
 
-Gather feedback from user on timeline time indicator accuracy.
-
-
-
-
+1. Configure Docker Compose for local PostgreSQL database.
+2. Initialize Prisma ORM schema under `apps/backend`.
+3. Create the first plan (Plan 1.1) in `.gsd/phases/1/` for database setup and environment configuration.
 
 ## Active Decisions
 
-Decisions made that affect current work:
-
 | Decision | Choice | Made | Affects |
 |----------|--------|------|---------|
-| Contextual Help | Trigger once per feature via localStorage state tracking | 2026-06-16 | User Onboarding UX |
+| Architecture Style | pnpm monorepo with apps/frontend and apps/backend | 2026-06-23 | All components, imports, and execution scripts |
+| Frontend Naming | Angular standalone, CSS files, '2016' naming convention | 2026-06-23 | Frontend components directory |
 
 ## Blockers
 
@@ -39,8 +35,5 @@ None
 
 ## Concerns
 
-- **Audio Context Procedural Logic:** The custom audio generation code is highly coupled with the component state. Care must be taken not to break the audio context setup when refactoring.
-
-## Session Context
-
-The user is focused on user experience and onboarding, wanting to ensure that complex features are easily understandable without overwhelming the user with a single massive tutorial.
+- **Monorepo Dependency Isolation:** Ensure backend libraries do not pollute frontend bundles and vice-versa. Maintain separate dependencies per sub-package.
+- **Offline Sync Orchestration:** Design clear interfaces in Angular services early to allow switching between mock localStorage and active HTTP APIs seamlessly.

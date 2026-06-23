@@ -1,172 +1,70 @@
 ---
-milestone: v2.0
-version: 2.0.0
-updated: 2026-06-16T11:20:00Z
+milestone: v1.0-MVP
+version: 1.0.0
+updated: 2026-06-23T14:45:00Z
 ---
 
-# Roadmap
+# Roadmap: BuJo Focus MVP (Angular + NestJS)
 
-> **Current Phase:** 18 - Keep Rapid Capture Open & Standardize Task Creation Capabilities
-> **Status:** ✅ Complete
+> **Current Phase:** 1 - Database Setup & Backend Architecture
+> **Status:** ⏳ Pending
 
 ## Must-Haves (from SPEC)
 
-- [x] Reorganize files inside `src/` to strictly align with `GEMINI.md` feature guidelines.
-- [x] Move procedural audio generation from `src/App.tsx` to `src/hooks/useAmbientAudio.ts`.
-- [x] Move Pomodoro timer state and ticking code from `src/App.tsx` to `src/hooks/usePomodoroTimer.ts`.
-- [x] Refactor bullet journal states (items, collections, settings) to custom hooks and connect them through a React Context.
-- [x] Shrink `src/App.tsx` to under 400 lines while maintaining 100% feature parity.
-- [x] Ensure the project builds cleanly without TypeScript or lint errors.
-- [x] Ensure critical UI overlays (Tutorial) are responsive on mobile.
-- [x] Implement Brag Document tracking integrated with professional growth metrics.
+- [ ] Docker Compose setup for Postgres database.
+- [ ] Database Schema definitions (Prisma schema or TypeORM entities) inside `apps/backend/`.
+- [ ] JWT Authentication API endpoints on NestJS backend.
+- [ ] CRUD API endpoints for journal tasks, energy levels, and habits.
+- [ ] Tailwind CSS layout setup and standalone component architecture inside `apps/frontend/`.
+- [ ] AuthService and state tracking (Signals) in Angular frontend.
+- [ ] Rebuilt gamified Daily Log, ADHD Energy Chart, and Someday/Maybe components.
+- [ ] Offline sync resilience (local storage fallback) on Angular client.
 
 ---
 
 ## Phases
 
-### Phase 1: Directory Organization & Context Foundation
-**Status:** ✅ Complete
-**Objective:** Align directory structure with feature rules and establish the context provider skeleton.
+### Phase 1: Database Setup & Backend Architecture
+**Status:** ⏳ Pending
+**Objective:** Configure Docker Compose for PostgreSQL, set up the database schemas, and initialize NestJS config/prisma modules.
 
-### Phase 2: Procedural Audio & Auxiliary Refactoring
-**Status:** ✅ Complete
-**Objective:** Extract the complex Web Audio API synthesizer code and secondary UI helpers.
+**Plans:**
+- Plan 1.1: Docker Compose PostgreSQL and Prisma/TypeORM Initialization.
+- Plan 1.2: Database entity schemas mapping (Users, Tasks, Habits, EnergyLogs).
 
-### Phase 3: Core State & State Hooks Extraction
-**Status:** ✅ Complete
-**Objective:** Move all bullet log, collections, settings, and Pomodoro timer states from `App.tsx` to modular hooks.
+### Phase 2: Backend Auth & Core REST APIs
+**Status:** ⏳ Pending
+**Objective:** Implement JWT authentication, and CRUD API endpoints for Bullet Journal items.
 
-### Phase 4: App.tsx Slimming & Validation
-**Status:** ✅ Complete
-**Objective:** Wrap application in Context, wire child components, clean up App.tsx, and run full test verification.
+**Plans:**
+- Plan 2.1: Authentication Controller & Guards with Passport/JWT.
+- Plan 2.2: Journal Task & Collection API endpoints.
+- Plan 2.3: Habit Tracker & ADHD Energy Chart API endpoints.
 
-### Phase 5: Index Tab UI & Layout Optimization
-**Status**: ✅ Complete
-**Objective**: Redesign the components at the Indice (IndexTab) to optimize the Quick Access Menu layout and sizing.
+### Phase 3: Angular Foundation & Auth Integration
+**Status:** ⏳ Pending
+**Objective:** Setup Tailwind CSS, create global HTTP services, routing architecture, and build the Login/Signup screens.
 
-### Phase 6: Advanced GTD & Visual Customization features
-**Status**: ✅ Complete
-**Objective**: Implement Trash Bin (Lixeira), Someday/Maybe (Algum Dia/Talvez), delegation status, task visual icons, and Dream Board.
+**Plans:**
+- Plan 3.1: Tailwind CSS, Global Theme Config, & Layout Shell in Angular.
+- Plan 3.2: HTTP Client service, State Signals, and Authentication routing.
 
-### Phase 7: Supabase Persistence & Local Storage Migration
-**Status**: ✅ Complete
-**Objective**: Replace pure LocalStorage persistence with an integrated local-first Supabase cloud database sync.
+### Phase 4: Core Frontend Features
+**Status:** ⏳ Pending
+**Objective:** Build standalone components for Daily Log, ADHD Energy Chart, Habits Tracker, and Someday/Maybe Board.
 
-### Phase 8: Local LLM AI Assistant & Task Decomposition
-**Status**: ✅ Complete
-**Objective**: Integrate Local LLM (Web Worker) for task decomposition and cognitive relief suggestions.
+**Plans:**
+- Plan 4.1: Daily Log timeline and time-blocking components.
+- Plan 4.2: Habit consistency tracker and Someday/Maybe Sticky Notes.
+- Plan 4.3: ADHD Energy flutuation chart rendering (interactive SVG/Chart).
 
-### Phase 9: Quality of Life, Advanced Modals & Core Enhancements
-**Status**: ✅ Complete
-**Objective**: Implement detailed view modals, core UI refinements, and improved task management workflows.
+### Phase 5: Integration, Sync, & Validation
+**Status:** ⏳ Pending
+**Objective:** Integrate frontend with NestJS REST endpoints, implement local storage sync fallback, and verify production build.
 
-**Plans**:
-- [x] Plan 9.1: Timeline UI Enhancements and Visual Feedback.
-- [x] Plan 9.2: Advanced Search and Filtering across all logs.
-- [x] Plan 9.3: Weekly & Monthly Log Day Modals.
-- [x] Plan 9.4: Global Data Management & Technical Debt Removal.
-- [x] Plan 9.5: Global Search & Omnibox.
-- [x] Plan 9.6: PWA Install & Offline Awareness.
-
-### Phase 10: Mobile Optimization & UX Polish
-**Status**: ✅ Complete
-**Objective**: Finalize mobile-specific UI fixes and ensure a seamless experience across devices.
-
-**Plans**:
-- [x] Plan 10.1: Tutorial Mobile Responsiveness & UX Polish.
-
-### Phase 11: Brag Document Integration
-**Status**: ✅ Complete
-**Objective**: Provide a built-in UI for career tracking, linked to XP progression and cloud sync.
-
-**Plans**:
-- [x] Plan 11.1: Brag Document Integration, Sync & UI Layout.
-
-### Phase 12: Smart Add NLP Input
-**Status**: ✅ Complete
-**Objective**: Implement a Todoist-style natural language parser for rapid task entry.
-
-**Plans**:
-- [x] Plan 12.1: Todoist-style Smart Add NLP Parser.
-
-### Phase 13: Contextual Feature Help
-**Status**: ✅ Complete
-**Objective**: Implement specific, auto-triggering contextual help modals for each feature in the sidebar.
-
-**Plans**:
-- [x] Plan 13.1: Contextual Feature Help & Floating Button.
-
-### Phase 14: Task Links Input & Clean Domain Rendering
-**Status**: ✅ Complete
-**Objective**: Add collapsible text input fields for link entries in task forms, showing short hostname/domain links inline.
-
-**Plans**:
-- [x] Plan 14.1: Ponytail Refactoring - Component & Context Cleanup.
-- [x] Plan 14.2: Task Links Input and Clean Domain Rendering.
-
-### Phase 15: Migration Duplication Fix & Unified Delay Tracking
-**Status**: ✅ Complete
-**Objective**: Fix task migration duplication in manual and auto-migration, unify card aging based on hours/days, and render consistent delay badges across all log screens.
-
-**Plans**:
-- [x] Plan 15.1: Migration Duplication Fix & Unified Delay Tracking.
-- [x] Plan 15.2: NLP Direct Link Extraction & Layout Alignment.
-
-### Phase 16: Drag-and-Drop Reordering for Dreams and Achievements
-**Status**: ✅ Complete
-**Objective**: Enable drag-and-drop reordering for dreams and achievements in both the DreamBoardTab and the IndexTab, ensuring that reordering in one view is perfectly reflected in the other.
-
-**Plans**:
-- [x] Plan 16.1: Drag-and-Drop Reordering for Dreams and Achievements.
-
-### Phase 17: Close Modals on Escape Key Press
-**Status**: ✅ Complete
-**Objective**: Ensure that pressing the Escape key immediately closes any open modals or dialog overlays across the application for a better keyboard user experience.
-
-**Plans**:
-- [x] Plan 17.1: Close Modals on Escape Key Press.
-
-### Phase 18: Keep Rapid Capture Open & Standardize Task Creation Capabilities
-**Status**: ✅ Complete
-**Objective**: Keep the Rapid Capture Modal open after task save. Incorporate icon, date, and time inputs inside the Rapid Capture Modal UI. Standardize all task creation forms to support icon, date, time, and link-to-subtask parser capabilities, defaulting standard task icons to 🎯.
-
-**Plans**:
-- [x] Plan 18.1: Keep Rapid Capture Open & Standardize Task Creation Capabilities.
-
-### Phase 19: Layout Refinements & Dream-linked Habit Tracking
-**Status**: ✅ Complete
-**Objective**: Refine dashboard layout, reorder quick access items, merge goals and habit trackers, make habit cards clickable, and handle modal escape listeners.
-
-**Plans**:
-- [x] Plan 19.1: Merge goals and habit tracker into a unified dream-linked habit tracking card and refine layouts.
-
-### Phase 20: Mostrar os links no card da tarefa
-**Status**: ✅ Complete
-**Objective**: Show and parse URLs as links inside the task card component and allow inline editing of links.
-
-**Plans**:
-- [x] Plan 20.1: Mostrar os links no card da tarefa.
-
-### Phase 21: Mostrar lista de links como badges em vez de subtarefas
-**Status**: ✅ Complete
-**Objective**: Convert task links to tags/badges inside the task card instead of parsing them into multiple subtasks.
-
-**Plans**:
-- [x] Plan 21.1: Mostrar lista de links como badges em vez de subtarefas.
-
-### Phase 22: Ordenar as tarefas por padrão
-**Status**: ✅ Complete
-**Objective**: Order task views Chronologically by date/time, but display tasks without time first by default.
-
-**Plans**:
-- [x] Plan 22.1: Ordenar as tarefas por padrão.
-
-### Phase 23: Ajustar o cálculo da posição da hora na linha do tempo
-**Status**: ✅ Complete
-**Objective**: Adjust the time line current position indicator on the timeline to use element measurements and prevent misalignment in varying block heights.
-
-**Plans**:
-- [x] Plan 23.1: Ajustar o cálculo da posição da hora na linha do tempo.
+**Plans:**
+- Plan 5.1: API integration and Offline-first sync logic.
+- Plan 5.2: Production bundle build validation and end-to-end user flows verification.
 
 ---
 
@@ -174,29 +72,11 @@ updated: 2026-06-16T11:20:00Z
 
 | Phase | Status | Plans | Complete |
 |-------|--------|-------|----------|
-| 1     | ✅     | 2/2   | 2026-06-15 |
-| 2     | ✅     | 2/2   | 2026-06-15 |
-| 3     | ✅     | 3/3   | 2026-06-15 |
-| 4     | ✅     | 2/2   | 2026-06-15 |
-| 5     | ✅     | 2/2   | 2026-06-15 |
-| 6     | ✅     | 3/3   | 2026-06-16 |
-| 7     | ✅     | 1/1   | 2026-06-16 |
-| 8     | ✅     | 2/2   | 2026-06-16 |
-| 9     | ✅     | 6/6   | 2026-06-16 |
-| 10    | ✅     | 1/1   | 2026-06-16 |
-| 11    | ✅     | 1/1   | 2026-06-16 |
-| 12    | ✅     | 1/1   | 2026-06-16 |
-| 13    | ✅     | 1/1   | 2026-06-16 |
-| 14    | ✅     | 2/2   | 2026-06-22 |
-| 15    | ✅     | 2/2   | 2026-06-22 |
-| 16    | ✅     | 1/1   | 2026-06-22 |
-| 17    | ✅     | 1/1   | 2026-06-22 |
-| 18    | ✅     | 1/1   | 2026-06-22 |
-| 19    | ✅     | 1/1   | 2026-06-23 |
-| 20    | ✅     | 1/1   | 2026-06-23 |
-| 21    | ✅     | 1/1   | 2026-06-23 |
-| 22    | ✅     | 1/1   | 2026-06-23 |
-| 23    | ✅     | 1/1   | 2026-06-23 |
+| 1     | ⏳      | 0/2   | —        |
+| 2     | ⏳      | 0/3   | —        |
+| 3     | ⏳      | 0/2   | —        |
+| 4     | ⏳      | 0/3   | —        |
+| 5     | ⏳      | 0/2   | —        |
 
 ---
 
@@ -204,11 +84,5 @@ updated: 2026-06-16T11:20:00Z
 
 | Phase | Started | Completed | Duration |
 |-------|---------|-----------|----------|
-| 1-5   | 2026-06-15 | 2026-06-15 | 1 day |
-| 6-13  | 2026-06-16 | 2026-06-16 | 1 day |
-| 14    | 2026-06-22 | 2026-06-22 | 1 day |
-| 15    | 2026-06-22 | 2026-06-22 | 1 day |
-| 16    | 2026-06-22 | 2026-06-22 | 1 day |
-| 17    | 2026-06-22 | 2026-06-22 | 1 day |
-| 18    | 2026-06-22 | 2026-06-22 | 1 day |
-| 19-23 | 2026-06-23 | 2026-06-23 | 1 day |
+| 1     | —       | —         | —        |
+

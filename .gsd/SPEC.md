@@ -1,39 +1,63 @@
-# SPEC.md — Project Specification
+# SPEC.md — Project Specification for Angular + NestJS MVP
 
 > **Status**: `FINALIZED`
 
 ## Vision
 
-Maximize token efficiency and improve coding structure by refactoring the monolithic `src/App.tsx` file (2,655 lines) into modular React components, custom hooks, and React Context, and organizing the `src` directory according to the React Project Organization Rules specified in `GEMINI.md`.
-
-## Goals
-
-1. **Modularize State Management:** Extract bullet journal items, user settings, collections, and Pomodoro timer states from `src/App.tsx` into custom React hooks (e.g., `useBujoItems`, `useBujoSettings`, `useCollections`, `usePomodoroTimer`) and a global React Context provider.
-2. **Decompose Procedural Audio Synthesis:** Move the 150+ lines of Web Audio API procedural audio generation (rain, campfire, wind, and lofi noises) from `src/App.tsx` into a dedicated custom hook (`useAmbientAudio.ts`).
-3. **Restructure Directory Structure:** Reorganize files inside `src/` to strictly align with feature-based guidelines (moving global reusable components to `src/components/common/`, feature-specific components to `src/features/[feature-name]/components/`, hooks to `src/hooks/`, and context files to `src/context/`).
-4. **Reduce File-level Token Footprint:** Shrink `src/App.tsx` from 2,655 lines to a high-level layout file under 400 lines to minimize context window consumption for future edits.
-
-## Non-Goals (Out of Scope)
-
-- Adding new end-user features or changes to the app's visual layout.
-- Replacing the client-side local storage with a backend database.
-- Rewriting the background AI Web Worker (`src/ai.worker.ts`).
-- Upgrading React or Tailwind to major versions that break existing APIs.
-
-## Constraints
-
-- **Single-page client-only application:** Must continue to run completely offline in the browser.
-- **Strict import correctness:** All TypeScript imports must be updated and remain fully type-safe.
-- **Zero regression in functionality:** The ambient sounds, CSV/PDF exporting, AI suggestions, and ADHD energy log must work exactly as they do currently.
-
-## Success Criteria
-
-- [ ] `src/App.tsx` line count is reduced from 2,655 lines to under 400 lines.
-- [ ] No compilation errors or TypeScript warnings in the build (`npm run build` passes).
-- [ ] Refactored custom hooks and context files are fully functional and placed under `src/hooks/` and `src/context/`.
-- [ ] Ambient sound playing and mixing function correctly without audio context errors.
-- [ ] All components reside in their correct directories according to the guidelines.
+Re-architect and rebuild **BuJo Focus** — a cognitive minimalist planner for ADHD individuals — as a professional, scalable web application using **Angular** on the frontend and **NestJS** on the backend in a pnpm monorepo. This transition ensures secure user accounts, cloud database sync, and a decoupled architecture that optimizes local/offline execution while persisting logs and energy charts to a centralized API.
 
 ---
 
-*Last updated: 2026-06-15*
+## Goals
+
+1. **Monorepo Integration:**
+   - Establish a clean, well-managed pnpm monorepo under `apps/frontend/` (Angular) and `apps/backend/` (NestJS).
+   
+2. **NestJS Backend REST API:**
+   - Implement authentication using JWT (JSON Web Tokens).
+   - CRUD endpoints for Bullet Journal entries (Daily, Weekly, Monthly logs).
+   - APIs to persist and query Habit Tracker data.
+   - Persistence for ADHD Energy Charts and user configuration settings.
+   - Database layer using PostgreSQL with Prisma or TypeORM.
+
+3. **Angular Frontend SPA:**
+   - Re-implement the original gamified BuJo Focus client layout using Angular standalone components.
+   - Modular features for:
+     - **Daily Log:** Time-blocked tasks, emoji tags, and inline link parsing.
+     - **Focus Mode:** Pomodoro timer and ambient audio generator (translated to Angular services).
+     - **Energy Log:** Interactive interactive chart representing focus/energy levels.
+     - **Someday/Maybe Board:** A sticky-notes style dashboard.
+   - Implement state management using RxJS/NgRx Component Store or custom Services with Signals.
+
+4. **Offline Resilience:**
+   - Integrate an offline-fallback capability using local storage so the user can continue planning even when the NestJS API is unreachable.
+
+---
+
+## Non-Goals (Out of Scope)
+- Porting the background AI suggestions in Phase 1 (postponed to Phase 2).
+- Implementing third-party OAuth logins in the initial MVP.
+- Mobile PWA deployment (Vite PWA conversion was done, Angular PWA will be done in subsequent releases).
+
+---
+
+## Constraints
+
+- **Unified Styling:** Must use Tailwind CSS for the frontend UI to match the premium aesthetics.
+- **Strict TypeScript:** All projects must compile cleanly in strict mode.
+- **OpenAPI/Swagger:** Backend must expose fully documented Swagger endpoints at `/api/docs`.
+- **Database Portability:** Support local Postgres run via Docker Compose.
+
+---
+
+## Success Criteria
+
+- [ ] NestJS application successfully connects to PostgreSQL database.
+- [ ] Angular frontend standalone routing and state management function cleanly.
+- [ ] Full user authentication flow (Register/Login) works end-to-end.
+- [ ] Daily log entries can be created, updated, deleted, and queried via API.
+- [ ] Project compiles with zero TypeScript or build errors in both apps.
+
+---
+
+*Last updated: 2026-06-23*
