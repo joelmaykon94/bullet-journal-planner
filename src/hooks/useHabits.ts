@@ -28,11 +28,11 @@ export function useHabits() {
   }, [habitLogs]);
 
   const toggleHabitDate = (habit: string, dateStr: string, setUserXp: (xp: (prev: number) => number) => void, showToast: (msg: string) => void) => {
-    let isChecking = false;
+    const currentVal = habitLogs[habit]?.[dateStr] || false;
+    const isChecking = !currentVal;
+
     setHabitLogs(prev => {
       const logs = prev[habit] || {};
-      const currentVal = logs[dateStr] || false;
-      isChecking = !currentVal;
       return {
         ...prev,
         [habit]: {
