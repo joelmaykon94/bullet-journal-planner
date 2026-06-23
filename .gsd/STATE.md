@@ -10,11 +10,17 @@ updated: 2026-06-22T20:42:00Z
 
 ## Last Action
 
-Started Phase 19, Plan 19.1. Created 19.1-PLAN.md to coordinate the removal of all AI suggestions, brain dump, TDAH copilot, focus guides, and GTD Someday/Maybe tabs.
+Completed Phase 19, Plan 19.1 including additional layout adjustments:
+- Moved Daily Agenda (daily_spread) below Indice in the sidebar.
+- Relocated Goals Card ("Objetivos de Hoje") to be full width between Welcomer Banner and Quick Access Menu.
+- Moved Settings (Ajustes) button from navbar header to Quick Access.
+- Removed Trash Bin (Lixeira) button from the header navbar and increased search input size.
+- Standardized "Diário Bujo" and "Tutorial" buttons to look like metrics cards peers.
+- Moved welcoming title text above metrics cards inside the Welcomer Banner for full-width horizontal alignment.
 
 ## Next Steps
 
-Remove unused files, states, and components across the codebase.
+Verify and review overall UX.
 
 
 
