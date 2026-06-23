@@ -165,25 +165,33 @@ export const IndexTab = () => {
               <span className="text-xs font-black mt-0.5 text-zinc-150">{completedPomodoros * 25}m</span>
             </div>
 
-            {/* Bujo Action buttons */}
-            <div className="flex gap-1.5 pl-1 shrink-0">
-              <button 
-                onClick={() => {
-                  setSelectedDate(today);
-                  setStandardDate(today);
-                  setActiveTab('daily_log');
-                }}
-                className="px-3 py-1.5 bg-bujo-highlight text-white text-[9px] font-bold rounded-lg hover:opacity-95 transition-opacity cursor-pointer shadow-sm shadow-bujo-highlight/10"
-              >
-                Diário Bujo
-              </button>
-              <button 
-                onClick={() => setShowTutorial(true)}
-                className="px-3 py-1.5 bg-zinc-350/20 dark:bg-white/10 text-[9px] font-bold rounded-lg hover:bg-zinc-300/40 dark:hover:bg-white/20 transition-colors cursor-pointer"
-              >
-                Tutorial
-              </button>
-            </div>
+            {/* Diário Bujo Button */}
+            <button
+              onClick={() => {
+                setSelectedDate(today);
+                setStandardDate(today);
+                setActiveTab('daily_log');
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 hover:bg-zinc-200/20 dark:hover:bg-white/10 cursor-pointer transition-all flex flex-col justify-center text-center min-w-[95px]"
+              title="Ir para o Diário Bujo"
+            >
+              <span className="text-[8px] font-bold text-zinc-555 dark:text-zinc-500 uppercase tracking-wider">Diário</span>
+              <span className="text-xs font-black mt-0.5 text-bujo-highlight flex items-center justify-center gap-1">
+                📓 Bujo
+              </span>
+            </button>
+
+            {/* Tutorial Button */}
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="px-3.5 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/40 hover:bg-zinc-200/20 dark:hover:bg-white/10 cursor-pointer transition-all flex flex-col justify-center text-center min-w-[95px]"
+              title="Iniciar Tutorial Interativo"
+            >
+              <span className="text-[8px] font-bold text-zinc-555 dark:text-zinc-500 uppercase tracking-wider">Tutorial</span>
+              <span className="text-xs font-black mt-0.5 text-zinc-150 flex items-center justify-center gap-1">
+                👉 Guia
+              </span>
+            </button>
           </div>
         </div>
 
