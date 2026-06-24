@@ -20,6 +20,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function run() {
   console.log("Iniciando envio de relatórios financeiros...");
   
+  const isForce = process.argv.includes('--force') || process.argv.includes('--test');
+  
   // 1. Fetch data from Supabase
   const { data: rows, error } = await supabase
     .from('bujo_user_data')
@@ -59,6 +61,7 @@ async function run() {
   });
 
   const now = new Date();
+  const currentHour = now.getHours();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth(); // 0-indexed
   const monthNames = [
@@ -74,6 +77,15 @@ async function run() {
     if (!settings.dailyReportEnabled) {
       console.log(`Relatório diário desativado para o usuário: ${row.user_id}`);
       continue;
+    }
+    
+    // Check hour match (unless forced for testing)
+    if (!isForce) {
+      const targetHour = typeof settings.reportHour === 'number' ? settings.reportHour : 6;
+      if (currentHour !== targetHour) {
+        console.log(`Pulando usuário ${row.user_id}: hora atual (${currentHour}h) não coincide com a configurada (${targetHour}h). Use --force para testar.`);
+        continue;
+      }
     }
     
     const emails = settings.emails;
@@ -176,7 +188,7 @@ async function run() {
         <h2 style="color: #ec4899; text-transform: uppercase; font-size: 16px; border-bottom: 1px solid #27272a; padding-bottom: 8px; margin-top: 0;">
           📊 Resumo Financeiro - ${currentMonthName} de ${currentYear}
         </h2>
-        <p style="font-size: 10px; color: #a1a1aa;">Gerado em: ${dateFormatted} às 06:00</p>
+        <p style="font-size: 10px; color: #a1a1aa;">Gerado em: ${dateFormatted} às ${String(isForce ? now.getHours() : (settings.reportHour ?? 6)).padStart(2, '0')}:00</p>
         
         <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px;">
           <tr>

@@ -487,11 +487,20 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     } catch {}
     return 'joelmaykon94@gmail.com';
   });
+  const [reportHour, setReportHour] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('bujo_budget_settings');
+      if (saved) {
+        return JSON.parse(saved).reportHour ?? 6;
+      }
+    } catch {}
+    return 6;
+  });
 
   useEffect(() => {
-    const settings = { dailyReportEnabled, emails: reportEmails };
+    const settings = { dailyReportEnabled, emails: reportEmails, reportHour };
     localStorage.setItem('bujo_budget_settings', JSON.stringify(settings));
-  }, [dailyReportEnabled, reportEmails]);
+  }, [dailyReportEnabled, reportEmails, reportHour]);
 
   // Filtering states (Year, Month, Week, Day)
   const [viewMode, setViewMode] = useState<'year' | 'month' | 'week' | 'day'>('month');
@@ -1114,17 +1123,30 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
           </div>
           
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                id="dailyReportEnabled" 
-                checked={dailyReportEnabled} 
-                onChange={(e) => setDailyReportEnabled(e.target.checked)} 
-                className="w-3.5 h-3.5 rounded bg-zinc-900 border border-zinc-250/20 text-indigo-500 outline-none cursor-pointer"
-              />
-              <label htmlFor="dailyReportEnabled" className="font-bold text-zinc-300 cursor-pointer select-none">
-                Enviar resumo financeiro diário por e-mail às 06:00
-              </label>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id="dailyReportEnabled" 
+                  checked={dailyReportEnabled} 
+                  onChange={(e) => setDailyReportEnabled(e.target.checked)} 
+                  className="w-3.5 h-3.5 rounded bg-zinc-900 border border-zinc-250/20 text-indigo-500 outline-none cursor-pointer"
+                />
+                <label htmlFor="dailyReportEnabled" className="font-bold text-zinc-300 cursor-pointer select-none">
+                  Enviar resumo financeiro diário por e-mail às
+                </label>
+              </div>
+              <select
+                value={reportHour}
+                onChange={(e) => setReportHour(parseInt(e.target.value))}
+                className="bg-zinc-900 border border-zinc-250/20 rounded-lg px-2 py-0.5 text-[10px] font-bold text-zinc-300 outline-none cursor-pointer"
+              >
+                {Array.from({ length: 24 }).map((_, h) => (
+                  <option key={h} value={h} className="bg-zinc-900 text-zinc-100">
+                    {String(h).padStart(2, '0')}:00
+                  </option>
+                ))}
+              </select>
             </div>
             
             <div className="flex flex-col gap-1 mt-1">
