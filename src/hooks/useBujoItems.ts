@@ -326,7 +326,7 @@ export function useBujoItems(
     setItems(prev => prev.map(item => {
       if (item.id === id) {
         let nextStatus: BujoItem['status'] = 'open';
-        if (item.status === 'open') {
+        if (item.status === 'open' || item.status === 'scheduled') {
           nextStatus = 'completed';
           setUserXp(prevXp => {
             const nextXp = prevXp + 20;
@@ -335,16 +335,19 @@ export function useBujoItems(
           });
         }
         else if (item.status === 'completed') {
-          nextStatus = 'migrated';
+          nextStatus = 'cancelled';
           setUserXp(prevXp => {
             const nextXp = Math.max(0, prevXp - 20);
             showToast('↩️ Tarefa desmarcada: -20 XP');
             return nextXp;
           });
         }
-        else if (item.status === 'migrated') nextStatus = 'scheduled';
-        else if (item.status === 'scheduled') nextStatus = 'cancelled';
-        else if (item.status === 'cancelled') nextStatus = 'open';
+        else if (item.status === 'cancelled') {
+          nextStatus = 'migrated';
+        }
+        else if (item.status === 'migrated') {
+          nextStatus = 'open';
+        }
         return { ...item, status: nextStatus };
       }
       return item;
