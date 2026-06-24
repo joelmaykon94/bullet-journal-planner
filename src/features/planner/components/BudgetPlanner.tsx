@@ -19,7 +19,9 @@ import {
   User, 
   Folder, 
   Tag, 
-  Edit2 
+  Edit2,
+  Mail,
+  Settings
 } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 
@@ -44,6 +46,7 @@ interface BudgetItem {
   alreadyPaidInstallmentsCount?: number;
   paidInstallmentNumbers?: number[];
   paidMonths?: string[];
+  recurrenceType?: 'monthly' | 'seasonal';
 }
 
 const DEFAULT_MACRO_MAP: Record<string, 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros'> = {
@@ -464,6 +467,32 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   // Tab state
   const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'fixed' | 'installment' | 'arrears' | 'variable' | 'bujo_tasks'>('overview');
 
+  // Daily Report Settings state
+  const [showSettings, setShowSettings] = useState(false);
+  const [dailyReportEnabled, setDailyReportEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('bujo_budget_settings');
+      if (saved) {
+        return JSON.parse(saved).dailyReportEnabled ?? false;
+      }
+    } catch {}
+    return false;
+  });
+  const [reportEmails, setReportEmails] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('bujo_budget_settings');
+      if (saved) {
+        return JSON.parse(saved).emails ?? 'joelmaykon94@gmail.com';
+      }
+    } catch {}
+    return 'joelmaykon94@gmail.com';
+  });
+
+  useEffect(() => {
+    const settings = { dailyReportEnabled, emails: reportEmails };
+    localStorage.setItem('bujo_budget_settings', JSON.stringify(settings));
+  }, [dailyReportEnabled, reportEmails]);
+
   // Filtering states (Year, Month, Week, Day)
   const [viewMode, setViewMode] = useState<'year' | 'month' | 'week' | 'day'>('month');
   const [selectedAnchorDate, setSelectedAnchorDate] = useState<Date>(() => new Date());
@@ -485,6 +514,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const [firstInstallmentDateInput, setFirstInstallmentDateInput] = useState('');
   const [dueDayInput, setDueDayInput] = useState('5');
   const [alreadyPaidInstallmentsCountInput, setAlreadyPaidInstallmentsCountInput] = useState('');
+  const [recurrenceTypeInput, setRecurrenceTypeInput] = useState<'monthly' | 'seasonal'>('monthly');
 
   // Inline editing states
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -502,6 +532,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const [editFirstInstallmentDate, setEditFirstInstallmentDate] = useState('');
   const [editDueDay, setEditDueDay] = useState('5');
   const [editAlreadyPaidInstallmentsCount, setEditAlreadyPaidInstallmentsCount] = useState('');
+  const [editRecurrenceType, setEditRecurrenceType] = useState<'monthly' | 'seasonal'>('monthly');
 
   // Category change wrapper to auto-select macro classification
   const handleCategoryChange = (cat: string) => {
@@ -770,7 +801,8 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
       createdAt: todayISO,
       owner: ownerInput,
       category: categoryInput,
-      macroCategory: activeTab === 'income' ? 'Outros' : macroCategoryInput
+      macroCategory: activeTab === 'income' ? 'Outros' : macroCategoryInput,
+      recurrenceType: activeTab === 'income' ? recurrenceTypeInput : undefined
     };
 
     if (activeTab === 'fixed') {
@@ -815,6 +847,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     setAlreadyPaidInstallmentsCountInput('');
     setIsPaidInput(false);
     setIsCancelledInput(false);
+    setRecurrenceTypeInput('monthly');
     showToast('💰 Item adicionado ao orçamento!');
   };
 
@@ -828,6 +861,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     setEditMacroCategory(item.macroCategory);
     setEditIsPaid(!!item.isPaid);
     setEditIsCancelled(!!item.isCancelled);
+    setEditRecurrenceType(item.recurrenceType || 'monthly');
 
     if (item.type === 'installment') {
       setEditValue((item.totalDebtValue || item.value).toString());
@@ -897,7 +931,8 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
         category: editCategory,
         macroCategory: type === 'income' ? 'Outros' : editMacroCategory,
         isPaid: editIsPaid,
-        isCancelled: type === 'income' ? editIsCancelled : false
+        isCancelled: type === 'income' ? editIsCancelled : false,
+        recurrenceType: type === 'income' ? editRecurrenceType : undefined
       };
 
       if (type === 'installment') {
@@ -1027,118 +1062,175 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="flex flex-col gap-4 h-full font-mono text-zinc-200">
       {/* Navigation Tabs */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1.5 border-b border-white/5 shrink-0 scrollbar-none">
-        {[
-          { id: 'overview', label: 'Resumo' },
-          { id: 'income', label: 'Ganhos' },
-          { id: 'fixed', label: 'Fixas' },
-          { id: 'installment', label: 'Parceladas' },
-          { id: 'arrears', label: 'Atrasadas' },
-          { id: 'variable', label: 'Novas' },
-          { id: 'bujo_tasks', label: 'Compras Bujo' }
-        ].map(t => (
+      <div className="flex items-center justify-between gap-3 border-b border-white/5 pb-1.5 shrink-0 select-none">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+          {[
+            { id: 'overview', label: 'Resumo' },
+            { id: 'income', label: 'Ganhos' },
+            { id: 'fixed', label: 'Fixas' },
+            { id: 'installment', label: 'Parceladas' },
+            { id: 'arrears', label: 'Atrasadas' },
+            { id: 'variable', label: 'Novas' },
+            { id: 'bujo_tasks', label: 'Compras Bujo' }
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => {
+                setActiveTab(t.id as any);
+                setEditingItemId(null);
+                setCategoryInput(t.id === 'income' ? 'Freelance' : 'Geral');
+              }}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors border shrink-0 ${
+                activeTab === t.id
+                  ? 'bg-bujo-highlight text-white border-bujo-highlight shadow-sm shadow-bujo-highlight/15'
+                  : 'bg-zinc-200/5 hover:bg-zinc-200/10 text-zinc-400 border-zinc-200/20 dark:border-white/5'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+            showSettings 
+              ? 'bg-bujo-highlight text-white border-bujo-highlight shadow-sm'
+              : 'bg-zinc-200/5 hover:bg-zinc-200/10 text-zinc-400 border-zinc-200/20 dark:border-white/5'
+          }`}
+          title="Configurações do Relatório Diário"
+        >
+          <Mail className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {showSettings && (
+        <div className="p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/60 border border-zinc-250/20 flex flex-col gap-3 animate-fade-in text-[10px] select-none shrink-0">
+          <div className="flex items-center justify-between border-b border-white/5 pb-1">
+            <span className="font-extrabold uppercase tracking-wider text-indigo-300">📧 Configurações do Relatório Diário</span>
+            <button onClick={() => setShowSettings(false)} className="text-zinc-500 hover:text-white cursor-pointer border-none bg-transparent">
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                id="dailyReportEnabled" 
+                checked={dailyReportEnabled} 
+                onChange={(e) => setDailyReportEnabled(e.target.checked)} 
+                className="w-3.5 h-3.5 rounded bg-zinc-900 border border-zinc-250/20 text-indigo-500 outline-none cursor-pointer"
+              />
+              <label htmlFor="dailyReportEnabled" className="font-bold text-zinc-300 cursor-pointer select-none">
+                Enviar resumo financeiro diário por e-mail às 06:00
+              </label>
+            </div>
+            
+            <div className="flex flex-col gap-1 mt-1">
+              <label className="font-bold text-zinc-400 uppercase text-[7.5px] tracking-wider">Destinatários (múltiplos e-mails separados por vírgula)</label>
+              <input 
+                type="text" 
+                value={reportEmails} 
+                onChange={(e) => setReportEmails(e.target.value)} 
+                placeholder="Ex: joelmaykon94@gmail.com, outro@email.com" 
+                className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-zinc-95 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none w-full"
+              />
+            </div>
+          </div>
+          
+          <div className="text-[7px] text-zinc-500 leading-normal border-t border-white/5 pt-1.5 flex gap-1">
+            <span>ℹ️</span>
+            <span>O relatório consolida as entradas e saídas do mês atual e as principais contas pendentes. Requer SMTP configurado no arquivo .env do servidor.</span>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Dashboard Header (Period selection & Date Selector) */}
+      <div className="flex flex-col md:flex-row gap-3 items-stretch justify-between p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/60 border border-zinc-250/20 select-none shrink-0">
+        
+        {/* Period Selector Tabs */}
+        <div className="flex items-center gap-1.5 bg-zinc-200/10 dark:bg-black/25 p-0.5 rounded-xl border border-zinc-250/20">
+          {[
+            { id: 'year', label: 'Ano' },
+            { id: 'month', label: 'Mês' },
+            { id: 'week', label: 'Semana' },
+            { id: 'day', label: 'Dia' }
+          ].map(mode => (
+            <button
+              key={mode.id}
+              onClick={() => setViewMode(mode.id as any)}
+              className={`px-2.5 py-1 rounded-lg text-[8.5px] font-bold uppercase transition-all cursor-pointer ${
+                viewMode === mode.id 
+                  ? 'bg-bujo-highlight text-white shadow' 
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              {mode.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Date Swiper Control */}
+        <div className="flex items-center justify-between md:justify-center gap-2">
           <button
-            key={t.id}
-            onClick={() => {
-              setActiveTab(t.id as any);
-              setEditingItemId(null);
-              setCategoryInput(t.id === 'income' ? 'Freelance' : 'Geral');
-            }}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors border shrink-0 ${
-              activeTab === t.id
-                ? 'bg-bujo-highlight text-white border-bujo-highlight shadow-sm shadow-bujo-highlight/15'
-                : 'bg-zinc-200/5 hover:bg-zinc-200/10 text-zinc-400 border-zinc-200/20 dark:border-white/5'
-            }`}
+            onClick={handlePrevPeriod}
+            className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
           >
-            {t.label}
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
-        ))}
+          
+          <span className="text-[10px] font-extrabold uppercase text-white min-w-[140px] text-center">
+            {formatPeriodLabel()}
+          </span>
+
+          <button
+            onClick={handleNextPeriod}
+            className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Owner and Macro Filters */}
+        <div className="flex items-center gap-2.5">
+          {/* Member filter */}
+          <div className="flex flex-col gap-0.5 min-w-[80px]">
+            <span className="text-[6.5px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Membro</span>
+            <select
+              value={filterOwner}
+              onChange={(e) => setFilterOwner(e.target.value)}
+              className="bg-zinc-900 dark:bg-black border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
+            >
+              <option value="Todos" className="bg-zinc-900 text-zinc-100">👤 Todos</option>
+              {availableOwners.map(o => (
+                <option key={o} value={o} className="bg-zinc-900 text-zinc-100">👤 {o}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Macro filter */}
+          <div className="flex flex-col gap-0.5 min-w-[100px]">
+            <span className="text-[6.5px] font-bold text-zinc-555 uppercase tracking-widest leading-none">Classificação</span>
+            <select
+              value={filterMacro}
+              onChange={(e) => setFilterMacro(e.target.value)}
+              className="bg-zinc-900 dark:bg-black border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
+            >
+              <option value="Todos" className="bg-zinc-900 text-zinc-100">🏷️ Todas</option>
+              {availableMacros.map(m => (
+                <option key={m} value={m} className="bg-zinc-900 text-zinc-100">🏷️ {m}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
       </div>
 
       {/* Main Body */}
       <div className="flex-1 overflow-y-auto min-h-[300px] max-h-[65vh] pr-1">
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-4 animate-fade-in">
-            {/* Filter Dashboard Header (Period selection & Date Selector) */}
-            <div className="flex flex-col md:flex-row gap-3 items-stretch justify-between p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/60 border border-zinc-250/20 select-none">
-              
-              {/* Period Selector Tabs */}
-              <div className="flex items-center gap-1.5 bg-zinc-200/10 dark:bg-black/25 p-0.5 rounded-xl border border-zinc-250/20">
-                {[
-                  { id: 'year', label: 'Ano' },
-                  { id: 'month', label: 'Mês' },
-                  { id: 'week', label: 'Semana' },
-                  { id: 'day', label: 'Dia' }
-                ].map(mode => (
-                  <button
-                    key={mode.id}
-                    onClick={() => setViewMode(mode.id as any)}
-                    className={`px-2.5 py-1 rounded-lg text-[8.5px] font-bold uppercase transition-all cursor-pointer ${
-                      viewMode === mode.id 
-                        ? 'bg-bujo-highlight text-white shadow' 
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Date Swiper Control */}
-              <div className="flex items-center justify-between md:justify-center gap-2">
-                <button
-                  onClick={handlePrevPeriod}
-                  className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                
-                <span className="text-[10px] font-extrabold uppercase text-white min-w-[140px] text-center">
-                  {formatPeriodLabel()}
-                </span>
-
-                <button
-                  onClick={handleNextPeriod}
-                  className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Owner and Macro Filters */}
-              <div className="flex items-center gap-2.5">
-                {/* Member filter */}
-                <div className="flex flex-col gap-0.5 min-w-[80px]">
-                  <span className="text-[6.5px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Membro</span>
-                  <select
-                    value={filterOwner}
-                    onChange={(e) => setFilterOwner(e.target.value)}
-                    className="bg-zinc-900 dark:bg-black border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
-                  >
-                    <option value="Todos" className="bg-zinc-900 text-zinc-100">👤 Todos</option>
-                    {availableOwners.map(o => (
-                      <option key={o} value={o} className="bg-zinc-900 text-zinc-100">👤 {o}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Macro filter */}
-                <div className="flex flex-col gap-0.5 min-w-[100px]">
-                  <span className="text-[6.5px] font-bold text-zinc-555 uppercase tracking-widest leading-none">Classificação</span>
-                  <select
-                    value={filterMacro}
-                    onChange={(e) => setFilterMacro(e.target.value)}
-                    className="bg-zinc-900 dark:bg-black border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
-                  >
-                    <option value="Todos" className="bg-zinc-900 text-zinc-100">🏷️ Todas</option>
-                    {availableMacros.map(m => (
-                      <option key={m} value={m} className="bg-zinc-900 text-zinc-100">🏷️ {m}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-            </div>
 
             {/* Balance Header Card */}
             <div className="relative p-5 rounded-2xl bg-gradient-to-br from-zinc-900 to-indigo-955 border border-indigo-500/25 text-white shadow-xl overflow-hidden flex flex-col gap-4 select-none">
@@ -1389,11 +1481,11 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
               </span>
               
               {(() => {
-                const list = activeTab === 'income' ? incomes :
+                const list = activeTab === 'income' ? fIncomes :
                              activeTab === 'fixed' ? fFixed :
                              activeTab === 'installment' ? fInstallments :
-                             activeTab === 'arrears' ? overdueDebts :
-                             newExpenses;
+                             activeTab === 'arrears' ? fArrears :
+                             fVariable;
                 
                 if (list.length === 0) {
                   return (
@@ -1550,6 +1642,21 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                   )}
                                 </select>
                               </div>
+
+                              {/* Recorrência se for ganho */}
+                              {item.type === 'income' && (
+                                <div className="flex flex-col gap-0.5">
+                                  <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Frequência</label>
+                                  <select
+                                    value={editRecurrenceType}
+                                    onChange={(e) => setEditRecurrenceType(e.target.value as any)}
+                                    className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
+                                  >
+                                    <option value="monthly" className="bg-zinc-900 text-zinc-100">📅 Todos os meses</option>
+                                    <option value="seasonal" className="bg-zinc-900 text-zinc-100">🍂 Sazonal</option>
+                                  </select>
+                                </div>
+                              )}
 
                               {/* Parcelas se aplicável */}
                               {item.type === 'installment' && (
@@ -1749,6 +1856,13 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                 <Tag className="w-2 h-2" /> {item.macroCategory}
                               </span>
 
+                              {/* Recurrence Badge for Income */}
+                              {item.type === 'income' && (
+                                <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25 uppercase flex items-center gap-0.5">
+                                  {item.recurrenceType === 'seasonal' ? '🍂 Sazonal' : '📅 Mensal'}
+                                </span>
+                              )}
+
                             </div>
                           </div>
                         )}
@@ -1891,6 +2005,21 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                       )}
                     </select>
                   </div>
+
+                  {/* Recorrência se for ganho */}
+                  {activeTab === 'income' && (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Frequência</label>
+                      <select
+                        value={recurrenceTypeInput}
+                        onChange={(e) => setRecurrenceTypeInput(e.target.value as any)}
+                        className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-250/20 text-zinc-200 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                      >
+                        <option value="monthly" className="bg-zinc-900 text-zinc-100">📅 Todos os meses</option>
+                        <option value="seasonal" className="bg-zinc-900 text-zinc-100">🍂 Sazonal</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {activeTab === 'installment' && (
@@ -1969,47 +2098,6 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
         {/* Bujo Shopping Tasks Tab */}
         {activeTab === 'bujo_tasks' && (
           <div className="flex flex-col gap-3 animate-fade-in">
-            {/* Swiper Anchor Label & Date switcher */}
-            <div className="flex flex-col md:flex-row gap-3 items-stretch justify-between p-4 rounded-2xl bg-zinc-200/10 dark:bg-zinc-900/60 border border-zinc-250/20 select-none">
-              <div className="flex items-center gap-1.5 bg-zinc-200/10 dark:bg-black/25 p-0.5 rounded-xl border border-zinc-250/20">
-                {[
-                  { id: 'year', label: 'Ano' },
-                  { id: 'month', label: 'Mês' },
-                  { id: 'week', label: 'Semana' },
-                  { id: 'day', label: 'Dia' }
-                ].map(mode => (
-                  <button
-                    key={mode.id}
-                    onClick={() => setViewMode(mode.id as any)}
-                    className={`px-2.5 py-1 rounded-lg text-[8.5px] font-bold uppercase transition-all cursor-pointer ${
-                      viewMode === mode.id 
-                        ? 'bg-bujo-highlight text-white shadow' 
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between md:justify-center gap-2">
-                <button
-                  onClick={handlePrevPeriod}
-                  className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                <span className="text-[10px] font-extrabold uppercase text-white min-w-[140px] text-center">
-                  {formatPeriodLabel()}
-                </span>
-                <button
-                  onClick={handleNextPeriod}
-                  className="p-1 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
 
             <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[9px] text-purple-400 leading-normal">
               <strong>Integração Inteligente BuJo:</strong> Esta área exibe automaticamente todas as tarefas de compras/pagamentos concluídas no período selecionado, extraindo valores numéricos.
