@@ -13,7 +13,7 @@ import {
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
-import { Download, Printer, ChevronLeft, ChevronRight, X, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, Printer, ChevronLeft, ChevronRight, X, GripVertical, ChevronDown, ChevronUp, ClipboardList, CheckCircle2, XCircle, Calendar, FileText } from 'lucide-react';
 import { BulletItem } from './BulletItem';
 import { useBujo } from '../../../context/BujoContext';
 import { getLocalDateString, compareBujoItems } from '../../../utils/plannerUtils';
@@ -182,6 +182,12 @@ export const DailyLogTab = () => {
   // Sort items: default order (no time/date first, then by scheduled time)
   const sortedDateItems = [...dateItems].sort(compareBujoItems);
 
+  const tasksPending = dateItems.filter(i => i.type === 'task' && (i.status === 'open' || i.status === 'scheduled')).length;
+  const tasksCompleted = dateItems.filter(i => i.type === 'task' && i.status === 'completed').length;
+  const tasksCancelled = dateItems.filter(i => i.type === 'task' && i.status === 'cancelled').length;
+  const eventsCount = dateItems.filter(i => i.type === 'event').length;
+  const notesCount = dateItems.filter(i => i.type === 'note').length;
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -263,6 +269,54 @@ export const DailyLogTab = () => {
           >
             <Printer className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Imprimir</span>
           </button>
+        </div>
+      </div>
+
+      {/* Counters Row */}
+      <div className="grid grid-cols-2 xs:grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 no-print p-3 rounded-2xl bg-zinc-200/35 dark:bg-white/[0.02] border border-zinc-200/30 dark:border-white/5">
+        {/* Pending tasks */}
+        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex-1 sm:flex-none justify-center sm:justify-start">
+          <ClipboardList className="w-4 h-4 shrink-0" />
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">A Fazer</span>
+            <span className="text-sm font-bold font-mono leading-none mt-1">{tasksPending}</span>
+          </div>
+        </div>
+
+        {/* Completed tasks */}
+        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex-1 sm:flex-none justify-center sm:justify-start">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">Concluídas</span>
+            <span className="text-sm font-bold font-mono leading-none mt-1">{tasksCompleted}</span>
+          </div>
+        </div>
+
+        {/* Cancelled tasks */}
+        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex-1 sm:flex-none justify-center sm:justify-start">
+          <XCircle className="w-4 h-4 shrink-0" />
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">Canceladas</span>
+            <span className="text-sm font-bold font-mono leading-none mt-1">{tasksCancelled}</span>
+          </div>
+        </div>
+
+        {/* Events */}
+        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex-1 sm:flex-none justify-center sm:justify-start">
+          <Calendar className="w-4 h-4 shrink-0" />
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">Eventos</span>
+            <span className="text-sm font-bold font-mono leading-none mt-1">{eventsCount}</span>
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex-1 sm:flex-none justify-center sm:justify-start">
+          <FileText className="w-4 h-4 shrink-0" />
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">Notas</span>
+            <span className="text-sm font-bold font-mono leading-none mt-1">{notesCount}</span>
+          </div>
         </div>
       </div>
 
