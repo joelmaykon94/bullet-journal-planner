@@ -38,6 +38,11 @@ interface BudgetItem {
   owner: 'Joel' | 'Larissa' | 'Maykon' | 'Geral';
   category: string;
   macroCategory: 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros';
+  totalDebtValue?: number;
+  firstInstallmentDate?: string;
+  dueDay?: number;
+  alreadyPaidInstallmentsCount?: number;
+  paidInstallmentNumbers?: number[];
 }
 
 const DEFAULT_MACRO_MAP: Record<string, 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros'> = {
@@ -68,6 +73,7 @@ const sanitizeBudgetItems = (items: any[], defaultType: 'income' | 'fixed' | 'in
     value: typeof item.value === 'number' ? item.value : parseFloat(item.value) || 0,
     type: item.type || defaultType,
     isPaid: !!item.isPaid,
+    isCancelled: !!item.isCancelled,
     currentInstallment: item.currentInstallment,
     totalInstallments: item.totalInstallments,
     date: item.date || todayStr,
@@ -75,7 +81,12 @@ const sanitizeBudgetItems = (items: any[], defaultType: 'income' | 'fixed' | 'in
     createdAt: item.createdAt || todayStr,
     owner: item.owner || 'Geral',
     category: item.category || 'Geral',
-    macroCategory: item.macroCategory || 'Outros'
+    macroCategory: item.macroCategory || 'Outros',
+    totalDebtValue: item.totalDebtValue,
+    firstInstallmentDate: item.firstInstallmentDate,
+    dueDay: item.dueDay,
+    alreadyPaidInstallmentsCount: item.alreadyPaidInstallmentsCount,
+    paidInstallmentNumbers: item.paidInstallmentNumbers || []
   }));
 };
 
@@ -139,6 +150,144 @@ const isIncomeReceived = (item: BudgetItem, todayStr: string): boolean => {
   if (item.isPaid) return true;
   if (item.dueDate && item.dueDate <= todayStr) return true;
   return false;
+};
+
+const getWeekRange = (d: Date): [Date, Date] => {
+  const workingDate = new Date(d);
+  const day = workingDate.getDay();
+  const diff = workingDate.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+  const start = new Date(workingDate.setDate(diff));
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+  return [start, end];
+};
+
+const getActiveInstallmentForMonth = (item: BudgetItem, targetDate: Date): { num: number; dueDateStr: string; value: number } | null => {
+  if (item.type !== 'installment') return null;
+  
+  // Parse first installment date
+  const firstDate = item.firstInstallmentDate ? new Date(item.firstInstallmentDate + 'T00:00:00') : new Date(item.date + 'T00:00:00');
+  const firstYear = firstDate.getFullYear();
+  const firstMonth = firstDate.getMonth();
+  
+  const targetYear = targetDate.getFullYear();
+  const targetMonth = targetDate.getMonth();
+  
+  // Month difference
+  const monthDiff = (targetYear - firstYear) * 12 + (targetMonth - firstMonth);
+  
+  // The installment index in this target month
+  const startNum = (item.alreadyPaidInstallmentsCount || 0) + 1;
+  const currentNum = startNum + monthDiff;
+  
+  if (currentNum >= 1 && currentNum <= (item.totalInstallments || 12)) {
+    // It is active!
+    const dueDay = item.dueDay || firstDate.getDate() || 5;
+    
+    // Construct the due date string for target month
+    const yyyy = targetYear;
+    const mm = String(targetMonth + 1).padStart(2, '0');
+    const dd = String(dueDay).padStart(2, '0');
+    const dueDateStr = `${yyyy}-${mm}-${dd}`;
+    
+    // Calculate single installment value
+    const val = item.totalDebtValue 
+      ? item.totalDebtValue / (item.totalInstallments || 12) 
+      : item.value;
+      
+    return {
+      num: currentNum,
+      dueDateStr,
+      value: val
+    };
+  }
+  
+  return null;
+};
+
+const getInstallmentsInPeriod = (item: BudgetItem, viewMode: string, selectedAnchorDate: Date): BudgetItem[] => {
+  if (item.type !== 'installment') return [];
+  
+  const monthsToInspect: Date[] = [new Date(selectedAnchorDate)];
+  
+  if (viewMode === 'year') {
+    monthsToInspect.length = 0;
+    for (let m = 0; m < 12; m++) {
+      monthsToInspect.push(new Date(selectedAnchorDate.getFullYear(), m, 1));
+    }
+  }
+  
+  if (viewMode === 'week') {
+    const [start, end] = getWeekRange(selectedAnchorDate);
+    monthsToInspect.length = 0;
+    const startMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+    const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+    monthsToInspect.push(startMonth);
+    if (startMonth.getMonth() !== endMonth.getMonth() || startMonth.getFullYear() !== endMonth.getFullYear()) {
+      monthsToInspect.push(endMonth);
+    }
+  }
+  
+  if (viewMode === 'day') {
+    monthsToInspect.length = 0;
+    monthsToInspect.push(new Date(selectedAnchorDate));
+  }
+  
+  const results: BudgetItem[] = [];
+  
+  for (const mDate of monthsToInspect) {
+    const activeInfo = getActiveInstallmentForMonth(item, mDate);
+    if (activeInfo) {
+      const instDate = new Date(activeInfo.dueDateStr + 'T00:00:00');
+      
+      let inPeriod = false;
+      if (viewMode === 'year') {
+        inPeriod = instDate.getFullYear() === selectedAnchorDate.getFullYear();
+      } else if (viewMode === 'month') {
+        inPeriod = instDate.getFullYear() === selectedAnchorDate.getFullYear() &&
+                   instDate.getMonth() === selectedAnchorDate.getMonth();
+      } else if (viewMode === 'week') {
+        const [start, end] = getWeekRange(selectedAnchorDate);
+        inPeriod = instDate >= start && instDate <= end;
+      } else if (viewMode === 'day') {
+        inPeriod = instDate.getFullYear() === selectedAnchorDate.getFullYear() &&
+                   instDate.getMonth() === selectedAnchorDate.getMonth() &&
+                   instDate.getDate() === selectedAnchorDate.getDate();
+      }
+      
+      if (inPeriod) {
+        const paidNums = item.paidInstallmentNumbers || [];
+        const isThisPaid = paidNums.includes(activeInfo.num);
+        
+        results.push({
+          ...item,
+          id: `${item.id}-inst-${activeInfo.num}`,
+          value: activeInfo.value,
+          dueDate: activeInfo.dueDateStr,
+          date: activeInfo.dueDateStr,
+          isPaid: isThisPaid,
+          currentInstallment: activeInfo.num
+        });
+      }
+    }
+  }
+  
+  return results;
+};
+
+const getInstallmentsListInPeriod = (list: BudgetItem[], viewMode: string, selectedAnchorDate: Date, filterOwner: string, filterMacro: string): BudgetItem[] => {
+  const results: BudgetItem[] = [];
+  for (const item of list) {
+    const periodItems = getInstallmentsInPeriod(item, viewMode, selectedAnchorDate);
+    for (const pi of periodItems) {
+      if (filterOwner !== 'Todos' && pi.owner !== filterOwner) continue;
+      if (filterMacro !== 'Todos' && pi.macroCategory !== filterMacro) continue;
+      results.push(pi);
+    }
+  }
+  return results;
 };
 
 export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
@@ -212,6 +361,9 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const [totInstallments, setTotInstallments] = useState('12');
   const [isPaidInput, setIsPaidInput] = useState<boolean>(false);
   const [isCancelledInput, setIsCancelledInput] = useState<boolean>(false);
+  const [firstInstallmentDateInput, setFirstInstallmentDateInput] = useState('');
+  const [dueDayInput, setDueDayInput] = useState('5');
+  const [alreadyPaidInstallmentsCountInput, setAlreadyPaidInstallmentsCountInput] = useState('');
 
   // Inline editing states
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -226,6 +378,9 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const [editTotInstallments, setEditTotInstallments] = useState('12');
   const [editIsPaid, setEditIsPaid] = useState<boolean>(false);
   const [editIsCancelled, setEditIsCancelled] = useState<boolean>(false);
+  const [editFirstInstallmentDate, setEditFirstInstallmentDate] = useState('');
+  const [editDueDay, setEditDueDay] = useState('5');
+  const [editAlreadyPaidInstallmentsCount, setEditAlreadyPaidInstallmentsCount] = useState('');
 
   // Category change wrapper to auto-select macro classification
   const handleCategoryChange = (cat: string) => {
@@ -236,19 +391,6 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const handleEditCategoryChange = (cat: string) => {
     setEditCategory(cat);
     setEditMacroCategory(getMacroCategoryForCategory(cat));
-  };
-
-  // Date manipulation helpers
-  const getWeekRange = (d: Date): [Date, Date] => {
-    const workingDate = new Date(d);
-    const day = workingDate.getDay();
-    const diff = workingDate.getDate() - day + (day === 0 ? -6 : 1); // Monday start
-    const start = new Date(workingDate.setDate(diff));
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
-    return [start, end];
   };
 
   const handlePrevPeriod = () => {
@@ -390,7 +532,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   // Filtered lists for calculations
   const fIncomes = filterByPeriodAndMeta(incomes);
   const fFixed = filterByPeriodAndMeta(fixedBills);
-  const fInstallments = filterByPeriodAndMeta(installments);
+  const fInstallments = getInstallmentsListInPeriod(installments, viewMode, selectedAnchorDate, filterOwner, filterMacro);
   const fArrears = filterByPeriodAndMeta(overdueDebts);
   const fVariable = filterByPeriodAndMeta(newExpenses);
 
@@ -481,9 +623,16 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     const val = parseFloat(valueInput.replace(',', '.'));
     if (isNaN(val)) return;
 
-    if (dueDateInput && !isValidSlashDate(dueDateInput)) {
+    if (activeTab !== 'installment' && dueDateInput && !isValidSlashDate(dueDateInput)) {
       showToast('⚠️ Data de vencimento/previsão inválida! Use o formato DD/MM/AAAA');
       return;
+    }
+
+    if (activeTab === 'installment') {
+      if (firstInstallmentDateInput && !isValidSlashDate(firstInstallmentDateInput)) {
+        showToast('⚠️ Data da primeira parcela inválida! Use o formato DD/MM/AAAA');
+        return;
+      }
     }
 
     const todayISO = new Date().toISOString().split('T')[0];
@@ -504,8 +653,14 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     };
 
     if (activeTab === 'installment') {
-      newItem.currentInstallment = parseInt(currInstallment) || 1;
-      newItem.totalInstallments = parseInt(totInstallments) || 12;
+      const totInst = parseInt(totInstallments) || 12;
+      newItem.totalDebtValue = val;
+      newItem.totalInstallments = totInst;
+      newItem.value = val / totInst;
+      newItem.firstInstallmentDate = firstInstallmentDateInput ? parseDateToISO(firstInstallmentDateInput) : todayISO;
+      newItem.dueDay = parseInt(dueDayInput) || 5;
+      newItem.alreadyPaidInstallmentsCount = alreadyPaidInstallmentsCountInput ? parseInt(alreadyPaidInstallmentsCountInput) : 0;
+      newItem.paidInstallmentNumbers = [];
     }
 
     if (activeTab === 'income') {
@@ -529,6 +684,9 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     setMacroCategoryInput('Outros');
     setCurrInstallment('1');
     setTotInstallments('12');
+    setFirstInstallmentDateInput('');
+    setDueDayInput('5');
+    setAlreadyPaidInstallmentsCountInput('');
     setIsPaidInput(false);
     setIsCancelledInput(false);
     showToast('💰 Item adicionado ao orçamento!');
@@ -537,32 +695,58 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const handleStartEdit = (item: BudgetItem) => {
     setEditingItemId(item.id);
     setEditDesc(item.description);
-    setEditValue(item.value.toString());
     setEditDate(formatISOToSlash(item.date));
     setEditDueDate(formatISOToSlash(item.dueDate || ''));
     setEditOwner(item.owner);
     setEditCategory(item.category);
     setEditMacroCategory(item.macroCategory);
-    setEditCurrInstallment((item.currentInstallment || 1).toString());
-    setEditTotInstallments((item.totalInstallments || 12).toString());
     setEditIsPaid(!!item.isPaid);
     setEditIsCancelled(!!item.isCancelled);
+
+    if (item.type === 'installment') {
+      setEditValue((item.totalDebtValue || item.value).toString());
+      setEditFirstInstallmentDate(formatISOToSlash(item.firstInstallmentDate || item.date));
+      setEditDueDay((item.dueDay || 5).toString());
+      setEditAlreadyPaidInstallmentsCount((item.alreadyPaidInstallmentsCount || 0).toString());
+      setEditTotInstallments((item.totalInstallments || 12).toString());
+    } else {
+      setEditValue(item.value.toString());
+      setEditFirstInstallmentDate('');
+      setEditDueDay('');
+      setEditAlreadyPaidInstallmentsCount('');
+      setEditTotInstallments('');
+    }
   };
 
   const handleSaveEdit = (e: React.FormEvent, type: string) => {
     e.preventDefault();
     if (!editDesc.trim() || !editValue.trim()) return;
 
-    if (!isValidSlashDate(editDate) || (editDueDate && !isValidSlashDate(editDueDate))) {
+    if (!isValidSlashDate(editDate) || (type !== 'installment' && editDueDate && !isValidSlashDate(editDueDate))) {
       showToast('⚠️ Data inválida! Use o formato DD/MM/AAAA');
       return;
+    }
+
+    if (type === 'installment') {
+      if (editFirstInstallmentDate && !isValidSlashDate(editFirstInstallmentDate)) {
+        showToast('⚠️ Data da primeira parcela inválida! Use o formato DD/MM/AAAA');
+        return;
+      }
     }
 
     const val = parseFloat(editValue.replace(',', '.'));
     if (isNaN(val)) return;
 
+    let baseId = editingItemId;
+    if (type === 'installment' && editingItemId) {
+      const match = editingItemId.match(/^(.+)-inst-(\d+)$/);
+      if (match) {
+        baseId = match[1];
+      }
+    }
+
     const updateList = (list: BudgetItem[]) => list.map(item => {
-      if (item.id !== editingItemId) return item;
+      if (item.id !== baseId) return item;
       
       const updated: BudgetItem = {
         ...item,
@@ -578,8 +762,13 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
       };
 
       if (type === 'installment') {
-        updated.currentInstallment = parseInt(editCurrInstallment) || 1;
-        updated.totalInstallments = parseInt(editTotInstallments) || 12;
+        const totInst = parseInt(editTotInstallments) || 12;
+        updated.totalDebtValue = val;
+        updated.totalInstallments = totInst;
+        updated.value = val / totInst;
+        updated.firstInstallmentDate = editFirstInstallmentDate ? parseDateToISO(editFirstInstallmentDate) : parseDateToISO(editDate);
+        updated.dueDay = parseInt(editDueDay) || 5;
+        updated.alreadyPaidInstallmentsCount = parseInt(editAlreadyPaidInstallmentsCount) || 0;
       }
 
       return updated;
@@ -615,11 +804,29 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
         }
       }));
       showToast('🔄 Status de recebimento atualizado!');
+    } else if (type === 'installment') {
+      const match = id.match(/^(.+)-inst-(\d+)$/);
+      if (match) {
+        const baseId = match[1];
+        const installmentNum = parseInt(match[2], 10);
+        
+        setInstallments(prev => prev.map(item => {
+          if (item.id !== baseId) return item;
+          const paidNums = item.paidInstallmentNumbers || [];
+          const updatedPaidNums = paidNums.includes(installmentNum)
+            ? paidNums.filter(n => n !== installmentNum)
+            : [...paidNums, installmentNum];
+          return {
+            ...item,
+            paidInstallmentNumbers: updatedPaidNums
+          };
+        }));
+        showToast('🔄 Status de pagamento da parcela atualizado!');
+      }
     } else {
       const updateItem = (list: BudgetItem[]) => list.map(item => item.id === id ? { ...item, isPaid: !item.isPaid } : item);
 
       if (type === 'fixed') setFixedBills(updateItem);
-      else if (type === 'installment') setInstallments(updateItem);
       else if (type === 'arrears') setOverdueDebts(updateItem);
       else if (type === 'variable') setNewExpenses(updateItem);
 
@@ -628,11 +835,18 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   };
 
   const handleDeleteItem = (id: string, type: string) => {
-    if (type === 'income') setIncomes(prev => prev.filter(item => item.id !== id));
-    else if (type === 'fixed') setFixedBills(prev => prev.filter(item => item.id !== id));
-    else if (type === 'installment') setInstallments(prev => prev.filter(item => item.id !== id));
-    else if (type === 'arrears') setOverdueDebts(prev => prev.filter(item => item.id !== id));
-    else if (type === 'variable') setNewExpenses(prev => prev.filter(item => item.id !== id));
+    let targetId = id;
+    if (type === 'installment') {
+      const match = id.match(/^(.+)-inst-(\d+)$/);
+      if (match) {
+        targetId = match[1];
+      }
+    }
+    if (type === 'income') setIncomes(prev => prev.filter(item => item.id !== targetId));
+    else if (type === 'fixed') setFixedBills(prev => prev.filter(item => item.id !== targetId));
+    else if (type === 'installment') setInstallments(prev => prev.filter(item => item.id !== targetId));
+    else if (type === 'arrears') setOverdueDebts(prev => prev.filter(item => item.id !== targetId));
+    else if (type === 'variable') setNewExpenses(prev => prev.filter(item => item.id !== targetId));
 
     showToast('🗑️ Item removido!');
   };
@@ -977,7 +1191,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
               {(() => {
                 const list = activeTab === 'income' ? incomes :
                              activeTab === 'fixed' ? fixedBills :
-                             activeTab === 'installment' ? installments :
+                             activeTab === 'installment' ? fInstallments :
                              activeTab === 'arrears' ? overdueDebts :
                              newExpenses;
                 
@@ -1017,7 +1231,9 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
 
                               {/* Valor */}
                               <div className="flex flex-col gap-0.5">
-                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Valor (R$)</label>
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">
+                                  {item.type === 'installment' ? 'Valor Total da Dívida (R$)' : 'Valor (R$)'}
+                                </label>
                                 <input
                                   type="text"
                                   value={editValue}
@@ -1039,18 +1255,20 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                               </div>
 
                               {/* Data de Vencimento / Previsão */}
-                              <div className="flex flex-col gap-0.5">
-                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">
-                                  {item.type === 'income' ? 'Previsão de Recebimento (DD/MM/AAAA)' : 'Data de Vencimento (Opcional) (DD/MM/AAAA)'}
-                                </label>
-                                <input
-                                  type="text"
-                                  value={editDueDate}
-                                  onChange={(e) => setEditDueDate(e.target.value)}
-                                  placeholder="DD/MM/AAAA"
-                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
-                                />
-                              </div>
+                              {item.type !== 'installment' && (
+                                <div className="flex flex-col gap-0.5">
+                                  <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">
+                                    {item.type === 'income' ? 'Previsão de Recebimento (DD/MM/AAAA)' : 'Data de Vencimento (Opcional) (DD/MM/AAAA)'}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={editDueDate}
+                                    onChange={(e) => setEditDueDate(e.target.value)}
+                                    placeholder="DD/MM/AAAA"
+                                    className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                  />
+                                </div>
+                              )}
 
                               {/* Membro */}
                               <div className="flex flex-col gap-0.5">
@@ -1135,22 +1353,43 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
 
                               {/* Parcelas se aplicável */}
                               {item.type === 'installment' && (
-                                <div className="flex gap-2 w-full col-span-1 sm:col-span-2">
-                                  <div className="flex-1 flex flex-col gap-0.5">
-                                    <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Parc. Atual</label>
-                                    <input
-                                      type="number"
-                                      value={editCurrInstallment}
-                                      onChange={(e) => setEditCurrInstallment(e.target.value)}
-                                      className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
-                                    />
-                                  </div>
-                                  <div className="flex-1 flex flex-col gap-0.5">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full col-span-1 sm:col-span-2">
+                                  <div className="flex flex-col gap-0.5">
                                     <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Total Parc.</label>
                                     <input
                                       type="number"
                                       value={editTotInstallments}
                                       onChange={(e) => setEditTotInstallments(e.target.value)}
+                                      className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                    />
+                                  </div>
+                                  <div className="flex flex-col gap-0.5">
+                                    <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Data 1ª Parc. (DD/MM/AAAA)</label>
+                                    <input
+                                      type="text"
+                                      value={editFirstInstallmentDate}
+                                      onChange={(e) => setEditFirstInstallmentDate(e.target.value)}
+                                      className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                    />
+                                  </div>
+                                  <div className="flex flex-col gap-0.5">
+                                    <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Dia Vencimento</label>
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      max="31"
+                                      value={editDueDay}
+                                      onChange={(e) => setEditDueDay(e.target.value)}
+                                      className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                    />
+                                  </div>
+                                  <div className="flex flex-col gap-0.5">
+                                    <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Parc. Pagas</label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      value={editAlreadyPaidInstallmentsCount}
+                                      onChange={(e) => setEditAlreadyPaidInstallmentsCount(e.target.value)}
                                       className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
                                     />
                                   </div>
@@ -1210,8 +1449,8 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                     {item.description}
                                   </span>
                                   {item.type === 'installment' && (
-                                    <span className="text-[7.5px] font-bold text-zinc-550 mt-0.5">
-                                      Parcela: {item.currentInstallment}/{item.totalInstallments}
+                                    <span className="text-[7.5px] font-bold text-zinc-555 mt-0.5">
+                                      Parcela: {item.currentInstallment}/{item.totalInstallments} (Dívida Total: R$ {(item.totalDebtValue || (item.value * (item.totalInstallments || 1))).toLocaleString('pt-BR')})
                                     </span>
                                   )}
                                 </div>
@@ -1329,29 +1568,33 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                   
                   {/* Valor */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Valor (R$)</label>
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">
+                      {activeTab === 'installment' ? 'Valor Total da Dívida (R$)' : 'Valor (R$)'}
+                    </label>
                     <input
                       type="text"
                       value={valueInput}
                       onChange={(e) => setValueInput(e.target.value)}
-                      placeholder="Ex: 150.00"
+                      placeholder={activeTab === 'installment' ? 'Ex: 1200.00' : 'Ex: 150.00'}
                       className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
                     />
                   </div>
 
                   {/* Data Vencimento / Previsão */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">
-                      {activeTab === 'income' ? 'Data de Previsão de Recebimento (DD/MM/AAAA)' : 'Data de Vencimento (Opcional) (DD/MM/AAAA)'}
-                    </label>
-                    <input
-                      type="text"
-                      value={dueDateInput}
-                      onChange={(e) => setDueDateInput(e.target.value)}
-                      placeholder="DD/MM/AAAA"
-                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
-                    />
-                  </div>
+                  {activeTab !== 'installment' && (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">
+                        {activeTab === 'income' ? 'Data de Previsão de Recebimento (DD/MM/AAAA)' : 'Data de Vencimento (Opcional) (DD/MM/AAAA)'}
+                      </label>
+                      <input
+                        type="text"
+                        value={dueDateInput}
+                        onChange={(e) => setDueDateInput(e.target.value)}
+                        placeholder="DD/MM/AAAA"
+                        className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
+                      />
+                    </div>
+                  )}
 
                   {/* Membro */}
                   <div className="flex flex-col gap-1">
@@ -1436,22 +1679,45 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                 </div>
 
                 {activeTab === 'installment' && (
-                  <div className="grid grid-cols-2 gap-3 border-t border-white/5 pt-3">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Parcela Atual</label>
-                      <input
-                        type="number"
-                        value={currInstallment}
-                        onChange={(e) => setCurrInstallment(e.target.value)}
-                        className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
-                      />
-                    </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-white/5 pt-3">
                     <div className="flex flex-col gap-1">
                       <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Total de Parcelas</label>
                       <input
                         type="number"
                         value={totInstallments}
                         onChange={(e) => setTotInstallments(e.target.value)}
+                        className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Data da 1ª Parcela (DD/MM/AAAA)</label>
+                      <input
+                        type="text"
+                        value={firstInstallmentDateInput}
+                        onChange={(e) => setFirstInstallmentDateInput(e.target.value)}
+                        placeholder="DD/MM/AAAA"
+                        className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Dia de Vencimento</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={dueDayInput}
+                        onChange={(e) => setDueDayInput(e.target.value)}
+                        className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Parcelas Pagas (Opcional)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={alreadyPaidInstallmentsCountInput}
+                        onChange={(e) => setAlreadyPaidInstallmentsCountInput(e.target.value)}
+                        placeholder="Ex: 2"
                         className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
                       />
                     </div>
