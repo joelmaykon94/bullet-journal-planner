@@ -57,7 +57,12 @@ export function useBujoItems(
   }, [items]);
 
   useEffect(() => {
-    localStorage.setItem('bujo_focus_items', JSON.stringify(items));
+    const deduplicated = deduplicateBujoItems(items);
+    if (deduplicated.length !== items.length) {
+      setItems(deduplicated);
+    } else {
+      localStorage.setItem('bujo_focus_items', JSON.stringify(items));
+    }
   }, [items]);
 
   // Auto-migration of pending tasks on day rollover (midnight)

@@ -402,7 +402,61 @@ export const deduplicateBujoItems = (items: BujoItem[]): BujoItem[] => {
       cleaned.push(groupItems[0]);
     }
   });
-  return cleaned;
+
+  // Second pass: Cross-day deduplication and ghost cleanup
+  const todayStr = getLocalDateString();
+  const latestTasks = new Map<string, BujoItem>();
+
+  cleaned.forEach(item => {
+    if (item.type !== 'task') return;
+    const content = (item.content || '').trim().toLowerCase();
+    if (!content) return;
+
+    const existing = latestTasks.get(content);
+    if (!existing) {
+      latestTasks.set(content, item);
+    } else {
+      const dateA = item.date || '';
+      const dateB = existing.date || '';
+      if (dateA > dateB) {
+        latestTasks.set(content, item);
+      } else if (dateA === dateB) {
+        const statusOrder = { completed: 3, cancelled: 2, open: 1, scheduled: 1, migrated: 0 };
+        const scoreA = statusOrder[item.status] ?? 0;
+        const scoreB = statusOrder[existing.status] ?? 0;
+        if (scoreA > scoreB) {
+          latestTasks.set(content, item);
+        }
+      }
+    }
+  });
+
+  return cleaned.filter(item => {
+    if (item.type !== 'task') return true;
+    const content = (item.content || '').trim().toLowerCase();
+    if (!content) return true;
+
+    const latest = latestTasks.get(content);
+    if (!latest) return true;
+
+    // 1. Ghost cleanup: If status is 'migrated', is in the past, and has no active copy today/future
+    if (item.status === 'migrated') {
+      const isPast = item.date && item.date < todayStr;
+      const hasActiveLater = latest.date && latest.date >= todayStr && latest.status !== 'migrated';
+      if (isPast && !hasActiveLater) {
+        return false;
+      }
+    }
+
+    // 2. Remove duplicates in previous days for open, scheduled or migrated items
+    if (item.date && latest.date && item.date < latest.date) {
+      if (item.status === 'open' || item.status === 'scheduled' || item.status === 'migrated') {
+        return false;
+      }
+    }
+
+    return true;
+  });
 };
 
 
