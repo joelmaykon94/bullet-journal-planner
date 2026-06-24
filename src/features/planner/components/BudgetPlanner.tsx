@@ -147,6 +147,17 @@ const isValidSlashDate = (str: string): boolean => {
   return /^([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d{4}$/.test(str);
 };
 
+const maskSlashDate = (value: string): string => {
+  const clean = value.replace(/\D/g, '');
+  if (clean.length <= 2) {
+    return clean;
+  }
+  if (clean.length <= 4) {
+    return `${clean.slice(0, 2)}/${clean.slice(2)}`;
+  }
+  return `${clean.slice(0, 2)}/${clean.slice(2, 4)}/${clean.slice(4, 8)}`;
+};
+
 const isIncomeReceived = (item: BudgetItem, todayStr: string): boolean => {
   if (item.isCancelled) return false;
   if (item.isPaid) return true;
@@ -1401,7 +1412,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                 <input
                                   type="text"
                                   value={editDate}
-                                  onChange={(e) => setEditDate(e.target.value)}
+                                  onChange={(e) => setEditDate(maskSlashDate(e.target.value))}
                                   placeholder="DD/MM/AAAA"
                                   className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
                                 />
@@ -1416,7 +1427,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                   <input
                                     type="text"
                                     value={editDueDate}
-                                    onChange={(e) => setEditDueDate(e.target.value)}
+                                    onChange={(e) => setEditDueDate(maskSlashDate(e.target.value))}
                                     placeholder="DD/MM/AAAA"
                                     className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
                                   />
@@ -1521,7 +1532,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                     <input
                                       type="text"
                                       value={editFirstInstallmentDate}
-                                      onChange={(e) => setEditFirstInstallmentDate(e.target.value)}
+                                      onChange={(e) => setEditFirstInstallmentDate(maskSlashDate(e.target.value))}
                                       className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
                                     />
                                   </div>
@@ -1757,7 +1768,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                       <input
                         type="text"
                         value={dueDateInput}
-                        onChange={(e) => setDueDateInput(e.target.value)}
+                        onChange={(e) => setDueDateInput(maskSlashDate(e.target.value))}
                         placeholder="DD/MM/AAAA"
                         className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
                       />
@@ -1862,7 +1873,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                       <input
                         type="text"
                         value={firstInstallmentDateInput}
-                        onChange={(e) => setFirstInstallmentDateInput(e.target.value)}
+                        onChange={(e) => setFirstInstallmentDateInput(maskSlashDate(e.target.value))}
                         placeholder="DD/MM/AAAA"
                         className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
                       />
