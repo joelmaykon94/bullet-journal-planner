@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { 
   DndContext, 
   closestCenter,
@@ -188,6 +188,60 @@ export const DailyLogTab = () => {
   const eventsCount = dateItems.filter(i => i.type === 'event').length;
   const notesCount = dateItems.filter(i => i.type === 'note').length;
 
+  // ── Filter chip state ──────────────────────────────────────────────────────
+  // null = no filter | 'active' chip = show first / vivid | 'hidden' chip = dim + hide
+  type ChipKey = 'pending' | 'completed' | 'cancelled' | 'event' | 'note';
+  type ChipState = 'active' | 'hidden';
+  const [chipStates, setChipStates] = useState<Record<ChipKey, ChipState | null>>({
+    pending: null,
+    completed: null,
+    cancelled: null,
+    event: null,
+    note: null,
+  });
+
+  const handleChipClick = useCallback((key: ChipKey) => {
+    setChipStates(prev => {
+      const current = prev[key];
+      // Cycle: null → active → hidden → null
+      const next: ChipState | null = current === null ? 'active' : current === 'active' ? 'hidden' : null;
+      return { ...prev, [key]: next };
+    });
+  }, []);
+
+  const isItemHidden = (item: typeof sortedDateItems[0]): boolean => {
+    if (item.type === 'task' && (item.status === 'open' || item.status === 'scheduled') && chipStates.pending === 'hidden') return true;
+    if (item.type === 'task' && item.status === 'completed' && chipStates.completed === 'hidden') return true;
+    if (item.type === 'task' && item.status === 'cancelled' && chipStates.cancelled === 'hidden') return true;
+    if (item.type === 'event' && chipStates.event === 'hidden') return true;
+    if (item.type === 'note' && chipStates.note === 'hidden') return true;
+    return false;
+  };
+
+  const getItemChipKey = (item: typeof sortedDateItems[0]): ChipKey => {
+    if (item.type === 'task' && (item.status === 'open' || item.status === 'scheduled')) return 'pending';
+    if (item.type === 'task' && item.status === 'completed') return 'completed';
+    if (item.type === 'task' && item.status === 'cancelled') return 'cancelled';
+    if (item.type === 'event') return 'event';
+    return 'note';
+  };
+
+  const displayedItems = sortedDateItems
+    .filter(item => !isItemHidden(item))
+    .sort((a, b) => {
+      const aKey = getItemChipKey(a);
+      const bKey = getItemChipKey(b);
+      const aActive = chipStates[aKey] === 'active';
+      const bActive = chipStates[bKey] === 'active';
+      if (aActive && !bActive) return -1;
+      if (!aActive && bActive) return 1;
+      return 0;
+    });
+
+  const hasAnyActiveFilter = Object.values(chipStates).some(s => s !== null);
+
+  const resetFilters = () => setChipStates({ pending: null, completed: null, cancelled: null, event: null, note: null });
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -274,50 +328,143 @@ export const DailyLogTab = () => {
 
       {/* Counters Row */}
       <div className="grid grid-cols-2 xs:grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 no-print p-3 rounded-2xl bg-zinc-200/35 dark:bg-white/[0.02] border border-zinc-200/30 dark:border-white/5">
+
         {/* Pending tasks */}
-        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex-1 sm:flex-none justify-center sm:justify-start">
+        <button
+          type="button"
+          onClick={() => handleChipClick('pending')}
+          title={chipStates.pending === null ? 'Clique para destacar tarefas a fazer' : chipStates.pending === 'active' ? 'Clique para ocultar tarefas a fazer' : 'Clique para restaurar'}
+          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border flex-1 sm:flex-none justify-center sm:justify-start cursor-pointer transition-all select-none ${
+            chipStates.pending === 'active'
+              ? 'bg-amber-500/25 border-amber-500/60 text-amber-500 dark:text-amber-300 shadow-sm shadow-amber-500/20 ring-1 ring-amber-500/40'
+              : chipStates.pending === 'hidden'
+              ? 'bg-zinc-200/10 border-zinc-200/10 text-zinc-500 dark:text-zinc-600 opacity-50'
+              : 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500/15 hover:border-amber-500/35'
+          }`}
+        >
           <ClipboardList className="w-4 h-4 shrink-0" />
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">A Fazer</span>
             <span className="text-sm font-bold font-mono leading-none mt-1">{tasksPending}</span>
           </div>
-        </div>
+          {chipStates.pending !== null && (
+            <span className="ml-auto text-[8px] font-bold uppercase tracking-wider opacity-60">
+              {chipStates.pending === 'active' ? '▲ 1º' : '✕'}
+            </span>
+          )}
+        </button>
 
         {/* Completed tasks */}
-        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex-1 sm:flex-none justify-center sm:justify-start">
+        <button
+          type="button"
+          onClick={() => handleChipClick('completed')}
+          title={chipStates.completed === null ? 'Clique para destacar concluídas' : chipStates.completed === 'active' ? 'Clique para ocultar concluídas' : 'Clique para restaurar'}
+          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border flex-1 sm:flex-none justify-center sm:justify-start cursor-pointer transition-all select-none ${
+            chipStates.completed === 'active'
+              ? 'bg-emerald-500/25 border-emerald-500/60 text-emerald-500 dark:text-emerald-300 shadow-sm shadow-emerald-500/20 ring-1 ring-emerald-500/40'
+              : chipStates.completed === 'hidden'
+              ? 'bg-zinc-200/10 border-zinc-200/10 text-zinc-500 dark:text-zinc-600 opacity-50'
+              : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15 hover:border-emerald-500/35'
+          }`}
+        >
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">Concluídas</span>
             <span className="text-sm font-bold font-mono leading-none mt-1">{tasksCompleted}</span>
           </div>
-        </div>
+          {chipStates.completed !== null && (
+            <span className="ml-auto text-[8px] font-bold uppercase tracking-wider opacity-60">
+              {chipStates.completed === 'active' ? '▲ 1º' : '✕'}
+            </span>
+          )}
+        </button>
 
         {/* Cancelled tasks */}
-        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex-1 sm:flex-none justify-center sm:justify-start">
+        <button
+          type="button"
+          onClick={() => handleChipClick('cancelled')}
+          title={chipStates.cancelled === null ? 'Clique para destacar canceladas' : chipStates.cancelled === 'active' ? 'Clique para ocultar canceladas' : 'Clique para restaurar'}
+          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border flex-1 sm:flex-none justify-center sm:justify-start cursor-pointer transition-all select-none ${
+            chipStates.cancelled === 'active'
+              ? 'bg-rose-500/25 border-rose-500/60 text-rose-500 dark:text-rose-300 shadow-sm shadow-rose-500/20 ring-1 ring-rose-500/40'
+              : chipStates.cancelled === 'hidden'
+              ? 'bg-zinc-200/10 border-zinc-200/10 text-zinc-500 dark:text-zinc-600 opacity-50'
+              : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/15 hover:border-rose-500/35'
+          }`}
+        >
           <XCircle className="w-4 h-4 shrink-0" />
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">Canceladas</span>
             <span className="text-sm font-bold font-mono leading-none mt-1">{tasksCancelled}</span>
           </div>
-        </div>
+          {chipStates.cancelled !== null && (
+            <span className="ml-auto text-[8px] font-bold uppercase tracking-wider opacity-60">
+              {chipStates.cancelled === 'active' ? '▲ 1º' : '✕'}
+            </span>
+          )}
+        </button>
 
         {/* Events */}
-        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex-1 sm:flex-none justify-center sm:justify-start">
+        <button
+          type="button"
+          onClick={() => handleChipClick('event')}
+          title={chipStates.event === null ? 'Clique para destacar eventos' : chipStates.event === 'active' ? 'Clique para ocultar eventos' : 'Clique para restaurar'}
+          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border flex-1 sm:flex-none justify-center sm:justify-start cursor-pointer transition-all select-none ${
+            chipStates.event === 'active'
+              ? 'bg-indigo-500/25 border-indigo-500/60 text-indigo-500 dark:text-indigo-300 shadow-sm shadow-indigo-500/20 ring-1 ring-indigo-500/40'
+              : chipStates.event === 'hidden'
+              ? 'bg-zinc-200/10 border-zinc-200/10 text-zinc-500 dark:text-zinc-600 opacity-50'
+              : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/15 hover:border-indigo-500/35'
+          }`}
+        >
           <Calendar className="w-4 h-4 shrink-0" />
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">Eventos</span>
             <span className="text-sm font-bold font-mono leading-none mt-1">{eventsCount}</span>
           </div>
-        </div>
+          {chipStates.event !== null && (
+            <span className="ml-auto text-[8px] font-bold uppercase tracking-wider opacity-60">
+              {chipStates.event === 'active' ? '▲ 1º' : '✕'}
+            </span>
+          )}
+        </button>
 
         {/* Notes */}
-        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex-1 sm:flex-none justify-center sm:justify-start">
+        <button
+          type="button"
+          onClick={() => handleChipClick('note')}
+          title={chipStates.note === null ? 'Clique para destacar notas' : chipStates.note === 'active' ? 'Clique para ocultar notas' : 'Clique para restaurar'}
+          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border flex-1 sm:flex-none justify-center sm:justify-start cursor-pointer transition-all select-none ${
+            chipStates.note === 'active'
+              ? 'bg-cyan-500/25 border-cyan-500/60 text-cyan-500 dark:text-cyan-300 shadow-sm shadow-cyan-500/20 ring-1 ring-cyan-500/40'
+              : chipStates.note === 'hidden'
+              ? 'bg-zinc-200/10 border-zinc-200/10 text-zinc-500 dark:text-zinc-600 opacity-50'
+              : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/15 hover:border-cyan-500/35'
+          }`}
+        >
           <FileText className="w-4 h-4 shrink-0" />
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-70 leading-none">Notas</span>
             <span className="text-sm font-bold font-mono leading-none mt-1">{notesCount}</span>
           </div>
-        </div>
+          {chipStates.note !== null && (
+            <span className="ml-auto text-[8px] font-bold uppercase tracking-wider opacity-60">
+              {chipStates.note === 'active' ? '▲ 1º' : '✕'}
+            </span>
+          )}
+        </button>
+
+        {/* Reset filter pill */}
+        {hasAnyActiveFilter && (
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-300/30 bg-zinc-200/20 dark:border-white/10 dark:bg-white/5 text-zinc-500 hover:text-bujo-text hover:border-zinc-400/40 transition-all text-[10px] font-semibold cursor-pointer ml-auto"
+            title="Limpar filtros"
+          >
+            <X className="w-3 h-3" /> Limpar
+          </button>
+        )}
       </div>
 
       <div className="relative bg-zinc-200/30 dark:bg-white/5 p-2 rounded-xl border border-zinc-200/40 dark:border-white/10 no-print">
@@ -482,11 +629,11 @@ export const DailyLogTab = () => {
           onDragEnd={handleDragEnd}
         >
           <SortableContext 
-            items={sortedDateItems.map(i => i.id)}
+            items={displayedItems.map(i => i.id)}
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-2">
-              {sortedDateItems.map(item => (
+              {displayedItems.map(item => (
                 <div key={item.id} className="flex items-start gap-2 group/sort">
                   <DragHandle id={item.id} className="mt-4 opacity-0 group-hover/sort:opacity-40 hover:!opacity-100 transition-opacity">
                     <GripVertical className="w-4 h-4 text-zinc-400" />
@@ -500,6 +647,11 @@ export const DailyLogTab = () => {
           </SortableContext>
         </DndContext>
 
+        {displayedItems.length === 0 && sortedDateItems.length > 0 && (
+          <div className="p-6 rounded-2xl bg-zinc-200/10 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 text-center text-zinc-500 italic text-sm">
+            Todos os itens desta categoria estão ocultos. Clique no filtro acima para restaurá-los.
+          </div>
+        )}
         {sortedDateItems.length === 0 && (
           <div className="p-8 rounded-2xl bg-zinc-200/10 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 text-center text-zinc-500 italic text-sm">
             Nenhuma entrada para este dia. Adicione algo no formulário acima!
