@@ -1,0 +1,30 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+  echo "Usage: $0 <symbol>"
+  exit 1
+fi
+
+SYMBOL="$1"
+TARGET_DIR="apps"
+
+if [ ! -d "$TARGET_DIR" ]; then
+  TARGET_DIR="src"
+fi
+
+# Use grep to find whole word matches and format output to group by file name
+grep -rn -w \
+  --exclude-dir={node_modules,dist,.git,.angular} \
+  --include=\*.ts \
+  --include=\*.html \
+  --include=\*.css \
+  "$SYMBOL" "$TARGET_DIR" | awk -F: '
+  {
+    file=$1
+    line=$2
+    if (file != last_file) {
+      if (last_file != "") print ""
+      print "📄 File: " file
+      last_file = file
+    }
+    print "  Line " line
+  }'

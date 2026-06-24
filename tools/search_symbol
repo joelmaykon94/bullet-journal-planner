@@ -1,0 +1,21 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+  echo "Usage: $0 <search_term>"
+  exit 1
+fi
+
+SEARCH_TERM="$1"
+TARGET_DIR="apps"
+
+if [ ! -d "$TARGET_DIR" ]; then
+  TARGET_DIR="src"
+fi
+
+# Run grep recursively with 2 lines of context, including only source files and excluding dependencies/builds
+# We filter out lines that are only comments using grep -v
+grep -rn -C 2 \
+  --exclude-dir={node_modules,dist,.git,.angular} \
+  --include=\*.ts \
+  --include=\*.html \
+  --include=\*.css \
+  "$SEARCH_TERM" "$TARGET_DIR" | grep -vE "^[^-]*[-:]\s*(//|#|/\*|\*)"

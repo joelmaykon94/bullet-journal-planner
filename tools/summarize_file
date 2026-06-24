@@ -1,0 +1,30 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+  echo "Usage: $0 <file_path>"
+  exit 1
+fi
+
+FILE_PATH="$1"
+
+if [ ! -f "$FILE_PATH" ]; then
+  echo "Error: File '$FILE_PATH' does not exist."
+  exit 1
+fi
+
+TOTAL_LINES=$(wc -l < "$FILE_PATH")
+
+if [ "$TOTAL_LINES" -le 60 ]; then
+  cat "$FILE_PATH"
+  echo "----------------------------------------"
+  echo "Total lines: $TOTAL_LINES (Entire file displayed)"
+else
+  head -n 40 "$FILE_PATH"
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo " [... $(($TOTAL_LINES - 60)) lines hidden to save context tokens ...] "
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  tail -n 20 "$FILE_PATH"
+  echo "----------------------------------------"
+  echo "Total lines: $TOTAL_LINES"
+fi

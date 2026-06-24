@@ -1,29 +1,44 @@
-# Angular (Frontend) Project Organization Rules
-Organize the Angular application located in `apps/frontend/src/app/` using a clean, standalone component structure:
-- **Core Services (`src/app/core/`):** Put singleton services, custom HTTP interceptors, route guards, and global state managers here.
-- **Shared Elements (`src/app/shared/`):** Put reusable visual components, directives, custom pipes, and design system models here.
-- **Feature Folders (`src/app/features/`):** Organize core features (e.g. `planner`, `focus`, `adhd`, `settings`) in individual folders.
-  - Structure each feature: `apps/frontend/src/app/features/[feature-name]/`
-    - `components/` - Standalone components specific to the feature.
-    - `services/` - Services/APIs specific to the feature.
-    - `models/` - Domain interfaces/types.
-- **Rules:**
-  - Prefer Standalone Components and functional routing.
-  - Keep logic decoupled from presentation. Use services to handle business logic, state management, and external API requests.
-  - Follow the Angular Style Guide naming conventions (e.g., `*.component.ts`, `*.service.ts`, `*.directive.ts`).
+# Gemini AI Rules & Guidelines — Bullet Journal Planner
 
-# NestJS (Backend) Project Organization Rules
-Organize the NestJS application located in `apps/backend/src/` using a clean, module-based domain-driven structure:
+This file serves as the system rules configuration for Gemini. To separate AI instructions from project documentation, the full documentation is organized under the `docs/` directory.
+
+---
+
+## 📚 AI Documentation Index
+
+- **GSD Canonical Rules**: [docs/ai/PROJECT_RULES.md](docs/ai/PROJECT_RULES.md)
+- **GSD Style Guide**: [docs/ai/GSD-STYLE.md](docs/ai/GSD-STYLE.md)
+- **Coding Guidelines (Angular & NestJS)**: [docs/ai/CODING_GUIDELINES.md](docs/ai/CODING_GUIDELINES.md)
+- **Custom Tools Rules**: [docs/ai/CUSTOM_TOOLS.md](docs/ai/CUSTOM_TOOLS.md)
+
+---
+
+## ⚠️ Core System Instructions (Active Guard Rails)
+
+To ensure these rules remain active inside the agent's system prompt (since this file is loaded automatically via system configuration), the core coding guidelines and tool rules are summarized below:
+
+### 1. Angular (Frontend) Project Organization
+- **Path:** `apps/frontend/src/app/`
+- **Core Services (`src/app/core/`):** Singleton services, custom interceptors, guards, global state managers.
+- **Shared Elements (`src/app/shared/`):** Reusable components, directives, pipes, shared models.
+- **Feature Folders (`src/app/features/`):** Features like `planner`, `focus`, `adhd`, `settings` inside individual folders with `components/`, `services/`, and `models/`.
+- **Rules:** Prefer Standalone Components, use Angular Signals for state management, decouple logic from templates.
+
+### 2. NestJS (Backend) Project Organization
+- **Path:** `apps/backend/src/`
 - **Core Module (`src/core/`):** Global configurations, database connection modules, filters, interceptors, and guards.
-- **Feature Modules (`src/[feature-name]/`):** Place controllers, services, modules, and domain models together by feature.
-  - Structure each feature: `apps/backend/src/[feature-name]/`
-    - `dto/` - Data Transfer Objects for input validation (using `class-validator`).
-    - `entities/` - Database schemas or ORM entities.
-    - `[feature-name].controller.ts` - HTTP request handlers.
-    - `[feature-name].service.ts` - Business logic and database operations.
-    - `[feature-name].module.ts` - Feature module definition.
-- **Rules:**
-  - Never put raw business logic in controllers; delegate strictly to services.
-  - Use DTOs with validation decorators for all inputs.
-  - Standardize error handling using NestJS built-in Exceptions.
+- **Feature Modules (`src/[feature-name]/`):** Controllers, services, modules, and database schemas/entities by feature.
+  - Structure: `dto/`, `entities/`, `[feature-name].controller.ts`, `[feature-name].service.ts`, `[feature-name].module.ts`
+- **Rules:** Keep controllers thin, delegate strictly to services, validate inputs using DTOs with `class-validator`.
 
+### 3. Custom Tools Rules (Workspace `/tools`)
+- **Mandatory Tool Rules:**
+  1. Use `search_symbol` or `find_usages` before opening any file.
+  2. Use `summarize_file` before reading a file completely to decide if it's worth it.
+  3. Use `list_changed_files` at start of review or debugging.
+  4. Only read complete files when the tools above aren't sufficient.
+
+### 4. Active Testing & Property Validation Guardrail
+- **Tester Discipline**: Run complete verification checks (`pnpm build:backend && pnpm test:backend` and `pnpm build:frontend && pnpm --filter frontend test --no-watch`) before completing any task.
+- **Double-Ended Match**: Ensure all payload properties returned by backend APIs exactly match the types and properties consumed by Angular templates, signals, and services to prevent runtime failures.
+- **TDD Cycles**: Follow test-driven cycles (write/update tests before or during implementation, verify failures first, then verify success).

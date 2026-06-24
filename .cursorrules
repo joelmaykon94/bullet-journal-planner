@@ -1,0 +1,31 @@
+# Cursor Rules & Guidelines — Bullet Journal Planner
+
+This file serves as the system rules configuration for Cursor. To separate AI instructions from project documentation, the full documentation is organized under the `docs/` directory.
+
+---
+
+## 📚 AI Documentation Index
+
+- **GSD Canonical Rules**: [docs/ai/PROJECT_RULES.md](docs/ai/PROJECT_RULES.md)
+- **GSD Style Guide**: [docs/ai/GSD-STYLE.md](docs/ai/GSD-STYLE.md)
+- **Coding Guidelines (Angular & NestJS)**: [docs/ai/CODING_GUIDELINES.md](docs/ai/CODING_GUIDELINES.md)
+- **Custom Tools Rules**: [docs/ai/CUSTOM_TOOLS.md](docs/ai/CUSTOM_TOOLS.md)
+
+---
+
+## ⚠️ Core System Instructions (Active Guard Rails)
+
+To ensure these rules remain active inside Cursor, the core workspace rules are summarized below:
+
+### 1. Project Architecture
+- We are running a monorepo setup:
+  - `apps/frontend` contains an Angular application.
+  - `apps/backend` contains a NestJS application.
+- Follow the feature organization guidelines in [docs/ai/CODING_GUIDELINES.md](docs/ai/CODING_GUIDELINES.md).
+
+### 2. Custom Tools Rules (Workspace `/tools`)
+- **Mandatory Tool Rules:**
+  1. Use `search_symbol` or `find_usages` before opening any file.
+  2. Use `summarize_file` before reading a file completely to decide if it's worth it.
+  3. Use `list_changed_files` at start of review or debugging.
+  4. Only read complete files when the tools above aren't sufficient.
