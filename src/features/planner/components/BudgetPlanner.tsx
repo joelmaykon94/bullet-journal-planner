@@ -182,6 +182,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const [macroCategoryInput, setMacroCategoryInput] = useState<'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros'>('Outros');
   const [currInstallment, setCurrInstallment] = useState('1');
   const [totInstallments, setTotInstallments] = useState('12');
+  const [isPaidInput, setIsPaidInput] = useState<boolean>(false);
 
   // Inline editing states
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -194,6 +195,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const [editMacroCategory, setEditMacroCategory] = useState<'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros'>('Outros');
   const [editCurrInstallment, setEditCurrInstallment] = useState('1');
   const [editTotInstallments, setEditTotInstallments] = useState('12');
+  const [editIsPaid, setEditIsPaid] = useState<boolean>(false);
 
   // Category change wrapper to auto-select macro classification
   const handleCategoryChange = (cat: string) => {
@@ -381,6 +383,14 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const totalPaidExpenses = paidFixed + paidInstallments + paidArrears + paidVariable + totalBujoShopping; 
   const remainingToPay = totalExpenses - totalPaidExpenses;
 
+  // Real vs Future incomes
+  const realIncome = fIncomes.filter(i => i.isPaid).reduce((acc, curr) => acc + curr.value, 0);
+  const futureIncome = fIncomes.filter(i => !i.isPaid).reduce((acc, curr) => acc + curr.value, 0);
+
+  // Balances (Real vs Projected)
+  const realBalance = realIncome - totalPaidExpenses;
+  const projectedBalance = totalIncome - totalExpenses;
+
   // Percentage allocations for progress bars
   const fixedPercent = totalExpenses > 0 ? Math.round((totalFixed / totalExpenses) * 100) : 0;
   const installmentsPercent = totalExpenses > 0 ? Math.round((totalInstallments / totalExpenses) * 100) : 0;
@@ -443,7 +453,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
       description: descInput.trim(),
       value: val,
       type: activeTab as any,
-      isPaid: false,
+      isPaid: isPaidInput,
       date: dateInput,
       dueDate: dueDateInput || undefined,
       createdAt: new Date().toISOString().split('T')[0],
@@ -479,6 +489,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     setMacroCategoryInput('Outros');
     setCurrInstallment('1');
     setTotInstallments('12');
+    setIsPaidInput(false);
     showToast('💰 Item adicionado ao orçamento!');
   };
 
@@ -493,6 +504,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     setEditMacroCategory(item.macroCategory);
     setEditCurrInstallment((item.currentInstallment || 1).toString());
     setEditTotInstallments((item.totalInstallments || 12).toString());
+    setEditIsPaid(!!item.isPaid);
   };
 
   const handleSaveEdit = (e: React.FormEvent, type: string) => {
@@ -513,7 +525,8 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
         dueDate: editDueDate || undefined,
         owner: editOwner,
         category: editCategory as any,
-        macroCategory: editMacroCategory
+        macroCategory: editMacroCategory,
+        isPaid: editIsPaid
       };
 
       if (type === 'installment') {
@@ -537,12 +550,13 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const handleTogglePaid = (id: string, type: string) => {
     const updateItem = (list: BudgetItem[]) => list.map(item => item.id === id ? { ...item, isPaid: !item.isPaid } : item);
 
-    if (type === 'fixed') setFixedBills(updateItem);
+    if (type === 'income') setIncomes(updateItem);
+    else if (type === 'fixed') setFixedBills(updateItem);
     else if (type === 'installment') setInstallments(updateItem);
     else if (type === 'arrears') setOverdueDebts(updateItem);
     else if (type === 'variable') setNewExpenses(updateItem);
 
-    showToast('🔄 Status de pagamento atualizado!');
+    showToast(type === 'income' ? '🔄 Status de recebimento atualizado!' : '🔄 Status de pagamento atualizado!');
   };
 
   const handleDeleteItem = (id: string, type: string) => {
@@ -680,31 +694,64 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
             </div>
 
             {/* Balance Header Card */}
-            <div className="relative p-5 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 border border-blue-400/20 text-white shadow-lg overflow-hidden flex flex-col gap-4 select-none">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-6 -mt-6 blur-lg" />
-              <div>
-                <span className="text-[9px] uppercase tracking-widest font-extrabold text-blue-200">Saldo Filtrado do Período</span>
-                <h3 className="text-2xl font-black mt-0.5 flex items-center">
-                  R$ {currentBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </h3>
+            <div className="relative p-5 rounded-2xl bg-gradient-to-br from-zinc-900 to-indigo-955 border border-indigo-500/25 text-white shadow-xl overflow-hidden flex flex-col gap-4 select-none">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-10 -mt-10 blur-xl animate-pulse" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Saldo Real */}
+                <div className="flex flex-col p-3.5 rounded-xl bg-white/[0.03] border border-white/5 shadow-inner">
+                  <span className="text-[9px] uppercase tracking-widest font-extrabold text-indigo-300">Saldo Real / Caixa</span>
+                  <h3 className="text-2xl font-black mt-1 text-emerald-400">
+                    R$ {realBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h3>
+                  <p className="text-[8px] text-zinc-400 mt-1">
+                    Ganhos recebidos (R$ {realIncome.toLocaleString('pt-BR')}) - despesas pagas (R$ {totalPaidExpenses.toLocaleString('pt-BR')}).
+                  </p>
+                </div>
+
+                {/* Saldo Projetado */}
+                <div className="flex flex-col p-3.5 rounded-xl bg-white/[0.03] border border-white/5 shadow-inner">
+                  <span className="text-[9px] uppercase tracking-widest font-extrabold text-indigo-300">Saldo Projetado / Previsão</span>
+                  <h3 className="text-2xl font-black mt-1 text-indigo-200">
+                    R$ {projectedBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h3>
+                  <p className="text-[8px] text-zinc-400 mt-1">
+                    Total de ganhos (R$ {totalIncome.toLocaleString('pt-BR')}) - total de saídas (R$ {totalExpenses.toLocaleString('pt-BR')}).
+                  </p>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-white/10 text-emerald-300">
-                    <TrendingUp className="w-4 h-4" />
+
+              {/* Sub-metrics Breakdown Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/10 pt-4">
+                {/* Entradas detail */}
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-white/5 text-emerald-400 border border-emerald-500/10">
+                    <TrendingUp className="w-5 h-5" />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[8px] text-blue-200 uppercase font-bold tracking-wider">Entradas</span>
-                    <span className="text-xs font-black">R$ {totalIncome.toLocaleString('pt-BR')}</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[8px] text-indigo-300 uppercase font-bold tracking-wider">Entradas do Período</span>
+                    <span className="text-sm font-black">R$ {totalIncome.toLocaleString('pt-BR')}</span>
+                    <div className="flex items-center gap-1.5 text-[8px] text-zinc-400 mt-0.5">
+                      <span className="text-emerald-400">R$ {realIncome.toLocaleString('pt-BR')} (Real)</span>
+                      <span>•</span>
+                      <span className="text-indigo-300">R$ {futureIncome.toLocaleString('pt-BR')} (Futuro)</span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-white/10 text-red-300">
-                    <TrendingDown className="w-4 h-4" />
+
+                {/* Saídas detail */}
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-white/5 text-red-400 border border-red-500/10">
+                    <TrendingDown className="w-5 h-5" />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[8px] text-blue-200 uppercase font-bold tracking-wider">Saídas</span>
-                    <span className="text-xs font-black">R$ {totalExpenses.toLocaleString('pt-BR')}</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[8px] text-indigo-300 uppercase font-bold tracking-wider">Saídas do Período</span>
+                    <span className="text-sm font-black">R$ {totalExpenses.toLocaleString('pt-BR')}</span>
+                    <div className="flex items-center gap-1.5 text-[8px] text-zinc-400 mt-0.5">
+                      <span className="text-red-400">R$ {totalPaidExpenses.toLocaleString('pt-BR')} (Pago)</span>
+                      <span>•</span>
+                      <span className="text-amber-400">R$ {remainingToPay.toLocaleString('pt-BR')} (Pendente)</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -974,6 +1021,30 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                 </select>
                               </div>
 
+                              {/* Status do Lançamento */}
+                              <div className="flex flex-col gap-0.5">
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">
+                                  {item.type === 'income' ? 'Tipo de Ganho' : 'Status de Pagamento'}
+                                </label>
+                                <select
+                                  value={editIsPaid ? 'true' : 'false'}
+                                  onChange={(e) => setEditIsPaid(e.target.value === 'true')}
+                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
+                                >
+                                  {item.type === 'income' ? (
+                                    <>
+                                      <option value="false">📅 Futuro / Previsto</option>
+                                      <option value="true">💰 Real / Recebido</option>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <option value="false">⏳ Pendente</option>
+                                      <option value="true">✓ Pago</option>
+                                    </>
+                                  )}
+                                </select>
+                              </div>
+
                               {/* Parcelas se aplicável */}
                               {item.type === 'installment' && (
                                 <div className="flex gap-2 w-full col-span-1 sm:col-span-2">
@@ -1017,30 +1088,37 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
 
                           </form>
                         ) : (
-                          /* Standard Item Row */
+                           /* Standard Item Row */
                           <div 
                             className={`flex flex-col p-3 rounded-xl border transition-all ${
-                              item.isPaid 
-                                ? 'bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-60' 
-                                : 'bg-zinc-200/10 dark:bg-white/5 border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/30'
+                              item.type === 'income'
+                                ? item.isPaid
+                                  ? 'bg-emerald-550/10 dark:bg-emerald-500/[0.03] border-emerald-500/25 hover:border-emerald-500/40 shadow-inner'
+                                  : 'bg-indigo-500/5 dark:bg-indigo-500/[0.01] border-dashed border-indigo-550/30 hover:border-indigo-500/40'
+                                : item.isPaid 
+                                  ? 'bg-zinc-200/5 dark:bg-white/[0.01] border-zinc-200/10 dark:border-white/5 opacity-60' 
+                                  : 'bg-zinc-200/10 dark:bg-white/5 border-zinc-200/30 dark:border-white/5 hover:border-bujo-highlight/30'
                             }`}
                           >
                             <div className="flex items-center justify-between w-full">
                               <div className="flex items-center gap-2.5 min-w-0">
-                                {activeTab !== 'income' && (
-                                  <button
-                                    onClick={() => handleTogglePaid(item.id, item.type)}
-                                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border cursor-pointer transition-all ${
-                                      item.isPaid 
-                                        ? 'bg-emerald-500 border-emerald-500 text-white scale-105 shadow' 
-                                        : 'border-zinc-200/40 dark:border-white/20 hover:border-emerald-500'
-                                    }`}
-                                  >
-                                    {item.isPaid && <Check className="w-3 h-3 stroke-[3]" />}
-                                  </button>
-                                )}
+                                <button
+                                  onClick={() => handleTogglePaid(item.id, item.type)}
+                                  className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border cursor-pointer transition-all ${
+                                    item.isPaid 
+                                      ? 'bg-emerald-500 border-emerald-500 text-white scale-105 shadow' 
+                                      : 'border-zinc-200/40 dark:border-white/20 hover:border-emerald-500'
+                                  }`}
+                                  title={item.type === 'income' ? (item.isPaid ? "Marcar como Não Recebido" : "Marcar como Recebido") : (item.isPaid ? "Marcar como Não Pago" : "Marcar como Pago")}
+                                >
+                                  {item.isPaid && <Check className="w-3 h-3 stroke-[3]" />}
+                                </button>
                                 <div className="min-w-0 flex flex-col">
-                                  <span className={`text-xs font-bold truncate ${item.isPaid ? 'line-through text-zinc-550' : 'text-zinc-150'}`}>
+                                  <span className={`text-xs font-bold truncate ${
+                                    item.type === 'income'
+                                      ? 'text-zinc-150'
+                                      : item.isPaid ? 'line-through text-zinc-550' : 'text-zinc-150'
+                                  }`}>
                                     {item.description}
                                   </span>
                                   {item.type === 'installment' && (
@@ -1090,6 +1168,29 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                               )}
 
                               <div className="flex-1" />
+
+                              {/* Status Badge */}
+                              {item.type === 'income' ? (
+                                item.isPaid ? (
+                                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 uppercase flex items-center gap-0.5">
+                                    💰 Real / Recebido
+                                  </span>
+                                ) : (
+                                  <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/25 uppercase flex items-center gap-0.5">
+                                    📅 Futuro / Previsto
+                                  </span>
+                                )
+                              ) : (
+                                item.isPaid ? (
+                                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 uppercase flex items-center gap-0.5">
+                                    ✓ Pago
+                                  </span>
+                                ) : (
+                                  <span className={`px-1.5 py-0.5 rounded border uppercase flex items-center gap-0.5 ${item.dueDate && new Date(item.dueDate) < new Date() ? 'bg-red-500/10 text-red-500 border-red-500/25' : 'bg-amber-500/10 text-amber-400 border-amber-500/25'}`}>
+                                    ⏳ Pendente
+                                  </span>
+                                )
+                              )}
 
                               {/* Owner Badge */}
                               <span className="px-1.5 py-0.5 rounded bg-zinc-200/10 dark:bg-white/5 border border-zinc-250/20 text-zinc-450 uppercase flex items-center gap-0.5">
@@ -1211,6 +1312,30 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                       {availableMacros.map(m => (
                         <option key={m} value={m}>{m}</option>
                       ))}
+                    </select>
+                  </div>
+
+                  {/* Status */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">
+                      {activeTab === 'income' ? 'Tipo de Ganho' : 'Status de Pagamento'}
+                    </label>
+                    <select
+                      value={isPaidInput ? 'true' : 'false'}
+                      onChange={(e) => setIsPaidInput(e.target.value === 'true')}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                    >
+                      {activeTab === 'income' ? (
+                        <>
+                          <option value="false">📅 Futuro / Previsto</option>
+                          <option value="true">💰 Real / Recebido</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="false">⏳ Pendente</option>
+                          <option value="true">✓ Pago</option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>
