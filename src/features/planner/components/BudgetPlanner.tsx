@@ -29,26 +29,14 @@ interface BudgetItem {
   value: number;
   type: 'income' | 'fixed' | 'installment' | 'arrears' | 'variable';
   isPaid?: boolean;
+  isCancelled?: boolean;
   currentInstallment?: number;
   totalInstallments?: number;
   date: string; // Transaction/Created Date (YYYY-MM-DD)
   dueDate?: string; // Due Date (YYYY-MM-DD)
   createdAt: string; // Record Creation Date (YYYY-MM-DD)
   owner: 'Joel' | 'Larissa' | 'Maykon' | 'Geral';
-  category: 
-    | 'Dívidas' 
-    | 'Escola' 
-    | 'Veículo' 
-    | 'Internet' 
-    | 'Casa' 
-    | 'Serviços Online' 
-    | 'Saúde' 
-    | 'Alimentação' 
-    | 'Educação' 
-    | 'Lazer' 
-    | 'Vestuário' 
-    | 'Cuidados Pessoais' 
-    | 'Geral';
+  category: string;
   macroCategory: 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros';
 }
 
@@ -112,6 +100,46 @@ const DEFAULT_DEBTS: BudgetItem[] = [
 const DEFAULT_NEW: BudgetItem[] = [
   { id: 'new-1', description: 'Jantar Restaurante', value: 90, type: 'variable', isPaid: true, date: '2026-06-22', createdAt: '2026-06-22', owner: 'Joel', category: 'Lazer', macroCategory: 'Estilo de Vida' }
 ];
+
+const availableIncomeCategories = ['Uber', 'Freelance', 'Estagio', 'CLT', 'Emprestimos', 'Doação', 'Outros'];
+
+const parseDateToISO = (dateStr: string): string => {
+  if (!dateStr) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const day = parts[0].trim().padStart(2, '0');
+    const month = parts[1].trim().padStart(2, '0');
+    const year = parts[2].trim();
+    if (year.length === 4) {
+      return `${year}-${month}-${day}`;
+    }
+  }
+  return dateStr;
+};
+
+const formatISOToSlash = (isoStr: string): string => {
+  if (!isoStr) return '';
+  if (isoStr.includes('/')) return isoStr;
+  const parts = isoStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return isoStr;
+};
+
+const isValidSlashDate = (str: string): boolean => {
+  if (!str) return true;
+  return /^([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d{4}$/.test(str);
+};
+
+const isIncomeReceived = (item: BudgetItem, todayStr: string): boolean => {
+  if (item.isCancelled) return false;
+  if (item.isPaid) return true;
+  if (item.dueDate && item.dueDate <= todayStr) return true;
+  return false;
+};
 
 export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const { items, showToast } = useBujo();
@@ -183,6 +211,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const [currInstallment, setCurrInstallment] = useState('1');
   const [totInstallments, setTotInstallments] = useState('12');
   const [isPaidInput, setIsPaidInput] = useState<boolean>(false);
+  const [isCancelledInput, setIsCancelledInput] = useState<boolean>(false);
 
   // Inline editing states
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -196,6 +225,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const [editCurrInstallment, setEditCurrInstallment] = useState('1');
   const [editTotInstallments, setEditTotInstallments] = useState('12');
   const [editIsPaid, setEditIsPaid] = useState<boolean>(false);
+  const [editIsCancelled, setEditIsCancelled] = useState<boolean>(false);
 
   // Category change wrapper to auto-select macro classification
   const handleCategoryChange = (cat: string) => {
@@ -364,7 +394,10 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const fArrears = filterByPeriodAndMeta(overdueDebts);
   const fVariable = filterByPeriodAndMeta(newExpenses);
 
-  const totalIncome = fIncomes.reduce((acc, curr) => acc + curr.value, 0);
+  const todayStr = new Date().toISOString().split('T')[0];
+  const activeIncomes = fIncomes.filter(i => !i.isCancelled);
+
+  const totalIncome = activeIncomes.reduce((acc, curr) => acc + curr.value, 0);
   const totalFixed = fFixed.reduce((acc, curr) => acc + curr.value, 0);
   const totalInstallments = fInstallments.reduce((acc, curr) => acc + curr.value, 0);
   const totalArrears = fArrears.reduce((acc, curr) => acc + curr.value, 0);
@@ -384,8 +417,8 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   const remainingToPay = totalExpenses - totalPaidExpenses;
 
   // Real vs Future incomes
-  const realIncome = fIncomes.filter(i => i.isPaid).reduce((acc, curr) => acc + curr.value, 0);
-  const futureIncome = fIncomes.filter(i => !i.isPaid).reduce((acc, curr) => acc + curr.value, 0);
+  const realIncome = activeIncomes.filter(i => isIncomeReceived(i, todayStr)).reduce((acc, curr) => acc + curr.value, 0);
+  const futureIncome = activeIncomes.filter(i => !isIncomeReceived(i, todayStr)).reduce((acc, curr) => acc + curr.value, 0);
 
   // Balances (Real vs Projected)
   const realBalance = realIncome - totalPaidExpenses;
@@ -448,18 +481,26 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     const val = parseFloat(valueInput.replace(',', '.'));
     if (isNaN(val)) return;
 
+    if (dueDateInput && !isValidSlashDate(dueDateInput)) {
+      showToast('⚠️ Data de vencimento/previsão inválida! Use o formato DD/MM/AAAA');
+      return;
+    }
+
+    const todayISO = new Date().toISOString().split('T')[0];
+
     const newItem: BudgetItem = {
       id: `budget-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
       description: descInput.trim(),
       value: val,
       type: activeTab as any,
       isPaid: isPaidInput,
-      date: dateInput,
-      dueDate: dueDateInput || undefined,
-      createdAt: new Date().toISOString().split('T')[0],
+      isCancelled: activeTab === 'income' ? isCancelledInput : false,
+      date: todayISO, // Automatic creation date!
+      dueDate: dueDateInput ? parseDateToISO(dueDateInput) : undefined,
+      createdAt: todayISO,
       owner: ownerInput,
-      category: categoryInput as any,
-      macroCategory: macroCategoryInput
+      category: categoryInput,
+      macroCategory: activeTab === 'income' ? 'Outros' : macroCategoryInput
     };
 
     if (activeTab === 'installment') {
@@ -482,14 +523,14 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     // Reset inputs
     setDescInput('');
     setValueInput('');
-    setDateInput(new Date().toISOString().split('T')[0]);
     setDueDateInput('');
     setOwnerInput('Geral');
-    setCategoryInput('Geral');
+    setCategoryInput(activeTab === 'income' ? 'Freelance' : 'Geral');
     setMacroCategoryInput('Outros');
     setCurrInstallment('1');
     setTotInstallments('12');
     setIsPaidInput(false);
+    setIsCancelledInput(false);
     showToast('💰 Item adicionado ao orçamento!');
   };
 
@@ -497,19 +538,25 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     setEditingItemId(item.id);
     setEditDesc(item.description);
     setEditValue(item.value.toString());
-    setEditDate(item.date);
-    setEditDueDate(item.dueDate || '');
+    setEditDate(formatISOToSlash(item.date));
+    setEditDueDate(formatISOToSlash(item.dueDate || ''));
     setEditOwner(item.owner);
     setEditCategory(item.category);
     setEditMacroCategory(item.macroCategory);
     setEditCurrInstallment((item.currentInstallment || 1).toString());
     setEditTotInstallments((item.totalInstallments || 12).toString());
     setEditIsPaid(!!item.isPaid);
+    setEditIsCancelled(!!item.isCancelled);
   };
 
   const handleSaveEdit = (e: React.FormEvent, type: string) => {
     e.preventDefault();
     if (!editDesc.trim() || !editValue.trim()) return;
+
+    if (!isValidSlashDate(editDate) || (editDueDate && !isValidSlashDate(editDueDate))) {
+      showToast('⚠️ Data inválida! Use o formato DD/MM/AAAA');
+      return;
+    }
 
     const val = parseFloat(editValue.replace(',', '.'));
     if (isNaN(val)) return;
@@ -521,12 +568,13 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
         ...item,
         description: editDesc.trim(),
         value: val,
-        date: editDate,
-        dueDate: editDueDate || undefined,
+        date: parseDateToISO(editDate),
+        dueDate: editDueDate ? parseDateToISO(editDueDate) : undefined,
         owner: editOwner,
-        category: editCategory as any,
-        macroCategory: editMacroCategory,
-        isPaid: editIsPaid
+        category: editCategory,
+        macroCategory: type === 'income' ? 'Outros' : editMacroCategory,
+        isPaid: editIsPaid,
+        isCancelled: type === 'income' ? editIsCancelled : false
       };
 
       if (type === 'installment') {
@@ -548,15 +596,35 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
   };
 
   const handleTogglePaid = (id: string, type: string) => {
-    const updateItem = (list: BudgetItem[]) => list.map(item => item.id === id ? { ...item, isPaid: !item.isPaid } : item);
+    if (type === 'income') {
+      setIncomes(prev => prev.map(item => {
+        if (item.id !== id) return item;
+        
+        const todayStr = new Date().toISOString().split('T')[0];
+        const isReceived = isIncomeReceived(item, todayStr);
+        
+        if (item.isCancelled) {
+          // From Cancelado -> Futuro / Previsto
+          return { ...item, isPaid: false, isCancelled: false };
+        } else if (isReceived) {
+          // From Recebido -> Cancelado
+          return { ...item, isPaid: false, isCancelled: true };
+        } else {
+          // From Futuro -> Recebido
+          return { ...item, isPaid: true, isCancelled: false };
+        }
+      }));
+      showToast('🔄 Status de recebimento atualizado!');
+    } else {
+      const updateItem = (list: BudgetItem[]) => list.map(item => item.id === id ? { ...item, isPaid: !item.isPaid } : item);
 
-    if (type === 'income') setIncomes(updateItem);
-    else if (type === 'fixed') setFixedBills(updateItem);
-    else if (type === 'installment') setInstallments(updateItem);
-    else if (type === 'arrears') setOverdueDebts(updateItem);
-    else if (type === 'variable') setNewExpenses(updateItem);
+      if (type === 'fixed') setFixedBills(updateItem);
+      else if (type === 'installment') setInstallments(updateItem);
+      else if (type === 'arrears') setOverdueDebts(updateItem);
+      else if (type === 'variable') setNewExpenses(updateItem);
 
-    showToast(type === 'income' ? '🔄 Status de recebimento atualizado!' : '🔄 Status de pagamento atualizado!');
+      showToast('🔄 Status de pagamento atualizado!');
+    }
   };
 
   const handleDeleteItem = (id: string, type: string) => {
@@ -596,6 +664,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
             onClick={() => {
               setActiveTab(t.id as any);
               setEditingItemId(null);
+              setCategoryInput(t.id === 'income' ? 'Freelance' : 'Geral');
             }}
             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors border shrink-0 ${
               activeTab === t.id
@@ -666,26 +735,26 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                   <select
                     value={filterOwner}
                     onChange={(e) => setFilterOwner(e.target.value)}
-                    className="bg-zinc-200/10 dark:bg-black/35 border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
+                    className="bg-zinc-900 dark:bg-black border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
                   >
-                    <option value="Todos">👤 Todos</option>
+                    <option value="Todos" className="bg-zinc-900 text-zinc-100">👤 Todos</option>
                     {availableOwners.map(o => (
-                      <option key={o} value={o}>👤 {o}</option>
+                      <option key={o} value={o} className="bg-zinc-900 text-zinc-100">👤 {o}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Macro filter */}
                 <div className="flex flex-col gap-0.5 min-w-[100px]">
-                  <span className="text-[6.5px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Classificação</span>
+                  <span className="text-[6.5px] font-bold text-zinc-555 uppercase tracking-widest leading-none">Classificação</span>
                   <select
                     value={filterMacro}
                     onChange={(e) => setFilterMacro(e.target.value)}
-                    className="bg-zinc-200/10 dark:bg-black/35 border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
+                    className="bg-zinc-900 dark:bg-black border border-zinc-250/20 rounded-lg px-1.5 py-0.5 text-[8.5px] font-bold text-zinc-300 outline-none cursor-pointer"
                   >
-                    <option value="Todos">🏷️ Todas</option>
+                    <option value="Todos" className="bg-zinc-900 text-zinc-100">🏷️ Todas</option>
                     {availableMacros.map(m => (
-                      <option key={m} value={m}>🏷️ {m}</option>
+                      <option key={m} value={m} className="bg-zinc-900 text-zinc-100">🏷️ {m}</option>
                     ))}
                   </select>
                 </div>
@@ -959,22 +1028,26 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
 
                               {/* Data de Transação */}
                               <div className="flex flex-col gap-0.5">
-                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Data de Criação/Lançamento</label>
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Data de Criação/Lançamento (DD/MM/AAAA)</label>
                                 <input
-                                  type="date"
+                                  type="text"
                                   value={editDate}
                                   onChange={(e) => setEditDate(e.target.value)}
+                                  placeholder="DD/MM/AAAA"
                                   className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
                                 />
                               </div>
 
-                              {/* Data de Vencimento */}
+                              {/* Data de Vencimento / Previsão */}
                               <div className="flex flex-col gap-0.5">
-                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Data de Vencimento (Opcional)</label>
+                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">
+                                  {item.type === 'income' ? 'Previsão de Recebimento (DD/MM/AAAA)' : 'Data de Vencimento (Opcional) (DD/MM/AAAA)'}
+                                </label>
                                 <input
-                                  type="date"
+                                  type="text"
                                   value={editDueDate}
                                   onChange={(e) => setEditDueDate(e.target.value)}
+                                  placeholder="DD/MM/AAAA"
                                   className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
                                 />
                               </div>
@@ -988,7 +1061,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                   className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
                                 >
                                   {availableOwners.map(o => (
-                                    <option key={o} value={o}>{o}</option>
+                                    <option key={o} value={o} className="bg-zinc-900 text-zinc-100">{o}</option>
                                   ))}
                                 </select>
                               </div>
@@ -1001,25 +1074,27 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                   onChange={(e) => handleEditCategoryChange(e.target.value)}
                                   className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
                                 >
-                                  {availableCategories.map(c => (
-                                    <option key={c} value={c}>{c}</option>
+                                  {(item.type === 'income' ? availableIncomeCategories : availableCategories).map(c => (
+                                    <option key={c} value={c} className="bg-zinc-900 text-zinc-100">{c}</option>
                                   ))}
                                 </select>
                               </div>
 
                               {/* Classificação */}
-                              <div className="flex flex-col gap-0.5">
-                                <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Classificação de Custos</label>
-                                <select
-                                  value={editMacroCategory}
-                                  onChange={(e) => setEditMacroCategory(e.target.value as any)}
-                                  className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
-                                >
-                                  {availableMacros.map(m => (
-                                    <option key={m} value={m}>{m}</option>
-                                  ))}
-                                </select>
-                              </div>
+                              {item.type !== 'income' && (
+                                <div className="flex flex-col gap-0.5">
+                                  <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Classificação de Custos</label>
+                                  <select
+                                    value={editMacroCategory}
+                                    onChange={(e) => setEditMacroCategory(e.target.value as any)}
+                                    className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
+                                  >
+                                    {availableMacros.map(m => (
+                                      <option key={m} value={m} className="bg-zinc-900 text-zinc-100">{m}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
 
                               {/* Status do Lançamento */}
                               <div className="flex flex-col gap-0.5">
@@ -1027,19 +1102,32 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                   {item.type === 'income' ? 'Tipo de Ganho' : 'Status de Pagamento'}
                                 </label>
                                 <select
-                                  value={editIsPaid ? 'true' : 'false'}
-                                  onChange={(e) => setEditIsPaid(e.target.value === 'true')}
+                                  value={editIsCancelled ? 'cancelled' : editIsPaid ? 'true' : 'false'}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === 'cancelled') {
+                                      setEditIsPaid(false);
+                                      setEditIsCancelled(true);
+                                    } else if (val === 'true') {
+                                      setEditIsPaid(true);
+                                      setEditIsCancelled(false);
+                                    } else {
+                                      setEditIsPaid(false);
+                                      setEditIsCancelled(false);
+                                    }
+                                  }}
                                   className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none cursor-pointer"
                                 >
                                   {item.type === 'income' ? (
                                     <>
-                                      <option value="false">📅 Futuro / Previsto</option>
-                                      <option value="true">💰 Real / Recebido</option>
+                                      <option value="false" className="bg-zinc-900 text-zinc-100">📅 Futuro / Previsto</option>
+                                      <option value="true" className="bg-zinc-900 text-zinc-100">💰 Real / Recebido</option>
+                                      <option value="cancelled" className="bg-zinc-900 text-zinc-100">❌ Cancelado</option>
                                     </>
                                   ) : (
                                     <>
-                                      <option value="false">⏳ Pendente</option>
-                                      <option value="true">✓ Pago</option>
+                                      <option value="false" className="bg-zinc-900 text-zinc-100">⏳ Pendente</option>
+                                      <option value="true" className="bg-zinc-900 text-zinc-100">✓ Pago</option>
                                     </>
                                   )}
                                 </select>
@@ -1251,25 +1339,17 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                     />
                   </div>
 
-                  {/* Data Lançamento */}
+                  {/* Data Vencimento / Previsão */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Data Lançamento/Criação</label>
+                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">
+                      {activeTab === 'income' ? 'Data de Previsão de Recebimento (DD/MM/AAAA)' : 'Data de Vencimento (Opcional) (DD/MM/AAAA)'}
+                    </label>
                     <input
-                      type="date"
-                      value={dateInput}
-                      onChange={(e) => setDateInput(e.target.value)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Data Vencimento */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Data Vencimento (Opcional)</label>
-                    <input
-                      type="date"
+                      type="text"
                       value={dueDateInput}
                       onChange={(e) => setDueDateInput(e.target.value)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      placeholder="DD/MM/AAAA"
+                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none placeholder-zinc-650"
                     />
                   </div>
 
@@ -1279,10 +1359,10 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                     <select
                       value={ownerInput}
                       onChange={(e) => setOwnerInput(e.target.value as any)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-250/20 text-zinc-200 focus:border-bujo-highlight focus:outline-none cursor-pointer"
                     >
                       {availableOwners.map(o => (
-                        <option key={o} value={o}>{o}</option>
+                        <option key={o} value={o} className="bg-zinc-900 text-zinc-100">{o}</option>
                       ))}
                     </select>
                   </div>
@@ -1293,27 +1373,29 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                     <select
                       value={categoryInput}
                       onChange={(e) => handleCategoryChange(e.target.value)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-250/20 text-zinc-200 focus:border-bujo-highlight focus:outline-none cursor-pointer"
                     >
-                      {availableCategories.map(c => (
-                        <option key={c} value={c}>{c}</option>
+                      {(activeTab === 'income' ? availableIncomeCategories : availableCategories).map(c => (
+                        <option key={c} value={c} className="bg-zinc-900 text-zinc-100">{c}</option>
                       ))}
                     </select>
                   </div>
 
                   {/* Classificação */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Classificação de Custos</label>
-                    <select
-                      value={macroCategoryInput}
-                      onChange={(e) => setMacroCategoryInput(e.target.value as any)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none cursor-pointer"
-                    >
-                      {availableMacros.map(m => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {activeTab !== 'income' && (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Classificação de Custos</label>
+                      <select
+                        value={macroCategoryInput}
+                        onChange={(e) => setMacroCategoryInput(e.target.value as any)}
+                        className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-250/20 text-zinc-200 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                      >
+                        {availableMacros.map(m => (
+                          <option key={m} value={m} className="bg-zinc-900 text-zinc-100">{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   {/* Status */}
                   <div className="flex flex-col gap-1">
@@ -1321,19 +1403,32 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                       {activeTab === 'income' ? 'Tipo de Ganho' : 'Status de Pagamento'}
                     </label>
                     <select
-                      value={isPaidInput ? 'true' : 'false'}
-                      onChange={(e) => setIsPaidInput(e.target.value === 'true')}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none cursor-pointer"
+                      value={isCancelledInput ? 'cancelled' : isPaidInput ? 'true' : 'false'}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === 'cancelled') {
+                          setIsPaidInput(false);
+                          setIsCancelledInput(true);
+                        } else if (val === 'true') {
+                          setIsPaidInput(true);
+                          setIsCancelledInput(false);
+                        } else {
+                          setIsPaidInput(false);
+                          setIsCancelledInput(false);
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-250/20 text-zinc-200 focus:border-bujo-highlight focus:outline-none cursor-pointer"
                     >
                       {activeTab === 'income' ? (
                         <>
-                          <option value="false">📅 Futuro / Previsto</option>
-                          <option value="true">💰 Real / Recebido</option>
+                          <option value="false" className="bg-zinc-900 text-zinc-100">📅 Futuro / Previsto</option>
+                          <option value="true" className="bg-zinc-900 text-zinc-100">💰 Real / Recebido</option>
+                          <option value="cancelled" className="bg-zinc-900 text-zinc-100">❌ Cancelado</option>
                         </>
                       ) : (
                         <>
-                          <option value="false">⏳ Pendente</option>
-                          <option value="true">✓ Pago</option>
+                          <option value="false" className="bg-zinc-900 text-zinc-100">⏳ Pendente</option>
+                          <option value="true" className="bg-zinc-900 text-zinc-100">✓ Pago</option>
                         </>
                       )}
                     </select>
