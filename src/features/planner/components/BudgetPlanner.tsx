@@ -43,6 +43,7 @@ interface BudgetItem {
   dueDay?: number;
   alreadyPaidInstallmentsCount?: number;
   paidInstallmentNumbers?: number[];
+  paidMonths?: string[];
 }
 
 const DEFAULT_MACRO_MAP: Record<string, 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros'> = {
@@ -86,7 +87,8 @@ const sanitizeBudgetItems = (items: any[], defaultType: 'income' | 'fixed' | 'in
     firstInstallmentDate: item.firstInstallmentDate,
     dueDay: item.dueDay,
     alreadyPaidInstallmentsCount: item.alreadyPaidInstallmentsCount,
-    paidInstallmentNumbers: item.paidInstallmentNumbers || []
+    paidInstallmentNumbers: item.paidInstallmentNumbers || [],
+    paidMonths: item.paidMonths || []
   }));
 };
 
@@ -96,8 +98,8 @@ const DEFAULT_INCOMES: BudgetItem[] = [
 ];
 
 const DEFAULT_FIXED: BudgetItem[] = [
-  { id: 'fix-1', description: 'Aluguel', value: 1000, type: 'fixed', isPaid: true, date: '2026-06-05', dueDate: '2026-06-10', createdAt: '2026-06-01', owner: 'Geral', category: 'Casa', macroCategory: 'Essenciais' },
-  { id: 'fix-2', description: 'Assinatura Internet', value: 120, type: 'fixed', isPaid: false, date: '2026-06-15', dueDate: '2026-06-20', createdAt: '2026-06-01', owner: 'Geral', category: 'Internet', macroCategory: 'Essenciais' }
+  { id: 'fix-1', description: 'Aluguel', value: 1000, type: 'fixed', isPaid: true, date: '2026-06-05', dueDate: '2026-06-10', createdAt: '2026-06-01', owner: 'Geral', category: 'Casa', macroCategory: 'Essenciais', dueDay: 10, paidMonths: ['2026-06'] },
+  { id: 'fix-2', description: 'Assinatura Internet', value: 120, type: 'fixed', isPaid: false, date: '2026-06-15', dueDate: '2026-06-20', createdAt: '2026-06-01', owner: 'Geral', category: 'Internet', macroCategory: 'Essenciais', dueDay: 20, paidMonths: [] }
 ];
 
 const DEFAULT_INSTALLMENTS: BudgetItem[] = [
@@ -281,6 +283,114 @@ const getInstallmentsListInPeriod = (list: BudgetItem[], viewMode: string, selec
   const results: BudgetItem[] = [];
   for (const item of list) {
     const periodItems = getInstallmentsInPeriod(item, viewMode, selectedAnchorDate);
+    for (const pi of periodItems) {
+      if (filterOwner !== 'Todos' && pi.owner !== filterOwner) continue;
+      if (filterMacro !== 'Todos' && pi.macroCategory !== filterMacro) continue;
+      results.push(pi);
+    }
+  }
+  return results;
+};
+
+const getActiveFixedForMonth = (item: BudgetItem, targetDate: Date): { dueDateStr: string; value: number } | null => {
+  if (item.type !== 'fixed') return null;
+  
+  const creationDate = item.date ? new Date(item.date + 'T00:00:00') : new Date(item.createdAt + 'T00:00:00');
+  const creationYear = creationDate.getFullYear();
+  const creationMonth = creationDate.getMonth();
+  
+  const targetYear = targetDate.getFullYear();
+  const targetMonth = targetDate.getMonth();
+  
+  if (targetYear < creationYear || (targetYear === creationYear && targetMonth < creationMonth)) {
+    return null;
+  }
+  
+  const dueDay = item.dueDay || (item.dueDate ? new Date(item.dueDate + 'T00:00:00').getDate() : 5);
+  const yyyy = targetYear;
+  const mm = String(targetMonth + 1).padStart(2, '0');
+  const dd = String(dueDay).padStart(2, '0');
+  const dueDateStr = `${yyyy}-${mm}-${dd}`;
+  
+  return {
+    dueDateStr,
+    value: item.value
+  };
+};
+
+const getFixedInPeriod = (item: BudgetItem, viewMode: string, selectedAnchorDate: Date): BudgetItem[] => {
+  if (item.type !== 'fixed') return [];
+  
+  const monthsToInspect: Date[] = [new Date(selectedAnchorDate)];
+  
+  if (viewMode === 'year') {
+    monthsToInspect.length = 0;
+    for (let m = 0; m < 12; m++) {
+      monthsToInspect.push(new Date(selectedAnchorDate.getFullYear(), m, 1));
+    }
+  }
+  
+  if (viewMode === 'week') {
+    const [start, end] = getWeekRange(selectedAnchorDate);
+    monthsToInspect.length = 0;
+    const startMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+    const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+    monthsToInspect.push(startMonth);
+    if (startMonth.getMonth() !== endMonth.getMonth() || startMonth.getFullYear() !== endMonth.getFullYear()) {
+      monthsToInspect.push(endMonth);
+    }
+  }
+  
+  if (viewMode === 'day') {
+    monthsToInspect.length = 0;
+    monthsToInspect.push(new Date(selectedAnchorDate));
+  }
+  
+  const results: BudgetItem[] = [];
+  
+  for (const mDate of monthsToInspect) {
+    const activeInfo = getActiveFixedForMonth(item, mDate);
+    if (activeInfo) {
+      const instDate = new Date(activeInfo.dueDateStr + 'T00:00:00');
+      
+      let inPeriod = false;
+      if (viewMode === 'year') {
+        inPeriod = instDate.getFullYear() === selectedAnchorDate.getFullYear();
+      } else if (viewMode === 'month') {
+        inPeriod = instDate.getFullYear() === selectedAnchorDate.getFullYear() &&
+                   instDate.getMonth() === selectedAnchorDate.getMonth();
+      } else if (viewMode === 'week') {
+        const [start, end] = getWeekRange(selectedAnchorDate);
+        inPeriod = instDate >= start && instDate <= end;
+      } else if (viewMode === 'day') {
+        inPeriod = instDate.getFullYear() === selectedAnchorDate.getFullYear() &&
+                   instDate.getMonth() === selectedAnchorDate.getMonth() &&
+                   instDate.getDate() === selectedAnchorDate.getDate();
+      }
+      
+      if (inPeriod) {
+        const yearMonthStr = `${mDate.getFullYear()}-${String(mDate.getMonth() + 1).padStart(2, '0')}`;
+        const paidMonths = item.paidMonths || [];
+        const isThisPaid = paidMonths.includes(yearMonthStr);
+        
+        results.push({
+          ...item,
+          id: `${item.id}-fixed-${yearMonthStr}`,
+          dueDate: activeInfo.dueDateStr,
+          date: activeInfo.dueDateStr,
+          isPaid: isThisPaid
+        });
+      }
+    }
+  }
+  
+  return results;
+};
+
+const getFixedListInPeriod = (list: BudgetItem[], viewMode: string, selectedAnchorDate: Date, filterOwner: string, filterMacro: string): BudgetItem[] => {
+  const results: BudgetItem[] = [];
+  for (const item of list) {
+    const periodItems = getFixedInPeriod(item, viewMode, selectedAnchorDate);
     for (const pi of periodItems) {
       if (filterOwner !== 'Todos' && pi.owner !== filterOwner) continue;
       if (filterMacro !== 'Todos' && pi.macroCategory !== filterMacro) continue;
@@ -531,7 +641,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
 
   // Filtered lists for calculations
   const fIncomes = filterByPeriodAndMeta(incomes);
-  const fFixed = filterByPeriodAndMeta(fixedBills);
+  const fFixed = getFixedListInPeriod(fixedBills, viewMode, selectedAnchorDate, filterOwner, filterMacro);
   const fInstallments = getInstallmentsListInPeriod(installments, viewMode, selectedAnchorDate, filterOwner, filterMacro);
   const fArrears = filterByPeriodAndMeta(overdueDebts);
   const fVariable = filterByPeriodAndMeta(newExpenses);
@@ -623,7 +733,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     const val = parseFloat(valueInput.replace(',', '.'));
     if (isNaN(val)) return;
 
-    if (activeTab !== 'installment' && dueDateInput && !isValidSlashDate(dueDateInput)) {
+    if (activeTab !== 'installment' && activeTab !== 'fixed' && dueDateInput && !isValidSlashDate(dueDateInput)) {
       showToast('⚠️ Data de vencimento/previsão inválida! Use o formato DD/MM/AAAA');
       return;
     }
@@ -651,6 +761,11 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
       category: categoryInput,
       macroCategory: activeTab === 'income' ? 'Outros' : macroCategoryInput
     };
+
+    if (activeTab === 'fixed') {
+      newItem.dueDay = parseInt(dueDayInput) || 5;
+      newItem.paidMonths = [];
+    }
 
     if (activeTab === 'installment') {
       const totInst = parseInt(totInstallments) || 12;
@@ -709,6 +824,12 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
       setEditDueDay((item.dueDay || 5).toString());
       setEditAlreadyPaidInstallmentsCount((item.alreadyPaidInstallmentsCount || 0).toString());
       setEditTotInstallments((item.totalInstallments || 12).toString());
+    } else if (item.type === 'fixed') {
+      setEditValue(item.value.toString());
+      setEditDueDay((item.dueDay || 5).toString());
+      setEditFirstInstallmentDate('');
+      setEditAlreadyPaidInstallmentsCount('');
+      setEditTotInstallments('');
     } else {
       setEditValue(item.value.toString());
       setEditFirstInstallmentDate('');
@@ -722,7 +843,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     e.preventDefault();
     if (!editDesc.trim() || !editValue.trim()) return;
 
-    if (!isValidSlashDate(editDate) || (type !== 'installment' && editDueDate && !isValidSlashDate(editDueDate))) {
+    if (!isValidSlashDate(editDate) || (type !== 'installment' && type !== 'fixed' && editDueDate && !isValidSlashDate(editDueDate))) {
       showToast('⚠️ Data inválida! Use o formato DD/MM/AAAA');
       return;
     }
@@ -738,10 +859,17 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     if (isNaN(val)) return;
 
     let baseId = editingItemId;
-    if (type === 'installment' && editingItemId) {
-      const match = editingItemId.match(/^(.+)-inst-(\d+)$/);
-      if (match) {
-        baseId = match[1];
+    if (editingItemId) {
+      if (type === 'installment') {
+        const match = editingItemId.match(/^(.+)-inst-(\d+)$/);
+        if (match) {
+          baseId = match[1];
+        }
+      } else if (type === 'fixed') {
+        const match = editingItemId.match(/^(.+)-fixed-(\d{4}-\d{2})$/);
+        if (match) {
+          baseId = match[1];
+        }
       }
     }
 
@@ -769,6 +897,8 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
         updated.firstInstallmentDate = editFirstInstallmentDate ? parseDateToISO(editFirstInstallmentDate) : parseDateToISO(editDate);
         updated.dueDay = parseInt(editDueDay) || 5;
         updated.alreadyPaidInstallmentsCount = parseInt(editAlreadyPaidInstallmentsCount) || 0;
+      } else if (type === 'fixed') {
+        updated.dueDay = parseInt(editDueDay) || 5;
       }
 
       return updated;
@@ -823,11 +953,29 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
         }));
         showToast('🔄 Status de pagamento da parcela atualizado!');
       }
+    } else if (type === 'fixed') {
+      const match = id.match(/^(.+)-fixed-(\d{4}-\d{2})$/);
+      if (match) {
+        const baseId = match[1];
+        const yearMonthStr = match[2];
+        
+        setFixedBills(prev => prev.map(item => {
+          if (item.id !== baseId) return item;
+          const paidMonths = item.paidMonths || [];
+          const updatedPaidMonths = paidMonths.includes(yearMonthStr)
+            ? paidMonths.filter(m => m !== yearMonthStr)
+            : [...paidMonths, yearMonthStr];
+          return {
+            ...item,
+            paidMonths: updatedPaidMonths
+          };
+        }));
+        showToast('🔄 Status de pagamento da despesa fixa atualizado!');
+      }
     } else {
       const updateItem = (list: BudgetItem[]) => list.map(item => item.id === id ? { ...item, isPaid: !item.isPaid } : item);
 
-      if (type === 'fixed') setFixedBills(updateItem);
-      else if (type === 'arrears') setOverdueDebts(updateItem);
+      if (type === 'arrears') setOverdueDebts(updateItem);
       else if (type === 'variable') setNewExpenses(updateItem);
 
       showToast('🔄 Status de pagamento atualizado!');
@@ -838,6 +986,11 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
     let targetId = id;
     if (type === 'installment') {
       const match = id.match(/^(.+)-inst-(\d+)$/);
+      if (match) {
+        targetId = match[1];
+      }
+    } else if (type === 'fixed') {
+      const match = id.match(/^(.+)-fixed-(\d{4}-\d{2})$/);
       if (match) {
         targetId = match[1];
       }
@@ -1190,7 +1343,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
               
               {(() => {
                 const list = activeTab === 'income' ? incomes :
-                             activeTab === 'fixed' ? fixedBills :
+                             activeTab === 'fixed' ? fFixed :
                              activeTab === 'installment' ? fInstallments :
                              activeTab === 'arrears' ? overdueDebts :
                              newExpenses;
@@ -1255,7 +1408,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                               </div>
 
                               {/* Data de Vencimento / Previsão */}
-                              {item.type !== 'installment' && (
+                              {item.type !== 'installment' && item.type !== 'fixed' && (
                                 <div className="flex flex-col gap-0.5">
                                   <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">
                                     {item.type === 'income' ? 'Previsão de Recebimento (DD/MM/AAAA)' : 'Data de Vencimento (Opcional) (DD/MM/AAAA)'}
@@ -1393,6 +1546,21 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                                       className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
                                     />
                                   </div>
+                                </div>
+                              )}
+
+                              {/* Dia de vencimento despesa fixa se aplicável */}
+                              {item.type === 'fixed' && (
+                                <div className="flex flex-col gap-0.5 col-span-1 sm:col-span-2">
+                                  <label className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">Dia de Vencimento</label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="31"
+                                    value={editDueDay}
+                                    onChange={(e) => setEditDueDay(e.target.value)}
+                                    className="px-2 py-1 text-[9.5px] rounded-lg bg-zinc-900 border border-zinc-250/20 text-zinc-200 outline-none"
+                                  />
                                 </div>
                               )}
                             </div>
@@ -1581,7 +1749,7 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                   </div>
 
                   {/* Data Vencimento / Previsão */}
-                  {activeTab !== 'installment' && (
+                  {activeTab !== 'installment' && activeTab !== 'fixed' && (
                     <div className="flex flex-col gap-1">
                       <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">
                         {activeTab === 'income' ? 'Data de Previsão de Recebimento (DD/MM/AAAA)' : 'Data de Vencimento (Opcional) (DD/MM/AAAA)'}
@@ -1718,6 +1886,22 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                         value={alreadyPaidInstallmentsCountInput}
                         onChange={(e) => setAlreadyPaidInstallmentsCountInput(e.target.value)}
                         placeholder="Ex: 2"
+                        className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'fixed' && (
+                  <div className="grid grid-cols-1 border-t border-white/5 pt-3 text-[10px]">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Dia de Vencimento</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={dueDayInput}
+                        onChange={(e) => setDueDayInput(e.target.value)}
                         className="px-3 py-1.5 text-[10px] rounded-xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 text-zinc-150 focus:border-bujo-highlight focus:outline-none"
                       />
                     </div>
