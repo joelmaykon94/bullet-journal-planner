@@ -13,7 +13,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, GripVertical, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, GripVertical, X, ChevronDown, ChevronUp, CheckCheck } from 'lucide-react';
 import { useBujo } from '../../../context/BujoContext';
 import { BulletItem } from './BulletItem';
 import { SortableItem, DragHandle } from '../../../components/common/SortableItem';
@@ -59,6 +59,9 @@ export const FutureLogTab = () => {
     return dateMonth === selectedMonth;
   });
 
+  const scheduledEvents = currentMonthEvents.filter(item => item.status !== 'completed');
+  const completedEvents = currentMonthEvents.filter(item => item.status === 'completed');
+
   const handleLocalSubmit = (e: React.FormEvent) => {
     handleAddFutureEvent(
       e,
@@ -92,11 +95,13 @@ export const FutureLogTab = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {months.map((month, index) => {
           const isSelected = selectedMonth === index;
-          const monthEvents = items.filter(item => {
+          const allMonthItems = items.filter(item => {
             if (!item.date || item.date === 'someday_maybe') return false;
             const dateMonth = new Date(item.date + 'T00:00:00').getMonth();
             return dateMonth === index;
           });
+          const scheduledCount = allMonthItems.filter(i => i.status !== 'completed').length;
+          const completedCount = allMonthItems.filter(i => i.status === 'completed').length;
 
           return (
             <div
@@ -109,7 +114,17 @@ export const FutureLogTab = () => {
               }`}
             >
               <h4 className="text-xs font-bold uppercase tracking-wider">{month}</h4>
-              <span className="text-[10px] text-zinc-400 font-mono">{monthEvents.length} itens agendados</span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] text-zinc-400 font-mono">
+                  {scheduledCount} agendado{scheduledCount !== 1 ? 's' : ''}
+                </span>
+                {completedCount > 0 && (
+                  <span className="text-[10px] text-emerald-500/80 font-mono flex items-center gap-1">
+                    <CheckCheck className="w-2.5 h-2.5" />
+                    {completedCount} concluído{completedCount !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}
@@ -117,39 +132,67 @@ export const FutureLogTab = () => {
 
       <div className="p-6 rounded-3xl bg-zinc-200/10 dark:bg-white/5 border border-zinc-200/30 dark:border-white/5 flex flex-col md:flex-row gap-6">
         
-        <div className="flex-1 space-y-3">
-          <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-500 border-b border-zinc-200/40 dark:border-white/5 pb-2">
-            Itens de {months[selectedMonth]}
-          </h4>
-          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-            <DndContext 
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext 
-                items={currentMonthEvents.map(i => i.id)}
-                strategy={verticalListSortingStrategy}
+        <div className="flex-1 space-y-4">
+          {/* ── Agendadas ── */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-500 border-b border-zinc-200/40 dark:border-white/5 pb-2 flex items-center justify-between">
+              <span>Itens de {months[selectedMonth]}</span>
+              <span className="text-[10px] font-mono text-zinc-500 normal-case">
+                {scheduledEvents.length} agendado{scheduledEvents.length !== 1 ? 's' : ''}
+              </span>
+            </h4>
+            <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
+              <DndContext 
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                <div className="space-y-2">
-                  {currentMonthEvents.map(ev => (
-                    <div key={ev.id} className="flex items-start gap-2 group/sort">
-                      <DragHandle id={ev.id} className="mt-4 opacity-0 group-hover/sort:opacity-40 hover:!opacity-100 transition-opacity">
-                        <GripVertical className="w-4 h-4 text-zinc-500" />
-                      </DragHandle>
-                      <SortableItem id={ev.id} className="flex-1">
-                        <BulletItem item={ev} />
-                      </SortableItem>
-                    </div>
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
+                <SortableContext 
+                  items={scheduledEvents.map(i => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {scheduledEvents.map(ev => (
+                      <div key={ev.id} className="flex items-start gap-2 group/sort">
+                        <DragHandle id={ev.id} className="mt-4 opacity-0 group-hover/sort:opacity-40 hover:!opacity-100 transition-opacity">
+                          <GripVertical className="w-4 h-4 text-zinc-500" />
+                        </DragHandle>
+                        <SortableItem id={ev.id} className="flex-1">
+                          <BulletItem item={ev} />
+                        </SortableItem>
+                      </div>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
 
-            {currentMonthEvents.length === 0 && (
-              <p className="text-xs text-zinc-500 italic py-2 text-center">Sem itens agendados para este mês.</p>
-            )}
+              {scheduledEvents.length === 0 && (
+                <p className="text-xs text-zinc-500 italic py-2 text-center">Sem itens agendados para este mês.</p>
+              )}
+            </div>
           </div>
+
+          {/* ── Concluídas ── */}
+          {completedEvents.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-bold uppercase tracking-wider text-emerald-600/70 dark:text-emerald-500/60 border-b border-emerald-500/20 pb-2 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <CheckCheck className="w-4 h-4" />
+                  Concluídas
+                </span>
+                <span className="text-[10px] font-mono normal-case text-emerald-600/60 dark:text-emerald-500/50">
+                  {completedEvents.length} item{completedEvents.length !== 1 ? 'ns' : ''}
+                </span>
+              </h4>
+              <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 opacity-60">
+                {completedEvents.map(ev => (
+                  <div key={ev.id} className="flex items-start gap-2">
+                    <BulletItem item={ev} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="w-full md:w-80 space-y-3 no-print">
