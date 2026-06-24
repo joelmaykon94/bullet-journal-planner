@@ -1213,16 +1213,52 @@ export const BudgetPlanner = ({ onClose }: { onClose: () => void }) => {
                 
                 {/* Visual Gauge Component */}
                 <div className="relative w-28 h-14 overflow-hidden mt-2 flex items-end justify-center">
-                  {/* Outer Arc track */}
-                  <div className="absolute top-0 left-0 w-28 h-28 rounded-full border-[10px] border-zinc-200/10 dark:border-white/5" />
-                  {/* Colored Arc overlay */}
-                  <div 
-                    className="absolute top-0 left-0 w-28 h-28 rounded-full border-[10px] border-t-pink-500 border-r-indigo-500 border-b-transparent border-l-transparent transform transition-transform duration-500" 
-                    style={{ transform: `rotate(${Math.min(180, Math.max(0, (totalExpenses > 0 ? (totalPaidExpenses / totalExpenses) : 0) * 180 - 45))}deg)` }}
-                  />
-                  <div className="z-10 flex flex-col items-center">
+                  <svg viewBox="0 0 100 50" className="absolute top-0 left-0 w-full h-full overflow-visible">
+                    <defs>
+                      <linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ec4899" />
+                        <stop offset="100%" stop-color="#6366f1" />
+                      </linearGradient>
+                    </defs>
+                    {/* Track (Pendente) */}
+                    <path 
+                      d="M 10 50 A 40 40 0 0 1 90 50" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="10" 
+                      className="text-zinc-200/10 dark:text-white/5 cursor-help"
+                    >
+                      <title>{`Pendente: R$ ${remainingToPay.toLocaleString('pt-BR')} (${totalExpenses > 0 ? Math.round((remainingToPay / totalExpenses) * 100) : 0}%)`}</title>
+                    </path>
+                    {/* Progress (Pago) */}
+                    <path 
+                      d="M 10 50 A 40 40 0 0 1 90 50" 
+                      fill="none" 
+                      stroke="url(#gauge-grad)" 
+                      strokeWidth="10" 
+                      strokeDasharray="125.66" 
+                      strokeDashoffset={125.66 * (1 - (totalExpenses > 0 ? (totalPaidExpenses / totalExpenses) : 0))}
+                      className="cursor-help transition-all duration-500 ease-out"
+                    >
+                      <title>{`Pago: R$ ${totalPaidExpenses.toLocaleString('pt-BR')} (${totalExpenses > 0 ? Math.round((totalPaidExpenses / totalExpenses) * 100) : 0}%)`}</title>
+                    </path>
+                  </svg>
+                  
+                  <div className="z-10 flex flex-col items-center cursor-help animate-pulse mb-1" title={`Total Gasto: R$ ${totalExpenses.toLocaleString('pt-BR')}`}>
                     <span className="text-xs font-black">R$ {totalExpenses.toLocaleString('pt-BR')}</span>
-                    <span className="text-[7px] text-zinc-555 font-bold uppercase tracking-wider mt-0.5">Total Gasto</span>
+                    <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-wider mt-0.5">Total Gasto</span>
+                  </div>
+                </div>
+
+                {/* Subtitle / Legends to explain colors */}
+                <div className="flex gap-3 mt-1.5 text-[7.5px] font-bold uppercase tracking-wider">
+                  <div className="flex items-center gap-1 cursor-help" title={`Pago: R$ ${totalPaidExpenses.toLocaleString('pt-BR')}`}>
+                    <span className="w-2 h-2 rounded bg-gradient-to-r from-pink-500 to-indigo-500 shrink-0" />
+                    <span className="text-zinc-400">Pago ({totalExpenses > 0 ? Math.round((totalPaidExpenses / totalExpenses) * 100) : 0}%)</span>
+                  </div>
+                  <div className="flex items-center gap-1 cursor-help" title={`Pendente: R$ ${remainingToPay.toLocaleString('pt-BR')}`}>
+                    <span className="w-2 h-2 rounded bg-zinc-200/20 dark:bg-white/10 border border-white/5 shrink-0" />
+                    <span className="text-zinc-400">Pendente ({totalExpenses > 0 ? Math.round((remainingToPay / totalExpenses) * 100) : 0}%)</span>
                   </div>
                 </div>
                 
