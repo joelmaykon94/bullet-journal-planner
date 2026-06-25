@@ -430,7 +430,7 @@ export const SettingsTab = () => {
               </div>
             </div>
           </div>
-          <div className="flex gap-2 w-full sm:w-auto shrink-0">
+          <div className="flex gap-2 w-full sm:w-auto shrink-0 flex-wrap">
             {!user ? (
               <button
                 onClick={() => {
@@ -443,14 +443,18 @@ export const SettingsTab = () => {
               </button>
             ) : (
               <>
-                {syncStatus === 'error' && (
-                  <button
-                    onClick={handleRetrySync}
-                    className="px-4 py-2 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 border border-amber-500/30 rounded-xl transition-all cursor-pointer flex-1 sm:flex-initial"
-                  >
-                    Re-tentar Sincronização
-                  </button>
-                )}
+                {/* Always-visible manual sync button so user can force convergence at any time */}
+                <button
+                  onClick={handleRetrySync}
+                  disabled={syncStatus === 'syncing'}
+                  title="Mescla dados do dispositivo atual com a nuvem e propaga para todos os outros dispositivos"
+                  className="px-4 py-2 text-xs font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-500 border border-emerald-500/30 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 flex-1 sm:flex-initial disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c-1.657 0-3-4.03-3-9s1.343-9 3-9m0 18c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 0 1 9-9" />
+                  </svg>
+                  {syncStatus === 'syncing' ? 'Sincronizando…' : 'Forçar Sincronização'}
+                </button>
                 <button
                   onClick={() => {
                     askConfirmation({
