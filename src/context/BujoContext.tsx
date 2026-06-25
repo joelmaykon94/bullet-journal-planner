@@ -407,6 +407,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const mergeBujoData = (local: any, remote: any) => {
     const merged = { ...remote, ...local };
 
+    // Terminal statuses that should never be downgraded by a remote 'open' snapshot
+    const TERMINAL_STATUSES = new Set(['completed', 'cancelled']);
+
     const mergeArrayById = (locArr: any[], remArr: any[]) => {
       const map = new Map();
       remArr.forEach(item => {
@@ -421,7 +424,12 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           const key = item.id || JSON.stringify(item);
           const existing = map.get(key);
           if (existing && typeof existing === 'object') {
-            map.set(key, { ...existing, ...item });
+            const merged = { ...existing, ...item };
+            // Preserve terminal status: if either side is completed/cancelled, keep it
+            if (TERMINAL_STATUSES.has(existing.status) && !TERMINAL_STATUSES.has(item.status)) {
+              merged.status = existing.status;
+            }
+            map.set(key, merged);
           } else {
             map.set(key, item);
           }
@@ -464,6 +472,19 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     }
 
     if (Array.isArray(merged.bujo_focus_items)) {
+      // Remove from items any entry whose ID lives in the local trash —
+      // prevents Supabase from resurrecting deleted items back into the active list.
+      const localTrash: any[] = (local.bujo_focus_trash_items && Array.isArray(local.bujo_focus_trash_items))
+        ? local.bujo_focus_trash_items
+        : [];
+      const trashedIds = new Set(localTrash.map((t: any) => t?.id).filter(Boolean));
+
+      if (trashedIds.size > 0) {
+        merged.bujo_focus_items = merged.bujo_focus_items.filter(
+          (item: any) => !item?.id || !trashedIds.has(item.id)
+        );
+      }
+
       merged.bujo_focus_items = deduplicateBujoItems(merged.bujo_focus_items);
     }
 

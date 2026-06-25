@@ -74,6 +74,8 @@ export function useBujoItems(
       const pastPendingTasks = currentItems.filter(
         item =>
           item.type === 'task' &&
+          item.date &&
+          item.date !== 'someday_maybe' &&
           item.date < todayStr &&
           item.status !== 'completed' &&
           item.status !== 'cancelled' &&
@@ -88,6 +90,8 @@ export function useBujoItems(
       currentItems.forEach(item => {
         const isPastPending =
           item.type === 'task' &&
+          item.date &&
+          item.date !== 'someday_maybe' &&
           item.date < todayStr &&
           item.status !== 'completed' &&
           item.status !== 'cancelled' &&
@@ -624,6 +628,7 @@ export function useBujoItems(
       item =>
         item.date === dateStr &&
         item.type === 'task' &&
+        item.date !== 'someday_maybe' &&
         item.status !== 'completed' &&
         item.status !== 'cancelled' &&
         item.status !== 'migrated'
@@ -642,6 +647,7 @@ export function useBujoItems(
       if (
         item.date === dateStr &&
         item.type === 'task' &&
+        item.date !== 'someday_maybe' &&
         item.status !== 'completed' &&
         item.status !== 'cancelled' &&
         item.status !== 'migrated'
