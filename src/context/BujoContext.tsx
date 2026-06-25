@@ -421,6 +421,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     // Terminal statuses that should never be downgraded by a remote 'open' snapshot
     const TERMINAL_STATUSES = new Set(['completed', 'cancelled']);
 
+    // Generic shallow array merge by id (used for bujo_focus_items, habits, etc.)
     const mergeArrayById = (locArr: any[], remArr: any[]) => {
       const map = new Map();
       remArr.forEach(item => {
@@ -451,6 +452,95 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       return Array.from(map.values());
     };
 
+    // Deep merge for bujo_collections: merges the collection list by id,
+    // and within each collection merges the nested items, subtasks and media by id.
+    // This prevents production's item statuses/notes from being wiped by a local snapshot.
+    const COLLECTION_TERMINAL = new Set(['done', 'doing']);
+    const mergeCollections = (locCols: any[], remCols: any[]): any[] => {
+      const map = new Map<string, any>();
+
+      remCols.forEach(col => {
+        if (col?.id) map.set(col.id, col);
+      });
+
+      locCols.forEach(col => {
+        if (!col?.id) return;
+        const existing = map.get(col.id);
+        if (!existing) {
+          map.set(col.id, col);
+          return;
+        }
+
+        // Merge the collection's own scalar/metadata fields (local wins for name/desc/icon)
+        const mergedCol = { ...existing, ...col };
+
+        // Deep-merge the items array inside the collection
+        const remItems: any[] = existing.items || [];
+        const locItems: any[] = col.items || [];
+        const itemMap = new Map<string, any>();
+
+        remItems.forEach((it: any) => {
+          if (it?.id) itemMap.set(it.id, it);
+        });
+
+        locItems.forEach((it: any) => {
+          if (!it?.id) return;
+          const existingItem = itemMap.get(it.id);
+          if (!existingItem) {
+            itemMap.set(it.id, it);
+            return;
+          }
+
+          const mergedItem = { ...existingItem, ...it };
+
+          // Preserve terminal collection item status (done/doing > todo)
+          if (COLLECTION_TERMINAL.has(existingItem.status) && !COLLECTION_TERMINAL.has(it.status)) {
+            mergedItem.status = existingItem.status;
+          }
+
+          // Deep-merge subtasks by id
+          const remSubs: any[] = existingItem.subtasks || [];
+          const locSubs: any[] = it.subtasks || [];
+          const subMap = new Map<string, any>();
+          remSubs.forEach((s: any) => { if (s?.id) subMap.set(s.id, s); });
+          locSubs.forEach((s: any) => {
+            if (!s?.id) return;
+            const existingSub = subMap.get(s.id);
+            // For subtasks: prefer completed=true over false (irreversible action)
+            if (existingSub) {
+              subMap.set(s.id, { ...existingSub, ...s, completed: existingSub.completed || s.completed });
+            } else {
+              subMap.set(s.id, s);
+            }
+          });
+          mergedItem.subtasks = Array.from(subMap.values());
+
+          // Deep-merge media by id
+          const remMedia: any[] = existingItem.media || [];
+          const locMedia: any[] = it.media || [];
+          const mediaMap = new Map<string, any>();
+          remMedia.forEach((m: any) => { if (m?.id) mediaMap.set(m.id, m); });
+          locMedia.forEach((m: any) => {
+            if (!m?.id) return;
+            mediaMap.set(m.id, { ...(mediaMap.get(m.id) || {}), ...m });
+          });
+          mergedItem.media = Array.from(mediaMap.values());
+
+          // Merge notes: keep the longer/more complete version
+          if (existingItem.notes && it.notes && existingItem.notes.length > it.notes.length) {
+            mergedItem.notes = existingItem.notes;
+          }
+
+          itemMap.set(it.id, mergedItem);
+        });
+
+        mergedCol.items = Array.from(itemMap.values());
+        map.set(col.id, mergedCol);
+      });
+
+      return Array.from(map.values());
+    };
+
     for (const key of allKeys) {
       const localVal = local[key];
       const remoteVal = remote[key];
@@ -466,7 +556,10 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       }
 
       // Both sides have the key — merge intelligently
-      if (Array.isArray(localVal) && Array.isArray(remoteVal)) {
+      if (key === 'bujo_collections' && Array.isArray(localVal) && Array.isArray(remoteVal)) {
+        // Deep merge: preserves item statuses, notes, subtasks and media from both devices
+        merged[key] = mergeCollections(localVal, remoteVal);
+      } else if (Array.isArray(localVal) && Array.isArray(remoteVal)) {
         merged[key] = mergeArrayById(localVal, remoteVal);
       } else if (
         localVal && typeof localVal === 'object' &&
