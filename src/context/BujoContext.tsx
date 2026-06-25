@@ -385,12 +385,21 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   const { supabase, user } = useAuth();
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
   const lastSyncHashRef = useRef<string>('');
+  // Tracks whether the initial remote→local sync has completed.
+  // Background writes are blocked until this is true to avoid overwriting
+  // remote data with a stale local snapshot.
+  const initialSyncDoneRef = useRef<boolean>(false);
 
   const serializeLocalBujoData = () => {
     const data: { [key: string]: any } = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('bujo_') && key !== 'bujo_supabase_config') {
+      if (
+        key &&
+        key.startsWith('bujo_') &&
+        key !== 'bujo_supabase_config' &&
+        key !== 'bujo_offline_mode'
+      ) {
         const val = localStorage.getItem(key);
         if (val !== null) {
           try {
@@ -405,7 +414,9 @@ export function BujoProvider({ children }: { children: ReactNode }) {
   };
 
   const mergeBujoData = (local: any, remote: any) => {
-    const merged = { ...remote, ...local };
+    // Start with a union of both sides — keys from either device are included
+    const allKeys = new Set([...Object.keys(local), ...Object.keys(remote)]);
+    const merged: any = {};
 
     // Terminal statuses that should never be downgraded by a remote 'open' snapshot
     const TERMINAL_STATUSES = new Set(['completed', 'cancelled']);
@@ -424,12 +435,12 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           const key = item.id || JSON.stringify(item);
           const existing = map.get(key);
           if (existing && typeof existing === 'object') {
-            const merged = { ...existing, ...item };
-            // Preserve terminal status: if either side is completed/cancelled, keep it
+            const mergedItem = { ...existing, ...item };
+            // Preserve terminal status: completed/cancelled must never regress to open
             if (TERMINAL_STATUSES.has(existing.status) && !TERMINAL_STATUSES.has(item.status)) {
-              merged.status = existing.status;
+              mergedItem.status = existing.status;
             }
-            map.set(key, merged);
+            map.set(key, mergedItem);
           } else {
             map.set(key, item);
           }
@@ -440,44 +451,55 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       return Array.from(map.values());
     };
 
-    for (const key of Object.keys(remote)) {
-      if (local[key] !== undefined) {
-        const localVal = local[key];
-        const remoteVal = remote[key];
+    for (const key of allKeys) {
+      const localVal = local[key];
+      const remoteVal = remote[key];
 
-        if (Array.isArray(localVal) && Array.isArray(remoteVal)) {
-          merged[key] = mergeArrayById(localVal, remoteVal);
-        } else if (
-          localVal && typeof localVal === 'object' &&
-          remoteVal && typeof remoteVal === 'object'
-        ) {
-          if (key === 'bujo_habit_logs') {
-            const mergedLogs = { ...remoteVal };
-            for (const habit of Object.keys(localVal)) {
-              mergedLogs[habit] = {
-                ...(remoteVal[habit] || {}),
-                ...(localVal[habit] || {})
-              };
-            }
-            merged[key] = mergedLogs;
-          } else {
-            merged[key] = { ...remoteVal, ...localVal };
+      // Key exists on only one side → use whichever has it
+      if (localVal === undefined) {
+        merged[key] = remoteVal;
+        continue;
+      }
+      if (remoteVal === undefined) {
+        merged[key] = localVal;
+        continue;
+      }
+
+      // Both sides have the key — merge intelligently
+      if (Array.isArray(localVal) && Array.isArray(remoteVal)) {
+        merged[key] = mergeArrayById(localVal, remoteVal);
+      } else if (
+        localVal && typeof localVal === 'object' &&
+        remoteVal && typeof remoteVal === 'object'
+      ) {
+        if (key === 'bujo_habit_logs') {
+          const mergedLogs = { ...remoteVal };
+          for (const habit of Object.keys(localVal)) {
+            mergedLogs[habit] = {
+              ...(remoteVal[habit] || {}),
+              ...(localVal[habit] || {})
+            };
           }
-        } else if (key === 'bujo_focus_xp') {
-          merged[key] = Math.max(Number(localVal) || 0, Number(remoteVal) || 0);
+          merged[key] = mergedLogs;
         } else {
-          merged[key] = localVal !== null && localVal !== undefined ? localVal : remoteVal;
+          merged[key] = { ...remoteVal, ...localVal };
         }
+      } else if (key === 'bujo_focus_xp') {
+        // XP: keep the highest value between devices
+        merged[key] = Math.max(Number(localVal) || 0, Number(remoteVal) || 0);
+      } else {
+        // Scalar: local always wins (most recent action)
+        merged[key] = localVal !== null && localVal !== undefined ? localVal : remoteVal;
       }
     }
 
     if (Array.isArray(merged.bujo_focus_items)) {
-      // Remove from items any entry whose ID lives in the local trash —
-      // prevents Supabase from resurrecting deleted items back into the active list.
-      const localTrash: any[] = (local.bujo_focus_trash_items && Array.isArray(local.bujo_focus_trash_items))
-        ? local.bujo_focus_trash_items
+      // Remove from active items any ID that the *merged* trash contains —
+      // this prevents Supabase from resurrecting items deleted on any device.
+      const mergedTrash: any[] = Array.isArray(merged.bujo_focus_trash_items)
+        ? merged.bujo_focus_trash_items
         : [];
-      const trashedIds = new Set(localTrash.map((t: any) => t?.id).filter(Boolean));
+      const trashedIds = new Set(mergedTrash.map((t: any) => t?.id).filter(Boolean));
 
       if (trashedIds.size > 0) {
         merged.bujo_focus_items = merged.bujo_focus_items.filter(
@@ -733,6 +755,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     }
 
     let active = true;
+    initialSyncDoneRef.current = false;
 
     const performInitialSync = async () => {
       setSyncStatus('syncing');
@@ -748,6 +771,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         const localData = serializeLocalBujoData();
 
         if (!row) {
+          // No remote record yet → push local as the canonical source
           const { error: insertError } = await supabase
             .from('bujo_user_data')
             .insert({ user_id: user.id, data: localData });
@@ -755,20 +779,36 @@ export function BujoProvider({ children }: { children: ReactNode }) {
           if (insertError) throw insertError;
           if (active) {
             lastSyncHashRef.current = JSON.stringify(localData);
+            initialSyncDoneRef.current = true;
             setSyncStatus('synced');
             showToast('☁️ Backup inicial criado no Supabase!');
           }
         } else {
+          // Remote record exists → merge both sides, persist result everywhere
           const remoteData = row.data || {};
           const mergedData = mergeBujoData(localData, remoteData);
 
+          // 1. Update localStorage with merged result
           Object.entries(mergedData).forEach(([key, val]) => {
             localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
           });
 
+          // 2. Push merged result BACK to Supabase so all devices converge
+          const { error: upsertError } = await supabase
+            .from('bujo_user_data')
+            .upsert({
+              user_id: user.id,
+              data: mergedData
+            });
+
+          if (upsertError) {
+            console.warn('Could not push merged data back to Supabase:', upsertError);
+          }
+
           if (active) {
             updateReactStatesFromSync(mergedData);
             lastSyncHashRef.current = JSON.stringify(mergedData);
+            initialSyncDoneRef.current = true;
             setSyncStatus('synced');
             showToast('☁️ Dados sincronizados com o Supabase!');
           }
@@ -776,6 +816,8 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       } catch (err: any) {
         console.error('Supabase sync error:', err);
         if (active) {
+          // Allow background sync to proceed even if initial read failed
+          initialSyncDoneRef.current = true;
           setSyncStatus('error');
           const msg = err?.message || err?.details || JSON.stringify(err);
           showToast(`❌ Erro de Sincronização: ${msg}`);
@@ -794,6 +836,10 @@ export function BujoProvider({ children }: { children: ReactNode }) {
     if (!supabase || !user || syncStatus === 'error') return;
 
     const checkAndSync = async () => {
+      // Block background writes until the initial remote→local sync completes
+      // to avoid overwriting the Supabase record with stale local data.
+      if (!initialSyncDoneRef.current) return;
+
       const localData = serializeLocalBujoData();
       const currentHash = JSON.stringify(localData);
 
@@ -801,16 +847,42 @@ export function BujoProvider({ children }: { children: ReactNode }) {
 
       setSyncStatus('syncing');
       try {
-        const { error } = await supabase
+        // Read remote first so we can merge, then push the merged result.
+        // This makes background sync bidirectional: changes from other devices
+        // are pulled in, not silently overwritten.
+        const { data: row, error: readError } = await supabase
           .from('bujo_user_data')
-          .upsert({ 
-            user_id: user.id, 
-            data: localData,
-            updated_at: new Date().toISOString()
+          .select('data')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (readError) throw readError;
+
+        let dataToSave = localData;
+
+        if (row?.data) {
+          const remoteHash = JSON.stringify(row.data);
+          // Only re-merge if remote changed since last sync
+          if (remoteHash !== lastSyncHashRef.current) {
+            dataToSave = mergeBujoData(localData, row.data);
+            // Apply remote changes to localStorage + React state
+            Object.entries(dataToSave).forEach(([key, val]) => {
+              localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+            });
+            updateReactStatesFromSync(dataToSave);
+          }
+        }
+
+        const { error: writeError } = await supabase
+          .from('bujo_user_data')
+          .upsert({
+            user_id: user.id,
+            data: dataToSave
           });
 
-        if (error) throw error;
-        lastSyncHashRef.current = currentHash;
+        if (writeError) throw writeError;
+
+        lastSyncHashRef.current = JSON.stringify(dataToSave);
         setSyncStatus('synced');
       } catch (err: any) {
         console.error('Background sync error:', err);
@@ -820,7 +892,7 @@ export function BujoProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const interval = setInterval(checkAndSync, 5000);
+    const interval = setInterval(checkAndSync, 10000);
     return () => clearInterval(interval);
   }, [supabase, user, syncStatus]);
 
@@ -851,12 +923,23 @@ export function BujoProvider({ children }: { children: ReactNode }) {
         const remoteData = row.data || {};
         const mergedData = mergeBujoData(localData, remoteData);
 
+        // Update localStorage with merged result
         Object.entries(mergedData).forEach(([key, val]) => {
           localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
         });
 
+        // Push merged result back to Supabase so all devices converge
+        const { error: upsertError } = await supabase
+          .from('bujo_user_data')
+          .upsert({ user_id: user.id, data: mergedData });
+
+        if (upsertError) {
+          console.warn('Could not push merged data to Supabase:', upsertError);
+        }
+
         updateReactStatesFromSync(mergedData);
         lastSyncHashRef.current = JSON.stringify(mergedData);
+        initialSyncDoneRef.current = true;
         setSyncStatus('synced');
         showToast('☁️ Dados sincronizados com o Supabase!');
       }
