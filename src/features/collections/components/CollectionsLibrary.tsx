@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MarkdownNotebook } from '../../../components/common/MarkdownNotebook';
 import { 
   DndContext, 
   closestCenter,
@@ -98,19 +99,8 @@ export const CollectionsLibrary = () => {
   const activeCollection = collections.find(c => c.id === selectedCollectionId);
   const activeItem = activeCollection?.items.find((i: any) => i.id === selectedItemId);
 
-  // Smart Notes Parser (Unicode)
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    const lines = value.split('\n');
-    const updatedLines = lines.map(line => {
-      if (line.startsWith('- ')) return line.replace('- ', '• ');
-      if (line.startsWith('[] ')) return line.replace('[] ', '☐ ');
-      if (line.startsWith('# ')) return line.replace('# ', '❖ ').toUpperCase();
-      return line;
-    });
-
-    const newValue = updatedLines.join('\n');
-    
+  // Notes change handler — receives plain string from MarkdownNotebook
+  const handleNotesChange = (newValue: string) => {
     setCollections(prev => prev.map(col => {
       if (col.id === selectedCollectionId) {
         return {
@@ -420,17 +410,17 @@ export const CollectionsLibrary = () => {
                   </div>
                 </div>
 
-                {/* Full Column Notes Area */}
+                {/* Full Column Notes Area - Markdown Notebook */}
                 <div className="flex-1 flex flex-col space-y-2 min-h-0">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">Anotações do Registro</span>
-                    <span className="text-[8px] text-zinc-600 dark:text-zinc-500 italic">Dica: use - , [] ou # no início da linha</span>
+                    <span className="text-[8px] text-zinc-600 dark:text-zinc-500 italic">Markdown: # título, ## subtítulo, **negrito**, *itálico*, - lista, [] tarefa</span>
                   </div>
-                  <textarea
+                  <MarkdownNotebook
                     value={activeItem.notes || ''}
                     onChange={handleNotesChange}
-                    placeholder="Espaço livre para anotações... Suporta atalhos inteligentes."
-                    className="w-full flex-1 bg-zinc-150/50 dark:bg-zinc-950/40 border border-zinc-250/20 dark:border-white/5 rounded-2xl p-4 text-xs text-bujo-text placeholder:text-zinc-650 resize-none outline-none focus:border-bujo-highlight/30 transition-all font-mono leading-relaxed"
+                    placeholder="Espaço livre para anotações... Suporta Markdown."
+                    className="flex-1"
                   />
                 </div>
               </div>
