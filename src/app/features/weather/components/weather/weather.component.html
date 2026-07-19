@@ -1,0 +1,76 @@
+<ng-container *ngIf="theme() as t">
+  <!-- 1. ULTRA COMPACT WEATHER BAR (Paper UI) -->
+  <div class="p-3 sm:p-4 w-full flex flex-row items-center justify-between gap-3 bg-stone-50 border border-stone-200">
+    
+    <!-- City Toggle Buttons -->
+    <div class="flex items-center gap-2 shrink-0 overflow-x-auto hide-scrollbar max-w-[150px] sm:max-w-none" style="scrollbar-width: none;">
+      <button
+        *ngFor="let city of cities"
+        (click)="selectCity(city)"
+        class="px-2 py-1 text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap active:scale-95 border-b-2"
+        [ngClass]="selectedCity().name === city.name ? 'border-stone-800 text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'"
+      >
+        {{ city.name }}
+      </button>
+    </div>
+
+    <!-- Dynamic Weather Information Summary -->
+    <div 
+      (click)="!isLoading() && !error() && showDetailModal.set(true)"
+      class="flex-1 flex items-center justify-end sm:justify-around cursor-pointer hover:opacity-85 transition-opacity gap-2 sm:gap-4 min-w-0"
+    >
+      <ng-container *ngIf="isLoading()">
+        <div class="flex items-center gap-1.5 py-1">
+          <div class="w-3 h-3 border border-stone-800 border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-[9px] font-mono text-stone-500 hidden sm:inline uppercase">Carregando...</span>
+        </div>
+      </ng-container>
+      
+      <ng-container *ngIf="!isLoading() && error()">
+        <span class="text-[10px] text-red-700 font-bold truncate font-mono">{{ error() }}</span>
+      </ng-container>
+      
+      <ng-container *ngIf="!isLoading() && !error() && activeData() as data">
+        <!-- Temp and Weather Icon (Always Visible) -->
+        <div class="flex items-center gap-1.5 min-w-0">
+          <ng-container [ngSwitch]="getWeatherIconTemplate(data.current.weatherCode)">
+            <!-- Ink style SVG icons -->
+            <svg *ngSwitchCase="'sun'" class="w-5 h-5 flex-shrink-0 text-stone-700" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <svg *ngSwitchCase="'cloud'" class="w-5 h-5 flex-shrink-0 text-stone-700" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+            <svg *ngSwitchCase="'cloud-fog'" class="w-5 h-5 flex-shrink-0 text-stone-700" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 17H4"/><path d="M12 21H8"/></svg>
+            <svg *ngSwitchCase="'cloud-drizzle'" class="w-5 h-5 flex-shrink-0 text-stone-700" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 19v2"/><path d="M8 13v2"/><path d="M16 19v2"/><path d="M16 13v2"/><path d="M12 21v2"/><path d="M12 15v2"/></svg>
+            <svg *ngSwitchCase="'cloud-rain'" class="w-5 h-5 flex-shrink-0 text-stone-700" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>
+            <svg *ngSwitchCase="'cloud-snow'" class="w-5 h-5 flex-shrink-0 text-stone-700" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 15h.01"/><path d="M8 19h.01"/><path d="M12 17h.01"/><path d="M12 21h.01"/><path d="M16 15h.01"/><path d="M16 19h.01"/></svg>
+            <svg *ngSwitchCase="'cloud-lightning'" class="w-5 h-5 flex-shrink-0 text-stone-700" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/></svg>
+            <svg *ngSwitchDefault class="w-5 h-5 flex-shrink-0 text-stone-700" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>
+          </ng-container>
+          <span class="text-xs sm:text-sm font-bold font-mono text-stone-900 truncate">
+            {{ data.current.temperature }}°C
+          </span>
+        </div>
+
+        <!-- Conditions (Hidden on Mobile) -->
+        <div class="hidden md:flex flex-col">
+          <span class="text-[8px] font-bold text-stone-500 uppercase">Clima</span>
+          <span class="text-xs font-medium text-stone-800">
+            {{ getWeatherLabel(data.current.weatherCode) }}
+          </span>
+        </div>
+
+        <!-- Rain -->
+        <div class="flex items-center sm:flex-col gap-1 sm:gap-0">
+          <span class="text-[8px] font-bold text-stone-500 uppercase hidden sm:inline">Precip</span>
+          <span class="text-[10px] sm:text-xs font-mono text-stone-800 flex items-center gap-0.5">
+            {{ data.current.precipitation }}<span class="text-[8px] sm:text-[10px]">mm</span>
+          </span>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Sync Status -->
+    <div class="flex items-center gap-1 text-[8px] font-medium text-stone-500 shrink-0 font-mono">
+      <span class="w-1.5 h-1.5 rounded-full bg-stone-400 animate-pulse"></span>
+      <span class="hidden md:inline uppercase">Live</span>
+    </div>
+  </div>
+</ng-container>

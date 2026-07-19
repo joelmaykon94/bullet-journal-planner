@@ -1,0 +1,85 @@
+<div class="fm-container">
+  
+  <div class="fm-header">
+    <div class="fm-title-group">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fm-icon"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <h3>Centro de Alívio de Sobrecarga IA</h3>
+    </div>
+    <p class="fm-subtitle">Sentindo-se paralisado ou sobrecarregado? Nossa inteligência artificial redistribui suas pendências para acalmar a mente e reduzir o atrito cognitivo.</p>
+  </div>
+
+  <!-- INPUTS STEP -->
+  <div *ngIf="step === 'inputs'" class="fm-step-inputs">
+    
+    <div class="fm-form-group">
+      <label>Nível de Ansiedade / Paralisão</label>
+      <div class="fm-range-labels">
+        <span>Tranquilo (1)</span>
+        <span>Tensionado (3)</span>
+        <span>Crise (5)</span>
+      </div>
+      <input type="range" min="1" max="5" step="1" [(ngModel)]="anxiety" class="fm-range">
+    </div>
+
+    <div class="fm-form-group">
+      <label>Como está sua energia real?</label>
+      <div class="fm-btn-group">
+        <button (click)="energy = 'high'" [class.active]="energy === 'high'">⚡ Alta</button>
+        <button (click)="energy = 'low'" [class.active]="energy === 'low'">📉 Baixa</button>
+        <button (click)="energy = 'exhausted'" [class.active]="energy === 'exhausted'">💀 Esgotado</button>
+      </div>
+    </div>
+
+    <div class="fm-form-group">
+      <label>Tempo livre de foco hoje</label>
+      <div class="fm-btn-group">
+        <button (click)="availableHours = 1" [class.active]="availableHours === 1">1 hora</button>
+        <button (click)="availableHours = 2" [class.active]="availableHours === 2">2 horas</button>
+        <button (click)="availableHours = 4" [class.active]="availableHours === 4">4 horas</button>
+        <button (click)="availableHours = 8" [class.active]="availableHours === 8">8 horas</button>
+      </div>
+    </div>
+
+    <button class="fm-generate-btn" (click)="generateReliefPlan()" [disabled]="pendingTasks.length === 0">
+      <span *ngIf="pendingTasks.length > 0">🧠 Analisar {{ pendingTasks.length }} tarefas e Gerar Plano</span>
+      <span *ngIf="pendingTasks.length === 0">Sem tarefas pendentes</span>
+    </button>
+  </div>
+
+  <!-- PROPOSAL STEP -->
+  <div *ngIf="step === 'proposal'" class="fm-step-proposal">
+    
+    <div *ngIf="isGeneratingCounsel" class="fm-loading">
+      <div class="spinner"></div>
+      <p>Analisando sua carga cognitiva e processando agenda...</p>
+    </div>
+
+    <div *ngIf="!isGeneratingCounsel">
+      <div class="fm-counsel-card" [ngClass]="{'alert': energy === 'exhausted' || anxiety >= 4}">
+        <p>{{ counsel }}</p>
+      </div>
+
+      <div class="fm-proposal-list">
+        <h4>Plano de Remanejamento:</h4>
+        <div *ngFor="let prop of proposal" class="fm-prop-item">
+          <div class="fm-prop-info">
+            <span class="fm-prop-title">{{ prop.content }}</span>
+            <span class="fm-prop-date">Mover de {{ prop.originalDate }} para {{ prop.proposedDate }}</span>
+          </div>
+          <div class="fm-prop-action" [ngClass]="prop.action">
+            <span *ngIf="prop.action === 'keep'">Fazer Hoje</span>
+            <span *ngIf="prop.action === 'simplify'">Simplificar Hoje</span>
+            <span *ngIf="prop.action === 'postpone'">Adiar Breve</span>
+            <span *ngIf="prop.action === 'future'">Jogar p/ Futuro</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fm-actions">
+        <button class="fm-btn-cancel" (click)="step = 'inputs'">Voltar / Refazer</button>
+        <button class="fm-btn-apply" (click)="applyProposal()">✨ Aceitar Plano de Alívio</button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,115 @@
+<div class="flex flex-col gap-6 sm:gap-8 max-w-7xl mx-auto">
+  
+  <!-- HEADER DO DASHBOARD ESTILO PAPEL -->
+  <div class="border-b-2 border-stone-800 pb-4 mb-2">
+    <h1 class="text-3xl sm:text-4xl font-serif text-stone-900 font-bold italic tracking-tight">Index</h1>
+    <p class="text-xs sm:text-sm text-stone-500 font-mono mt-2 uppercase tracking-widest">Resumo Geral</p>
+  </div>
+
+  <!-- 1. Menu de Acesso Rápido -->
+  <div class="grid grid-cols-4 sm:grid-cols-7 gap-3 pb-2 sm:pb-0">
+    <div *ngFor="let item of quickMenu" 
+         class="flex flex-col items-center gap-1.5 sm:gap-2 group cursor-pointer"
+         (click)="navigateTo(item.tab)">
+      <div class="w-12 h-12 sm:w-full sm:aspect-square sm:h-auto rounded-xl flex items-center justify-center transition-all duration-300 border border-stone-200 bg-stone-50 group-hover:bg-stone-800 group-hover:text-stone-50 group-hover:-translate-y-1 group-hover:shadow-[4px_4px_0px_rgba(41,37,36,0.2)] text-stone-700">
+        <!-- Ícones (simplificado para usar SVG genérico ou mapeado) -->
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="item.iconPath" />
+        </svg>
+      </div>
+      <span class="text-[9px] sm:text-[11px] font-bold text-stone-600 group-hover:text-stone-900 text-center uppercase tracking-wide break-words max-w-full px-1 leading-tight">
+        {{ item.label }}
+      </span>
+    </div>
+  </div>
+
+  <!-- 2. Visão Geral Consolidada -->
+  <div class="rounded-none border border-stone-300 bg-white shadow-[8px_8px_0px_rgba(41,37,36,0.1)] p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 relative">
+    
+    <div class="border-b border-stone-200 pb-3">
+      <h2 class="text-lg font-serif font-bold text-stone-900 flex items-center gap-2">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        Panorama Atual
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+      
+      <!-- Tarefas & Produtividade -->
+      <div class="p-4 bg-stone-50 border border-stone-200 rounded-sm relative group hover:border-stone-400 transition-colors">
+        <div class="flex items-center gap-2 border-b border-stone-200 pb-2 mb-3">
+          <svg class="w-4 h-4 text-stone-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          <span class="text-[10px] font-bold text-stone-600 uppercase tracking-widest">Tarefas (Mês)</span>
+        </div>
+        <div class="flex flex-col gap-2">
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-stone-500 font-medium">Total Registradas</span>
+            <span class="font-bold font-mono text-stone-800">{{ totalTasks }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-stone-500 font-medium">Concluídas</span>
+            <span class="font-bold font-mono text-[#4a5d4e]">{{ completedCount }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-stone-500 font-medium">Pendentes</span>
+            <span class="font-bold font-mono text-[#8b6f4e]">{{ pendingCount }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-stone-500 font-medium">Canceladas</span>
+            <span class="font-bold font-mono text-[#8a4a4a]">{{ cancelledCount }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Atenção Requerida (Atrasadas) -->
+      <div class="p-4 bg-stone-50 border border-stone-200 rounded-sm relative group hover:border-[#e2d5d5] transition-colors">
+        <div class="flex items-center justify-between border-b border-stone-200 pb-2 mb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#8a4a4a]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="text-[10px] font-bold text-[#8a4a4a] uppercase tracking-widest">Atenção</span>
+          </div>
+          <span class="font-bold font-mono text-lg text-[#8a4a4a]">{{ overdueTasks.length }}</span>
+        </div>
+        <div class="max-h-[100px] overflow-y-auto pr-1 flex flex-col gap-2" style="scrollbar-width: thin; scrollbar-color: #d6d3d1 transparent;">
+          <ng-container *ngIf="overdueTasks.length > 0; else noOverdue">
+            <div *ngFor="let task of overdueTasks" class="flex justify-between items-center gap-2 text-xs border-b border-stone-100 pb-1 last:border-0">
+              <span class="truncate text-stone-700 hover:underline cursor-pointer" (click)="goToDailyLog(task.date, task.id)">{{ task.content }}</span>
+              <span class="font-bold text-[#8a4a4a] flex-shrink-0 font-mono">{{ task.delayDisplay }}</span>
+            </div>
+          </ng-container>
+          <ng-template #noOverdue>
+            <span class="text-xs text-stone-400 italic">Nenhuma tarefa atrasada</span>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Despesas em Aberto -->
+      <div class="p-4 bg-stone-50 border border-stone-200 rounded-sm relative group hover:border-[#d5dce2] transition-colors">
+        <div class="flex items-center justify-between border-b border-stone-200 pb-2 mb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-stone-600 shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span class="text-[10px] font-bold text-stone-600 uppercase tracking-widest truncate">A Pagar</span>
+          </div>
+          <div class="bg-[#eef3f0] text-[#4a5d4e] text-[9px] font-bold px-1.5 py-0.5 rounded border border-[#d0e0d5] whitespace-nowrap ml-2">
+            Entrada: {{ formatCurrencyShort(totalIncome) }}
+          </div>
+        </div>
+        <div class="text-2xl font-bold font-mono text-stone-800 mb-2 truncate">{{ formatCurrencyShort(remainingToPay) }}</div>
+        
+        <div class="max-h-[80px] overflow-y-auto pr-1 flex flex-col gap-2" style="scrollbar-width: thin; scrollbar-color: #d6d3d1 transparent;">
+          <ng-container *ngIf="allUnpaidExpenses.length > 0; else noExpenses">
+            <div *ngFor="let exp of allUnpaidExpenses" class="flex justify-between items-center gap-2 text-xs border-b border-stone-100 pb-1 last:border-0">
+              <span class="truncate text-stone-700 hover:underline cursor-pointer">{{ exp.name }}</span>
+              <span class="font-bold text-stone-600 flex-shrink-0 font-mono">{{ formatCurrencyShort(exp.value) }}</span>
+            </div>
+          </ng-container>
+          <ng-template #noExpenses>
+            <span class="text-xs text-stone-400 italic">Tudo pago este mês.</span>
+          </ng-template>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

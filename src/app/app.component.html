@@ -1,0 +1,316 @@
+<div class="app-root relative" *ngIf="authService.currentUser$ | async as user; else authScreen">
+  <!-- Toast Modal (Flashing) -->
+  <div *ngIf="(notificationService.latestNotification$ | async) as toast" 
+       class="fixed top-6 right-6 sm:top-8 sm:right-8 z-[99999] bg-white rounded-none border border-stone-400 border-l-4 border-l-orange-500 shadow-[8px_8px_0px_rgba(41,37,36,0.15)] p-4 min-w-[300px] animate-pulse flex items-start gap-4">
+    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 text-orange-600">
+      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+    </div>
+    <div class="flex-1 mt-0.5">
+      <h3 class="font-bold text-stone-800 text-[15px] font-sans mb-1 leading-tight">{{ toast.title }}</h3>
+      <p class="text-stone-600 text-sm font-medium leading-tight"><span class="font-bold text-orange-600">{{ toast.timeText }}:</span> {{ toast.message }}</p>
+    </div>
+    <button class="text-stone-400 hover:text-stone-800 -mt-1 -mr-1" (click)="notificationService.clearLatestNotification()">
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- SIDEBAR OVERLAY (Mobile) -->
+  <div class="sidebar-overlay" [class.visible]="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+      </div>
+      <div>
+        <h2>BuJo Focus</h2>
+      </div>
+    </div>
+
+    <!-- Clock -->
+    <div class="sidebar-clock">
+      <div class="time">{{ getFormattedTime() }}</div>
+      <div class="date">{{ getFormattedDate() }}</div>
+      
+      <!-- Mini Weather (Geolocation) -->
+      <div class="mini-weather" *ngIf="localWeather() as w">
+        <span>{{ w.city }} | {{ w.temp }}°C,</span>
+        <ng-container [ngSwitch]="w.icon">
+          <svg *ngSwitchCase="'sun'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          <svg *ngSwitchCase="'cloud'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+          <svg *ngSwitchCase="'cloud-fog'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 17H4"/><path d="M12 21H8"/></svg>
+          <svg *ngSwitchCase="'cloud-drizzle'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 19v2"/><path d="M8 13v2"/><path d="M16 19v2"/><path d="M16 13v2"/><path d="M12 21v2"/><path d="M12 15v2"/></svg>
+          <svg *ngSwitchCase="'cloud-rain'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>
+          <svg *ngSwitchCase="'cloud-snow'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 15h.01"/><path d="M8 19h.01"/><path d="M12 17h.01"/><path d="M12 21h.01"/><path d="M16 15h.01"/><path d="M16 19h.01"/></svg>
+          <svg *ngSwitchCase="'cloud-lightning'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/></svg>
+          <svg *ngSwitchDefault xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>
+        </ng-container>
+        <span>{{ w.label }}</span>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar-nav">
+      <button *ngFor="let tab of tabs" class="nav-item" [class.active]="activeTab() === tab.id" (click)="setTab(tab.id)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <ng-container *ngIf="tab.icon === 'home'"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'calendar'"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'calendar-days'"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'calendar-range'"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'clock'"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'book-open'"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'wallet'"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'library'"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'zap'"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'settings'"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'trash-2'"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></ng-container>
+        </svg>
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar-footer" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;">
+      <div class="relative group" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <div class="avatar w-8 h-8 rounded-full bg-stone-800 text-white flex items-center justify-center font-serif font-bold text-xs transition-colors group-hover:bg-stone-700" style="background: var(--color-ink-main); color: var(--color-paper-bg); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">{{ getUserInitial() }}</div>
+        <div style="display: flex; flex-direction: column;">
+          <span style="font-size: 12px; font-weight: bold; color: var(--color-ink-main);">{{ getUserFirstName() }}</span>
+        </div>
+        
+        <!-- User Menu Popover (Desktop Hover) -->
+        <div class="absolute bottom-[calc(100%+10px)] left-0 w-56 bg-white rounded-none shadow-[8px_8px_0px_rgba(41,37,36,0.15)] border border-stone-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] flex flex-col">
+          <div class="p-3 border-b border-stone-200 bg-stone-50">
+            <span class="text-[10px] text-stone-500 font-bold block uppercase tracking-widest">Conta:</span>
+            <span class="text-xs text-stone-800 font-mono font-bold truncate">{{ (authService.currentUser$ | async)?.email || 'offline' }}</span>
+          </div>
+          <div class="p-1 flex flex-col">
+            <button class="flex items-center gap-2 p-2 text-sm text-stone-600 hover:bg-stone-100 transition-colors text-left w-full" (click)="setTab('settings')">
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              Configurações
+            </button>
+            <button class="flex items-center gap-2 p-2 text-sm text-stone-600 hover:bg-stone-100 transition-colors text-left w-full" (click)="setTab('trash')">
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              Lixeira
+            </button>
+            <div class="h-px bg-stone-200 my-1 mx-2"></div>
+            <button class="flex items-center gap-2 p-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left w-full font-bold" (click)="logout()">
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+              Sair da conta
+            </button>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 4px; align-items: center;">
+        <!-- Notification Bell (Desktop) -->
+        <div class="relative hidden sm:block notification-container">
+          <button class="relative p-2 text-stone-500 hover:bg-stone-200/50 rounded-full transition-colors"
+                  (click)="toggleDesktopNotifications($event)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+            </svg>
+            <span *ngIf="(notificationService.unreadCount$ | async) as count" 
+                  class="absolute top-0 right-0 w-3 h-3 bg-red-500 text-white text-[8px] font-bold flex items-center justify-center rounded-full border border-white">
+              {{ count > 9 ? '9+' : count }}
+            </span>
+          </button>
+          
+          <!-- Notifications Dropdown -->
+          <div *ngIf="desktopNotificationsOpen()" 
+               class="absolute bottom-[calc(100%+10px)] left-0 w-72 max-h-96 bg-white rounded-none shadow-[8px_8px_0px_rgba(41,37,36,0.15)] border border-stone-300 overflow-hidden z-[100] flex flex-col">
+            <div class="p-3 border-b border-stone-300 flex justify-between items-center bg-stone-50">
+              <h3 class="font-bold text-stone-800 text-sm font-sans">Notificações</h3>
+              <button class="text-[10px] text-stone-500 hover:text-stone-800 font-bold" (click)="markAllNotificationsRead()">Lidas</button>
+            </div>
+            
+            <div class="overflow-y-auto flex-1 p-2 flex flex-col gap-2 max-h-72">
+              <ng-container *ngIf="(notificationService.notifications$ | async) as notifs">
+                <div *ngIf="notifs.length === 0" class="p-4 text-center text-sm text-stone-400">
+                  Nenhuma notificação.
+                </div>
+                
+                <div *ngFor="let notif of notifs" 
+                     class="p-3 rounded-sm text-sm text-left transition-colors cursor-pointer border"
+                     [ngClass]="notif.read ? 'bg-white opacity-60 border-stone-200' : 'bg-orange-50/50 hover:bg-orange-50 border-orange-300'"
+                     (click)="handleNotificationClick(notif)">
+                  <div class="font-bold font-sans text-stone-800 mb-0.5">{{ notif.title }}</div>
+                  <div class="text-stone-600 leading-tight mb-1 text-[13px]">{{ notif.message }}</div>
+                  <div class="text-[10px] text-stone-500 font-bold font-mono bg-stone-100 rounded px-1 w-max">Às {{ notif.taskTime || (notif.createdAt | date:'HH:mm') }}</div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <button class="theme-btn" (click)="toggleTheme()" style="background: transparent; border: none; cursor: pointer; color: var(--color-ink-muted); padding: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- App Version -->
+    <div class="w-full flex justify-center mt-2 mb-2">
+      <div class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-stone-100 text-stone-500 border border-stone-200">
+        {{ appVersion }}
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- Top Bar (Mobile) -->
+    <header class="top-bar">
+      <button class="menu-btn" (click)="toggleSidebar()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+      </button>
+      
+      <!-- Informações de Clima/Data (Mobile Center) -->
+      <div class="flex-1 flex flex-col items-center justify-center mx-2 overflow-hidden" *ngIf="localWeather() as w; else noWeather">
+        <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-stone-700 font-mono tracking-tight">
+          <span>{{ getFormattedTime() }}</span>
+          <span class="text-stone-400">•</span>
+          <span>{{ getShortDate() }}</span>
+        </div>
+        <div class="flex items-center gap-1 text-[9px] sm:text-[10px] text-stone-500 truncate w-full justify-center">
+          <span class="truncate" title="{{ w.city.split(',')[0] }}">{{ w.city.split(',')[0] }}</span>
+          <span>|</span>
+          <span class="flex-shrink-0">{{ w.temp }}°C,</span>
+          <ng-container [ngSwitch]="w.icon">
+            <svg class="w-3 h-3 flex-shrink-0" *ngSwitchCase="'sun'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <svg class="w-3 h-3 flex-shrink-0" *ngSwitchCase="'cloud'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+            <svg class="w-3 h-3 flex-shrink-0" *ngSwitchCase="'cloud-fog'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 17H4"/><path d="M12 21H8"/></svg>
+            <svg class="w-3 h-3 flex-shrink-0" *ngSwitchCase="'cloud-drizzle'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 19v2"/><path d="M8 13v2"/><path d="M16 19v2"/><path d="M16 13v2"/><path d="M12 21v2"/><path d="M12 15v2"/></svg>
+            <svg class="w-3 h-3 flex-shrink-0" *ngSwitchCase="'cloud-rain'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>
+            <svg class="w-3 h-3 flex-shrink-0" *ngSwitchCase="'cloud-snow'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 15h.01"/><path d="M8 19h.01"/><path d="M12 17h.01"/><path d="M12 21h.01"/><path d="M16 15h.01"/><path d="M16 19h.01"/></svg>
+            <svg class="w-3 h-3 flex-shrink-0" *ngSwitchCase="'cloud-lightning'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/></svg>
+            <svg class="w-3 h-3 flex-shrink-0" *ngSwitchDefault xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>
+          </ng-container>
+          <span class="flex-shrink-0">{{ w.label }}</span>
+        </div>
+      </div>
+      <ng-template #noWeather>
+        <h1 class="flex-1 text-center font-serif text-lg font-bold text-stone-900 truncate">{{ title() }}</h1>
+      </ng-template>
+
+      <div class="top-bar-right flex-shrink-0 flex items-center gap-3 relative">
+        <!-- Notification Bell -->
+        <div class="relative notification-container">
+          <button class="relative p-1.5 text-stone-500 hover:bg-stone-100 rounded-full transition-colors"
+                  (click)="toggleMobileNotifications($event)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+            </svg>
+            <span *ngIf="(notificationService.unreadCount$ | async) as count" 
+                  class="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white">
+              {{ count > 9 ? '9+' : count }}
+            </span>
+          </button>
+          
+          <!-- Notifications Dropdown -->
+          <div *ngIf="mobileNotificationsOpen()" 
+               class="absolute right-[-10px] mt-2 w-72 max-h-96 bg-white rounded-none shadow-[8px_8px_0px_rgba(41,37,36,0.15)] border border-stone-300 overflow-hidden z-[100] flex flex-col">
+            <div class="p-3 border-b border-stone-300 flex justify-between items-center bg-stone-50">
+              <h3 class="font-bold text-stone-800 text-sm font-sans">Notificações</h3>
+              <button class="text-[10px] text-stone-500 hover:text-stone-800 font-bold" (click)="markAllNotificationsRead()">Lidas</button>
+            </div>
+            
+            <div class="overflow-y-auto flex-1 p-2 flex flex-col gap-2 max-h-72">
+              <ng-container *ngIf="(notificationService.notifications$ | async) as notifs">
+                <div *ngIf="notifs.length === 0" class="p-4 text-center text-sm text-stone-400">
+                  Nenhuma notificação.
+                </div>
+                
+                <div *ngFor="let notif of notifs" 
+                     class="p-3 rounded-sm text-sm text-left transition-colors cursor-pointer border"
+                     [ngClass]="notif.read ? 'bg-white opacity-60 border-stone-200' : 'bg-orange-50/50 hover:bg-orange-50 border-orange-300'"
+                     (click)="handleNotificationClick(notif)">
+                  <div class="font-bold font-sans text-stone-800 mb-0.5">{{ notif.title }}</div>
+                  <div class="text-stone-600 leading-tight mb-1 text-[13px]">{{ notif.message }}</div>
+                  <div class="text-[10px] text-stone-500 font-bold font-mono bg-stone-100 rounded px-1 w-max">Às {{ notif.taskTime || (notif.createdAt | date:'HH:mm') }}</div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative user-menu-container">
+          <div class="avatar w-8 h-8 rounded-full bg-stone-800 text-white flex items-center justify-center font-serif font-bold cursor-pointer" (click)="toggleUserMenu($event)">B</div>
+          
+          <!-- User Menu Popover (Mobile) -->
+          <div *ngIf="userMenuOpen()" 
+               class="absolute right-0 mt-2 w-56 bg-white rounded-none shadow-[8px_8px_0px_rgba(41,37,36,0.15)] border border-stone-300 z-[100] flex flex-col">
+            <div class="p-3 border-b border-stone-200 bg-stone-50">
+              <span class="text-[10px] text-stone-500 font-bold block uppercase tracking-widest">Conta:</span>
+              <span class="text-xs text-stone-800 font-mono font-bold truncate">usuario@bujofocus.com</span>
+            </div>
+            <div class="p-1 flex flex-col">
+              <button class="flex items-center gap-2 p-2 text-sm text-stone-600 hover:bg-stone-100 transition-colors text-left w-full" (click)="setTab('settings'); userMenuOpen.set(false)">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Configurações
+              </button>
+              <button class="flex items-center gap-2 p-2 text-sm text-stone-600 hover:bg-stone-100 transition-colors text-left w-full" (click)="setTab('trash'); userMenuOpen.set(false)">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Lixeira
+              </button>
+              <div class="h-px bg-stone-200 my-1 mx-2"></div>
+              <button class="flex items-center gap-2 p-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left w-full font-bold">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Sair da conta
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tab Content -->
+    <main class="content-scroll">
+      <app-dashboard *ngIf="activeTab() === 'dashboard'" (tabChange)="setTab($any($event))"></app-dashboard>
+      <app-daily-log *ngIf="activeTab() === 'daily'"></app-daily-log>
+      <app-timeline *ngIf="activeTab() === 'timeline'"></app-timeline>
+      <app-weekly-log *ngIf="activeTab() === 'weekly'" (tabChange)="setTab($any($event))"></app-weekly-log>
+      <app-monthly-log *ngIf="activeTab() === 'monthly'" (tabChange)="setTab($any($event))"></app-monthly-log>
+      <app-trash *ngIf="activeTab() === 'trash'"></app-trash>
+      <app-collections-library *ngIf="activeTab() === 'collections'"></app-collections-library>
+      <app-budget-planner *ngIf="activeTab() === 'budget'"></app-budget-planner>
+      <app-future-log *ngIf="activeTab() === 'future_log'"></app-future-log>
+      <app-settings *ngIf="activeTab() === 'settings'" class="p-6 block"></app-settings>
+
+      <div class="flex flex-col items-center justify-center p-12 text-stone-400 gap-4 mt-20" *ngIf="activeTab() !== 'dashboard' && activeTab() !== 'daily' && activeTab() !== 'timeline' && activeTab() !== 'trash' && activeTab() !== 'weekly' && activeTab() !== 'monthly' && activeTab() !== 'collections' && activeTab() !== 'budget' && activeTab() !== 'future_log' && activeTab() !== 'settings'">
+        <div class="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center border border-stone-200">
+          <svg class="w-8 h-8 text-stone-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <h2 class="text-xl font-serif font-bold text-stone-700">{{ getActiveLabel() }}</h2>
+        <p class="text-sm font-sans text-stone-500 mt-2 text-center">Em desenvolvimento.</p>
+      </div>
+    </main>
+
+    <!-- Bottom Nav (Mobile) -->
+    <nav class="mobile-bottom-nav">
+      <button *ngFor="let tab of bottomTabs" class="bottom-nav-item" [class.active]="activeTab() === tab.id" (click)="setTab(tab.id)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <ng-container *ngIf="tab.icon === 'home'"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'calendar'"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'clock'"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'wallet'"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'library'"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></ng-container>
+        </svg>
+        <span>{{ tab.shortLabel }}</span>
+      </button>
+    </nav>
+  </div>
+</div>
+
+<ng-template #authScreen>
+  <app-auth-screen></app-auth-screen>
+</ng-template>

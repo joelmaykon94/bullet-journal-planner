@@ -1,0 +1,249 @@
+<div class="h-full flex flex-col bg-stone-50 text-stone-800 p-4 md:p-8 overflow-y-auto hide-scrollbar">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl sm:text-4xl font-serif text-stone-900 font-bold italic tracking-tight">Financeiro</h1>
+      <p class="text-sm text-stone-500 font-mono mt-1 uppercase tracking-widest">Acompanhamento e metas</p>
+    </div>
+    
+    <div class="flex flex-wrap sm:flex-nowrap items-center justify-center gap-1 sm:gap-2 bg-white p-1.5 rounded border border-stone-300 shadow-[4px_4px_0px_rgba(41,37,36,0.1)] w-full md:w-auto">
+      <select [(ngModel)]="viewMode" (change)="resetDate()" class="bg-transparent font-mono text-xs sm:text-sm uppercase font-bold focus:outline-none text-stone-700 border-none cursor-pointer px-1 sm:px-2 outline-none">
+        <option value="year">Anual</option>
+        <option value="month">Mensal</option>
+        <option value="week">Semanal</option>
+        <option value="day">Diário</option>
+      </select>
+      <div class="h-5 w-px bg-stone-300 mx-1 hidden sm:block"></div>
+      <button class="p-1 sm:p-1.5 hover:bg-stone-200 rounded transition-colors text-stone-600" (click)="handlePrevPeriod()">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+      </button>
+      <span class="text-xs sm:text-sm font-bold min-w-[90px] sm:min-w-[120px] text-center text-stone-800 font-serif italic">{{ formatPeriodLabel() }}</span>
+      <button class="p-1 sm:p-1.5 hover:bg-stone-200 rounded transition-colors text-stone-600" (click)="handleNextPeriod()">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Cards Overview -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 sm:mb-8">
+    <!-- Balance Card -->
+    <div class="bg-stone-900 rounded p-5 sm:p-6 shadow-[4px_4px_0px_rgba(41,37,36,0.2)] text-white border border-stone-800 w-full overflow-hidden">
+      <h3 class="text-stone-400 font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider">Saldo Atual</h3>
+      <div class="text-3xl sm:text-4xl font-serif italic font-bold truncate" [ngClass]="currentBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+        R$ {{ currentBalance | number:'1.2-2' }}
+      </div>
+      <div class="mt-3 sm:mt-4 flex items-center gap-2 text-[10px] sm:text-xs font-mono uppercase text-stone-300 truncate">
+        <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" [ngClass]="currentBalance >= 0 ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+        {{ currentBalance >= 0 ? 'Orçamento positivo' : 'Atenção necessária' }}
+      </div>
+    </div>
+
+    <!-- Income Card -->
+    <div class="bg-white rounded p-5 sm:p-6 shadow-[4px_4px_0px_rgba(41,37,36,0.1)] border border-stone-300 flex flex-col justify-between w-full overflow-hidden">
+      <div>
+        <h3 class="text-stone-500 font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider">Receitas</h3>
+        <div class="text-xl sm:text-2xl font-serif italic font-bold text-stone-900 truncate">
+          R$ {{ totalIncome | number:'1.2-2' }}
+        </div>
+      </div>
+      <div class="w-full bg-stone-100 h-2 mt-4 sm:mt-5 rounded-full overflow-hidden border border-stone-200 shrink-0">
+        <div class="bg-emerald-500 h-full" style="width: 100%"></div>
+      </div>
+    </div>
+
+    <!-- Expenses Card -->
+    <div class="bg-white rounded p-5 sm:p-6 shadow-[4px_4px_0px_rgba(41,37,36,0.1)] border border-stone-300 flex flex-col justify-between w-full overflow-hidden">
+      <div>
+        <h3 class="text-stone-500 font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider">Despesas</h3>
+        <div class="text-xl sm:text-2xl font-serif italic font-bold text-stone-900 truncate">
+          R$ {{ totalExpenses | number:'1.2-2' }}
+        </div>
+      </div>
+      <div class="w-full bg-stone-100 h-2 mt-4 sm:mt-5 rounded-full overflow-hidden border border-stone-200 shrink-0">
+        <div class="bg-rose-500 h-full transition-all duration-500 ease-out" [style.width.%]="(totalExpenses / (totalIncome || 1)) * 100 > 100 ? 100 : (totalExpenses / (totalIncome || 1)) * 100"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex overflow-x-auto hide-scrollbar gap-2 mb-6 pb-2 border-b-2 border-stone-800 pr-4 sm:pr-0 w-full">
+    <button class="px-4 sm:px-5 py-2 rounded text-xs sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'overview' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'overview'">Dashboard</button>
+    <button class="px-4 sm:px-5 py-2 rounded text-xs sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'income' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'income'">Receitas</button>
+    <button class="px-4 sm:px-5 py-2 rounded text-xs sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'fixed' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'fixed'">Fixas</button>
+    <button class="px-4 sm:px-5 py-2 rounded text-xs sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'variable' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'variable'">Variáveis</button>
+  </div>
+
+  <!-- Content Area -->
+  <div class="flex-1 bg-white rounded shadow-[8px_8px_0px_rgba(41,37,36,0.1)] border border-stone-300 overflow-hidden relative flex flex-col">
+    
+    <!-- Tab: Overview (Visual Breakdown) -->
+    <div *ngIf="activeTab === 'overview'" class="p-4 sm:p-6 md:p-8 h-full overflow-y-auto hide-scrollbar">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+        <h2 class="text-xl font-serif italic font-bold text-stone-900">Resumo de Despesas</h2>
+        <button class="w-full sm:w-auto bg-stone-800 text-stone-100 px-4 py-2 rounded font-mono text-sm uppercase tracking-wider hover:bg-stone-900 transition-colors shadow-[2px_2px_0px_rgba(41,37,36,0.2)]" (click)="openNewModal()">
+          + Lançamento
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <!-- Breakdown List -->
+        <div class="space-y-4">
+          
+          <div class="flex items-center justify-between p-4 bg-stone-50 rounded border border-stone-200">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+              </div>
+              <div>
+                <div class="font-bold text-stone-900">Fixas</div>
+                <div class="text-xs font-mono text-stone-500 uppercase">{{ fFixed.length }} itens</div>
+              </div>
+            </div>
+            <div class="font-bold text-base sm:text-lg text-stone-900 whitespace-nowrap ml-2">R$ {{ totalFixed | number:'1.2-2' }}</div>
+          </div>
+
+          <div class="flex items-center justify-between p-3 sm:p-4 bg-stone-50 rounded border border-stone-200">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded bg-orange-100 flex items-center justify-center text-orange-600 border border-orange-200 flex-shrink-0">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-sm sm:text-base text-stone-900 truncate">Variáveis</div>
+                <div class="text-[10px] sm:text-xs font-mono text-stone-500 uppercase">{{ fVariable.length }} itens</div>
+              </div>
+            </div>
+            <div class="font-bold text-base sm:text-lg text-stone-900 whitespace-nowrap ml-2">R$ {{ totalVariable | number:'1.2-2' }}</div>
+          </div>
+        </div>
+
+        <!-- Visual representation -->
+        <div class="flex items-center justify-center p-4 sm:p-6 w-full">
+          <div class="w-full max-w-[200px] sm:max-w-[240px] aspect-square rounded-full border-8 border-stone-100 flex flex-col items-center justify-center relative shadow-sm mx-auto shrink-0">
+             <div class="absolute inset-0 rounded-full border-t-8 border-l-8 border-stone-800 transform -rotate-45" [ngStyle]="{'opacity': totalExpenses > 0 ? 1 : 0}"></div>
+             <div class="text-stone-500 text-[10px] sm:text-xs font-mono uppercase tracking-widest relative z-10 mb-1">Despesa Total</div>
+             <div class="text-xl sm:text-3xl font-serif italic font-bold text-stone-900 relative z-10 px-2 text-center w-full truncate">R$ {{ totalExpenses | number:'1.0-0' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lists Tab -->
+    <div *ngIf="activeTab !== 'overview'" class="flex flex-col h-full">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 md:p-8 border-b-2 border-stone-100">
+        <h2 class="text-xl sm:text-2xl font-serif italic font-bold text-stone-900 capitalize">
+          {{ activeTab === 'income' ? 'Receitas' : (activeTab === 'fixed' ? 'Contas Fixas' : 'Variáveis') }}
+        </h2>
+        <button class="w-full sm:w-auto bg-stone-800 text-stone-100 px-4 py-2 rounded font-mono text-sm uppercase tracking-wider hover:bg-stone-900 transition-colors shadow-[2px_2px_0px_rgba(41,37,36,0.2)]" (click)="openNewModal()">
+          + Lançamento
+        </button>
+      </div>
+      
+      <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1 bg-stone-50/50 hide-scrollbar">
+        <!-- Dynamic list rendering based on tab -->
+        <ng-container [ngSwitch]="activeTab">
+          <!-- Income List -->
+          <div *ngSwitchCase="'income'" class="space-y-3">
+            <div *ngFor="let item of fIncomes" class="flex items-center justify-between p-3 sm:p-4 bg-white rounded border border-stone-200 cursor-pointer hover:border-stone-800 transition-colors" (click)="openEditModal(item, 'income')">
+              <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-sm sm:text-base text-stone-900 truncate">{{ item.description }}</div>
+                  <div class="text-[10px] sm:text-xs font-mono text-stone-500 uppercase">{{ item.date | date:'dd/MM/yyyy' }}</div>
+                </div>
+              </div>
+              <div class="text-sm sm:text-lg font-bold text-stone-900 whitespace-nowrap ml-2">R$ {{ item.value | number:'1.2-2' }}</div>
+            </div>
+            <div *ngIf="fIncomes.length === 0" class="text-center py-12 text-stone-400 font-serif italic text-lg border-2 border-dashed border-stone-200 rounded">
+              Nenhuma receita encontrada para este período.
+            </div>
+          </div>
+
+          <!-- Fixed List -->
+          <div *ngSwitchCase="'fixed'" class="space-y-3">
+            <div *ngFor="let item of fFixed" class="flex items-center justify-between p-3 sm:p-4 bg-white rounded border border-stone-200 cursor-pointer hover:border-stone-800 transition-colors" (click)="openEditModal(item, 'fixed')">
+              <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-sm sm:text-base text-stone-900 truncate">{{ item.description }}</div>
+                  <div class="text-[10px] sm:text-xs font-mono text-stone-500 uppercase">Vence dia {{ item.dueDay || 5 }}</div>
+                </div>
+              </div>
+              <div class="text-sm sm:text-lg font-bold text-stone-900 whitespace-nowrap ml-2">R$ {{ item.value | number:'1.2-2' }}</div>
+            </div>
+            <div *ngIf="fFixed.length === 0" class="text-center py-12 text-stone-400 font-serif italic text-lg border-2 border-dashed border-stone-200 rounded">
+              Nenhuma conta fixa encontrada para este período.
+            </div>
+          </div>
+
+          <!-- Variables List -->
+          <div *ngSwitchCase="'variable'" class="space-y-3">
+            <div *ngFor="let item of fVariable" class="flex items-center justify-between p-3 sm:p-4 bg-white rounded border border-stone-200 cursor-pointer hover:border-stone-800 transition-colors" (click)="openEditModal(item, 'variable')">
+              <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-sm sm:text-base text-stone-900 truncate">{{ item.description }}</div>
+                  <div class="text-[10px] sm:text-xs font-mono text-stone-500 uppercase truncate">{{ item.category }}</div>
+                </div>
+              </div>
+              <div class="text-sm sm:text-lg font-bold text-stone-900 whitespace-nowrap ml-2">R$ {{ item.value | number:'1.2-2' }}</div>
+            </div>
+            <div *ngIf="fVariable.length === 0" class="text-center py-12 text-stone-400 font-serif italic text-lg border-2 border-dashed border-stone-200 rounded">
+              Nenhuma despesa variável encontrada.
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div *ngIf="showModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-md rounded shadow-[4px_4px_0px_rgba(41,37,36,0.3)] border-2 border-stone-800 my-auto">
+      
+      <div class="flex justify-between items-center p-4 sm:p-6 border-b-2 border-stone-800 bg-stone-50 rounded-t">
+        <h3 class="text-lg sm:text-xl font-serif italic font-bold text-stone-900 truncate pr-2">{{ editingItemId ? 'Editar Lançamento' : 'Novo Lançamento' }}</h3>
+        <button class="text-stone-500 hover:text-stone-900 transition-colors bg-stone-200/50 hover:bg-stone-200 rounded p-1 shrink-0" (click)="closeModal()">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+      
+      <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div>
+          <label class="block text-[10px] sm:text-xs font-mono font-bold text-stone-600 mb-1.5 sm:mb-2 uppercase tracking-wider">Descrição</label>
+          <input type="text" [(ngModel)]="descInput" placeholder="Ex: Salário, Conta de Luz" class="w-full bg-white border border-stone-300 rounded px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base text-stone-900 focus:outline-none focus:border-stone-800 transition-colors shadow-inner font-sans">
+        </div>
+        
+        <div>
+          <label class="block text-[10px] sm:text-xs font-mono font-bold text-stone-600 mb-1.5 sm:mb-2 uppercase tracking-wider">Valor (R$)</label>
+          <div class="relative">
+            <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-stone-500 font-mono text-sm sm:text-base">R$</span>
+            <input type="text" [(ngModel)]="valueInput" placeholder="0,00" class="w-full bg-white border border-stone-300 rounded pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm sm:text-base text-stone-900 font-bold focus:outline-none focus:border-stone-800 transition-colors shadow-inner">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] sm:text-xs font-mono font-bold text-stone-600 mb-1.5 sm:mb-2 uppercase tracking-wider">Vencimento</label>
+            <input type="date" [(ngModel)]="dueDateInput" class="w-full bg-white border border-stone-300 rounded px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base text-stone-900 focus:outline-none focus:border-stone-800 transition-colors shadow-inner font-sans">
+          </div>
+          <div>
+            <label class="block text-[10px] sm:text-xs font-mono font-bold text-stone-600 mb-1.5 sm:mb-2 uppercase tracking-wider">Categoria</label>
+            <input type="text" [(ngModel)]="categoryInput" placeholder="Ex: Casa" class="w-full bg-white border border-stone-300 rounded px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base text-stone-900 focus:outline-none focus:border-stone-800 transition-colors shadow-inner font-sans">
+          </div>
+        </div>
+        
+        <div class="pt-2 sm:pt-4">
+          <button class="w-full bg-stone-800 text-stone-100 font-mono uppercase tracking-wider font-bold py-2.5 sm:py-3 text-sm sm:text-base rounded shadow-[4px_4px_0px_rgba(41,37,36,0.2)] hover:bg-stone-900 hover:translate-y-[1px] hover:shadow-[3px_3px_0px_rgba(41,37,36,0.2)] transition-all" (click)="handleAddNewItem()">
+            {{ editingItemId ? 'Salvar Alterações' : 'Salvar Lançamento' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,123 @@
+<div class="fl-container">
+  
+  <div class="fl-header">
+    <div>
+      <span class="fl-header-subtitle">METAS E PLANOS</span>
+      <h3 class="fl-header-title">
+        Future Log &mdash; <span>Visão Anual</span>
+      </h3>
+    </div>
+  </div>
+
+  <div class="fl-months-grid">
+    <div *ngFor="let month of months; let i = index" 
+         (click)="selectedMonth = i"
+         class="fl-month-card" 
+         [class.active]="selectedMonth === i">
+      <h4>{{ month }}</h4>
+      <div class="fl-month-stats">
+        <span>{{ getScheduledCount(i) }} agendado(s)</span>
+        <span *ngIf="getCompletedCount(i) > 0" class="fl-completed-stat">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>
+          {{ getCompletedCount(i) }} concluído(s)
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="fl-content-layout">
+    
+    <div class="fl-main-panel">
+      <!-- Scheduled Events -->
+      <div class="fl-section">
+        <h4 class="fl-section-title">
+          <span>Itens de {{ months[selectedMonth] }}</span>
+          <span class="fl-section-count">{{ scheduledEvents.length }} agendado(s)</span>
+        </h4>
+        
+        <div class="fl-items-list" *ngIf="scheduledEvents.length > 0">
+          <div *ngFor="let ev of scheduledEvents" class="fl-item-wrapper">
+            <app-bullet-item [item]="ev" class="fl-bullet-item"></app-bullet-item>
+          </div>
+        </div>
+        
+        <p *ngIf="scheduledEvents.length === 0" class="fl-empty-text">Sem itens agendados para este mês.</p>
+      </div>
+
+      <!-- Completed Events -->
+      <div class="fl-section" *ngIf="completedEvents.length > 0">
+        <h4 class="fl-section-title fl-title-completed">
+          <span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>
+            Concluídas
+          </span>
+          <span class="fl-section-count">{{ completedEvents.length }} item(ns)</span>
+        </h4>
+        <div class="fl-items-list fl-completed-list">
+          <div *ngFor="let ev of completedEvents" class="fl-item-wrapper">
+            <app-bullet-item [item]="ev" class="fl-bullet-item"></app-bullet-item>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Panel -->
+    <div class="fl-side-panel">
+      <h4 class="fl-side-title">Agendar Novo Item</h4>
+      <form (submit)="handleLocalSubmit($event)" class="fl-form">
+        
+        <div class="fl-type-selector">
+          <button type="button" (click)="inputType = 'task'" [class.active]="inputType === 'task'">• Tarefa</button>
+          <button type="button" (click)="inputType = 'event'" [class.active]="inputType === 'event'">○ Evento</button>
+          <button type="button" (click)="inputType = 'note'" [class.active]="inputType === 'note'">- Nota</button>
+        </div>
+
+        <div class="fl-form-group">
+          <input type="text" [(ngModel)]="inputText" name="inputText" required 
+                 [placeholder]="inputType === 'task' ? 'Adicionar tarefa...' : inputType === 'event' ? 'Adicionar evento...' : 'Adicionar nota...'" />
+        </div>
+
+        <div class="fl-form-group">
+          <label>Hora ⏱️</label>
+          <input type="time" [(ngModel)]="inputTime" name="inputTime" />
+        </div>
+
+        <ng-container *ngIf="inputType === 'task'">
+          <div class="fl-form-row">
+            <div class="fl-form-group">
+              <label>Energia ⚡</label>
+              <select [(ngModel)]="energy" name="energy">
+                <option [value]="1">1</option>
+                <option [value]="2">2</option>
+                <option [value]="3">3</option>
+                <option [value]="4">4</option>
+                <option [value]="5">5</option>
+              </select>
+            </div>
+            <div class="fl-form-group">
+              <label>Complex. 🧠</label>
+              <select [(ngModel)]="complexity" name="complexity">
+                <option [value]="1">1</option>
+                <option [value]="2">2</option>
+                <option [value]="3">3</option>
+                <option [value]="4">4</option>
+                <option [value]="5">5</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fl-form-group">
+            <label>Tempo (min) ⏱️</label>
+            <input type="number" min="0" placeholder="Minutos" [(ngModel)]="executionTime" name="executionTime" />
+          </div>
+        </ng-container>
+
+        <button type="submit" class="fl-btn-submit">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Agendar
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>

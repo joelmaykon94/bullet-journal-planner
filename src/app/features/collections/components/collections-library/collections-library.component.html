@@ -1,0 +1,122 @@
+<div class="cl-container">
+  <div class="cl-header-panel">
+    <div class="cl-header-content">
+      <div>
+        <span class="cl-header-subtitle">Minhas Coleções</span>
+        <h2 class="cl-header-title">📚 Biblioteca de Coleções</h2>
+        <p class="cl-header-desc">
+          Crie coleções personalizadas e adicione itens diretamente aos cartões abaixo.
+        </p>
+      </div>
+      <div class="cl-header-actions">
+        <button (click)="showCreateCollectionModal = true" class="cl-btn-primary">
+          + Nova Coleção
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Masonry Grid of Collections -->
+  <div class="cl-masonry-grid" cdkDropListGroup>
+    
+    <div *ngFor="let col of collections" class="cl-masonry-card">
+      <div class="cl-masonry-header">
+        <div class="cl-masonry-title-group">
+          <span class="cl-masonry-icon">{{ col.icon || '📚' }}</span>
+          <h3 class="cl-masonry-title">{{ col.name }}</h3>
+        </div>
+        <button class="cl-btn-delete-mini" (click)="handleDeleteCollection(col.id, $event)" title="Excluir Coleção">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>
+      
+      <p class="cl-masonry-desc" *ngIf="col.description">{{ col.description }}</p>
+
+      <!-- Items Checklist inside the Collection -->
+      <div class="cl-masonry-items" cdkDropList [cdkDropListData]="col.items" (cdkDropListDropped)="dropItemMasonry(col.id, $event)">
+        <div *ngFor="let item of col.items" class="cl-masonry-item" cdkDrag>
+          <div class="cl-masonry-drag-handle" cdkDragHandle>⋮⋮</div>
+          
+          <input type="checkbox" 
+                 [checked]="item.status === 'done'" 
+                 (change)="handleUpdateCollectionItemStatus(col.id, item.id, item.status === 'done' ? 'todo' : 'done')" 
+                 class="cl-masonry-checkbox" />
+                 
+          <span class="cl-masonry-item-title" [class.completed]="item.status === 'done'">{{ item.title }}</span>
+          
+          <button class="cl-subtask-del" (click)="handleDeleteCollectionItemMasonry(col.id, item.id)">×</button>
+        </div>
+      </div>
+
+      <!-- Quick Add Item -->
+      <div class="cl-masonry-add">
+        <input type="text" 
+               placeholder="Adicionar item..." 
+               [(ngModel)]="newItemsContent[col.id]" 
+               (keyup.enter)="handleAddMasonryItem(col.id)" 
+               class="cl-masonry-add-input" />
+        <button class="cl-masonry-add-btn" (click)="handleAddMasonryItem(col.id)">+</button>
+      </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="collections.length === 0" class="cl-empty-state-global">
+      Nenhuma coleção criada. Clique em "Nova Coleção" para começar.
+    </div>
+
+  </div>
+
+  <!-- CREATE COLLECTION MODAL -->
+  <div *ngIf="showCreateCollectionModal" class="cl-modal-overlay">
+    <div class="cl-modal">
+      <div class="cl-modal-header">
+        <h3><span>📚</span> Criar Nova Coleção</h3>
+        <button (click)="handleCancelCreateCollection()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form (submit)="handleCreateCollection($event)" class="cl-modal-form">
+        <div class="cl-form-group">
+          <label>Ícone / Emoji</label>
+          <div class="cl-icon-input-group">
+            <button type="button" class="cl-icon-picker-lg" (click)="showColIconDropdown = !showColIconDropdown">
+              {{ newColIcon }}
+            </button>
+            <input type="text" required maxlength="2" [(ngModel)]="newColIcon" name="newColIcon" class="cl-icon-input" />
+          </div>
+          
+          <div *ngIf="showColIconDropdown" class="cl-icon-dropdown">
+            <div class="cl-dropdown-header">
+              <span>Escolha um Ícone</span>
+              <button type="button" (click)="showColIconDropdown = false">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <div class="cl-dropdown-grid">
+              <button type="button" *ngFor="let emoji of emojis" (click)="newColIcon = emoji; showColIconDropdown = false" [class.selected]="newColIcon === emoji">
+                {{ emoji }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cl-form-group">
+          <label>Nome da Coleção</label>
+          <input type="text" required placeholder="Ex: Leituras, Projeto X..." [(ngModel)]="newColName" name="newColName" class="cl-input" />
+        </div>
+
+        <div class="cl-form-group">
+          <label>Descrição (Opcional)</label>
+          <textarea placeholder="Do que se trata esta coleção?" [(ngModel)]="newColDesc" name="newColDesc" rows="2" class="cl-textarea"></textarea>
+        </div>
+
+        <div class="cl-modal-footer">
+          <button type="button" (click)="handleCancelCreateCollection()" class="cl-btn-text">Cancelar</button>
+          <button type="submit" class="cl-btn-primary">Criar Coleção</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

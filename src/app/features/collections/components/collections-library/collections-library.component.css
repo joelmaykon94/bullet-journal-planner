@@ -1,0 +1,327 @@
+/* =========================================
+   MASONRY KANBAN COLLECTIONS (PAPER POST-IT STYLE)
+   ========================================= */
+
+.cl-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.cl-header-panel {
+  background-color: var(--color-paper-panel);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 20px;
+  padding: 24px;
+}
+.cl-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cl-header-subtitle {
+  font-size: 10px;
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+}
+.cl-header-title {
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--color-ink-main);
+  margin: 4px 0 8px 0;
+}
+.cl-header-desc {
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+.cl-btn-primary {
+  padding: 10px 16px;
+  background-color: var(--color-ink-main);
+  color: var(--color-paper-bg);
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.cl-btn-primary:hover { opacity: 0.9; }
+
+/* Masonry Grid (Cards) */
+.cl-masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.cl-masonry-card {
+  background-color: var(--color-paper-panel);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 2px 4px 12px rgba(0,0,0,0.02);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.cl-masonry-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 8px 20px rgba(0,0,0,0.04);
+}
+
+.cl-masonry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.cl-masonry-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cl-masonry-icon {
+  font-size: 20px;
+}
+.cl-masonry-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  margin: 0;
+}
+.cl-btn-delete-mini {
+  background: transparent;
+  border: none;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.5;
+  transition: opacity 0.2s, color 0.2s;
+}
+.cl-btn-delete-mini:hover {
+  opacity: 1;
+  color: #ef4444;
+}
+
+.cl-masonry-desc {
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Items List within Card */
+.cl-masonry-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 20px; /* for drag drop dropzone */
+}
+.cl-masonry-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+.cl-masonry-item:hover {
+  background-color: rgba(0,0,0,0.03);
+}
+
+/* Drag and Drop CDK styles */
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px -3px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-paper-panel);
+  border: 1px dashed var(--color-ink-green);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+}
+.cdk-drag-placeholder {
+  opacity: 0.2;
+}
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+.cl-masonry-items.cdk-drop-list-dragging .cl-masonry-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cl-masonry-drag-handle {
+  cursor: grab;
+  color: var(--color-ink-light);
+  font-size: 10px;
+  font-weight: bold;
+  padding: 4px;
+  user-select: none;
+}
+.cl-masonry-drag-handle:active {
+  cursor: grabbing;
+}
+.cl-masonry-checkbox {
+  accent-color: var(--color-ink-green);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+.cl-masonry-item-title {
+  font-size: 13px;
+  color: var(--color-ink-main);
+  flex: 1;
+}
+.cl-masonry-item-title.completed {
+  text-decoration: line-through;
+  color: var(--color-ink-light);
+}
+
+.cl-subtask-del {
+  background: transparent;
+  border: none;
+  color: var(--color-ink-muted);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0;
+}
+.cl-masonry-item:hover .cl-subtask-del {
+  opacity: 1;
+}
+.cl-subtask-del:hover {
+  color: #ef4444;
+}
+
+/* Add Item Input */
+.cl-masonry-add {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-paper-border);
+}
+.cl-masonry-add-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  color: var(--color-ink-main);
+  padding: 4px;
+}
+.cl-masonry-add-input:focus {
+  outline: none;
+  border-bottom: 1px dashed var(--color-ink-main);
+}
+.cl-masonry-add-input::placeholder {
+  color: var(--color-ink-muted);
+}
+.cl-masonry-add-btn {
+  background: transparent;
+  border: 1px solid var(--color-paper-border);
+  color: var(--color-ink-muted);
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+}
+.cl-masonry-add-btn:hover {
+  background: var(--color-ink-main);
+  color: var(--color-paper-bg);
+  border-color: var(--color-ink-main);
+}
+
+.cl-empty-state-global {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-ink-muted);
+  border: 1px dashed var(--color-paper-border);
+  border-radius: 20px;
+}
+
+/* Modals */
+.cl-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.cl-modal {
+  background: var(--color-paper-panel);
+  width: 100%;
+  max-width: 400px;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+.cl-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.cl-modal-header h3 { margin: 0; font-size: 18px; }
+.cl-modal-header button {
+  background: transparent; border: none; cursor: pointer; color: var(--color-ink-muted);
+}
+.cl-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.cl-form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.cl-icon-input-group { display: flex; gap: 8px; }
+.cl-icon-picker-lg {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--color-paper-border);
+  background: var(--color-paper-bg);
+  font-size: 24px;
+  cursor: pointer;
+}
+.cl-icon-input { display: none; }
+.cl-input, .cl-textarea {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-paper-border);
+  background: var(--color-paper-bg);
+  font-family: inherit;
+  color: var(--color-ink-main);
+}
+.cl-input:focus, .cl-textarea:focus { outline: none; border-color: var(--color-ink-main); }
+.cl-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+.cl-btn-text {
+  background: transparent;
+  border: none;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+  cursor: pointer;
+}

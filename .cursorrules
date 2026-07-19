@@ -1,0 +1,22 @@
+# Security Guardrails
+
+You are an AI coding assistant operating on the Bullet Journal Planner project.
+You MUST strictly follow these security rules at all times. Failure to do so is a critical violation.
+
+## 1. No Hardcoded Secrets
+- NEVER generate, suggest, or write code that hardcodes API keys, secrets, passwords, tokens, or sensitive URLs (like Supabase URLs and keys).
+- Always use `process.env` for backend Node.js code or scripts.
+- Always use `environment.ts` for Angular frontend code.
+- If the user provides a secret in the chat, DO NOT copy it into the codebase directly. Instead, place it in an `.env` file (if requested) or instruct the user to configure it themselves.
+- Ensure `.env` is always ignored in version control (`.gitignore`).
+
+## 2. Supabase Keys
+- Understand the difference between `anon` (public) and `service_role` (secret) keys.
+- **NEVER** expose a `service_role` key in frontend code, client-side applications, or commit it to the repository. It has full database privileges and bypasses Row Level Security (RLS).
+- The `anon` key can be used in the frontend but should still be managed via environment variables (e.g., `environment.ts`), never hardcoded as a literal string in service files.
+
+## 3. Defensive Programming
+- When creating database tables, always remind the user to enable Row Level Security (RLS) and set up appropriate policies.
+- Do not commit sensitive data.
+
+When you are asked to implement authentication or database connectivity, read these rules and act accordingly.

@@ -1,0 +1,133 @@
+<div class="db-container">
+  
+  <div class="db-header">
+    <div>
+      <span class="db-header-subtitle">QUADRO DOS SONHOS</span>
+      <h3 class="db-header-title">
+        Quadro dos Sonhos &mdash; <span>Conquistas</span>
+      </h3>
+    </div>
+    
+    <div class="db-header-actions">
+      <div class="db-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+        <span>{{ conqueredCount }} de {{ dreams.length }} Conquistados</span>
+      </div>
+
+      <button (click)="showAddForm = !showAddForm" class="db-btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Adicionar Sonho
+      </button>
+    </div>
+  </div>
+
+  <form *ngIf="showAddForm" (submit)="handleFormSubmit($event)" class="db-form">
+    <h4 class="db-form-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
+      Qual é o seu próximo grande objetivo ou sonho?
+    </h4>
+    
+    <div class="db-form-grid">
+      <div class="db-form-group">
+        <label>Título do Sonho</label>
+        <input type="text" placeholder="Ex: Falar inglês fluentemente, Comprar meu próprio carro..." [(ngModel)]="title" name="title" required />
+      </div>
+
+      <div class="db-form-group">
+        <label>Categoria</label>
+        <select [(ngModel)]="category" name="category">
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="db-form-group">
+      <label>Descrição / Detalhes (Opcional)</label>
+      <textarea placeholder="Descreva o que isso significa para você, por que é importante ou as etapas para chegar lá..." [(ngModel)]="description" name="description" rows="2"></textarea>
+    </div>
+
+    <div class="db-form-group">
+      <label>Selecione um Ícone / Avatar</label>
+      <div class="db-emoji-list">
+        <button type="button" *ngFor="let em of emojis" 
+                (click)="icon = em" 
+                class="db-emoji-btn" 
+                [class.selected]="icon === em">
+          {{ em }}
+        </button>
+      </div>
+    </div>
+
+    <div class="db-form-actions">
+      <button type="button" (click)="showAddForm = false" class="db-btn-cancel">Cancelar</button>
+      <button type="submit" class="db-btn-submit">Fixar no Quadro ✨</button>
+    </div>
+  </form>
+
+  <div class="db-filters">
+    <div class="db-filter-group">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+      <button (click)="selectedCategoryFilter = 'Todos'" [class.active]="selectedCategoryFilter === 'Todos'">Todos</button>
+      <button *ngFor="let cat of categories" (click)="selectedCategoryFilter = cat" [class.active]="selectedCategoryFilter === cat">{{ cat }}</button>
+    </div>
+
+    <div class="db-status-filters">
+      <button (click)="statusFilter = 'all'" [class.active]="statusFilter === 'all'">Todos</button>
+      <button (click)="statusFilter = 'active'" [class.active]="statusFilter === 'active'">Ativos</button>
+      <button (click)="statusFilter = 'conquered'" [class.active]="statusFilter === 'conquered'">🏆 Conquistados</button>
+    </div>
+  </div>
+
+  <div *ngIf="filteredDreams.length === 0" class="db-empty">
+    <div class="db-empty-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+    </div>
+    <h4>Nenhum sonho por aqui</h4>
+    <p>Adicione seus objetivos, metas pessoais ou sonhos e marque-os como conquistados à medida que realizar suas conquistas!</p>
+  </div>
+
+  <div class="db-grid" *ngIf="filteredDreams.length > 0">
+    <div *ngFor="let dream of filteredDreams" 
+         class="db-card" 
+         [class.conquered]="dream.conquered">
+      
+      <div *ngIf="celebratingId === dream.id" class="db-celebration">
+        <span class="db-float-1">✨</span>
+        <span class="db-float-2">🏆</span>
+        <span class="db-float-3">🎉</span>
+        <span class="db-float-4">🌟</span>
+        <span class="db-float-5">❤️</span>
+      </div>
+
+      <div class="db-card-header">
+        <div class="db-card-icon-wrapper" [class.conquered]="dream.conquered">
+          {{ dream.icon || '🏆' }}
+        </div>
+        <div class="db-card-meta">
+          <span class="db-category-badge" [class.conquered]="dream.conquered">{{ dream.category }}</span>
+          <button (click)="handleDeleteDream(dream.id, dream.title)" class="db-btn-delete" title="Remover sonho">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="db-card-body">
+        <h4 [class.conquered]="dream.conquered">{{ dream.title }}</h4>
+        <p *ngIf="dream.description">{{ dream.description }}</p>
+      </div>
+
+      <div class="db-card-footer">
+        <div class="db-date">
+          Adicionado em: {{ dream.createdAt | date:'dd/MM/yyyy' }}
+        </div>
+        <button class="db-btn-conquer" [class.conquered]="dream.conquered" (click)="handleConquerClick(dream.id, dream.conquered)">
+          <svg *ngIf="dream.conquered" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <svg *ngIf="!dream.conquered" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+          {{ dream.conquered ? 'Conquistado!' : 'Marcar como Conquistado' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

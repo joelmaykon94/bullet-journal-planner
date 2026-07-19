@@ -1,0 +1,32 @@
+<div class="set-container">
+  
+  <div class="set-header">
+    <span class="set-subtitle">CONFIGURAÇÃO PESSOAL</span>
+    <h3 class="set-title">Ajustes — <span>Preferências</span></h3>
+  </div>
+
+  <div class="set-grid">
+    <!-- Visual Options -->
+    <div class="set-card">
+      <div class="set-card-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="set-icon text-bujo-blue"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+        <h4>Visual & Acessibilidade</h4>
+      </div>
+      <p class="set-desc">As opções de tema (Claro/Escuro) estão disponíveis no rodapé do menu lateral. Mais opções de fonte e contraste serão migradas em breve.</p>
+    </div>
+
+    <!-- Data Management -->
+    <div class="set-card border-danger">
+      <div class="set-card-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="set-icon text-bujo-red"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        <h4 class="text-danger">Gestão de Dados</h4>
+      </div>
+      <p class="set-desc">O aplicativo salva seus dados exclusivamente no navegador local do seu dispositivo.</p>
+      
+      <button class="set-btn set-btn-danger" (click)="clearData()">
+        ⚠️ Apagar Todos os Dados Locais
+      </button>
+    </div>
+
+  </div>
+</div>

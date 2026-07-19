@@ -1,0 +1,1 @@
+/home/joelmaykon/ai-workspace-commons/GSD-STYLE.md

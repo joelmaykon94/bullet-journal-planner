@@ -1,0 +1,20 @@
+allowBuilds:
+  '@parcel/watcher': true
+  core-js: true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true
+  onnxruntime-node: true
+  protobufjs: true
+  sharp: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@supabase/auth-js@2.108.2'
+  - '@supabase/functions-js@2.108.2'
+  - '@supabase/postgrest-js@2.108.2'
+  - '@supabase/realtime-js@2.108.2'
+  - '@supabase/storage-js@2.108.2'
+  - '@supabase/supabase-js@2.108.2'
+
+packages:
+  - 'apps/*'
