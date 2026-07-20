@@ -28,11 +28,11 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 sm:mb-8">
     <!-- Balance Card -->
     <div class="bg-stone-900 rounded p-5 sm:p-6 shadow-[4px_4px_0px_rgba(41,37,36,0.2)] text-white border border-stone-800 w-full overflow-hidden">
-      <h3 class="text-stone-100 font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider">Saldo Atual</h3>
+      <h3 class="text-stone-100 font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider font-bold">Saldo Atual</h3>
       <div class="text-3xl sm:text-4xl font-serif italic font-bold truncate" [ngClass]="currentBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'">
         R$ {{ currentBalance | number:'1.2-2' }}
       </div>
-      <div class="mt-3 sm:mt-4 flex items-center gap-2 text-[10px] sm:text-xs font-mono uppercase text-stone-200 truncate">
+      <div class="mt-3 sm:mt-4 flex items-center gap-2 text-[10px] sm:text-xs font-mono uppercase text-white font-bold truncate">
         <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" [ngClass]="currentBalance >= 0 ? 'bg-emerald-500' : 'bg-rose-500'"></span>
         {{ currentBalance >= 0 ? 'Orçamento positivo' : 'Atenção necessária' }}
       </div>
@@ -66,11 +66,11 @@
   </div>
 
   <!-- Tabs -->
-  <div class="flex overflow-x-auto hide-scrollbar gap-2 mb-6 pb-2 border-b-2 border-stone-800 pr-4 sm:pr-0 w-full">
-    <button class="px-4 sm:px-5 py-2 rounded text-xs sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'overview' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'overview'">Dashboard</button>
-    <button class="px-4 sm:px-5 py-2 rounded text-xs sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'income' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'income'">Receitas</button>
-    <button class="px-4 sm:px-5 py-2 rounded text-xs sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'fixed' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'fixed'">Fixas</button>
-    <button class="px-4 sm:px-5 py-2 rounded text-xs sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'variable' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'variable'">Variáveis</button>
+  <div class="flex overflow-x-auto hide-scrollbar gap-1 sm:gap-2 mb-6 pb-2 border-b-2 border-stone-800 pr-4 sm:pr-0 w-full">
+    <button class="px-2.5 sm:px-5 py-1.5 sm:py-2 rounded text-[10px] sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'overview' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'overview'">Dashboard</button>
+    <button class="px-2.5 sm:px-5 py-1.5 sm:py-2 rounded text-[10px] sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'income' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'income'">Receitas</button>
+    <button class="px-2.5 sm:px-5 py-1.5 sm:py-2 rounded text-[10px] sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'fixed' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'fixed'">Fixas</button>
+    <button class="px-2.5 sm:px-5 py-1.5 sm:py-2 rounded text-[10px] sm:text-sm font-mono uppercase font-bold transition-colors whitespace-nowrap shrink-0" [ngClass]="activeTab === 'variable' ? 'bg-stone-900 text-white shadow-[2px_2px_0px_rgba(41,37,36,0.2)]' : 'bg-white text-stone-600 border border-stone-300 hover:bg-stone-100'" (click)="activeTab = 'variable'">Variáveis</button>
   </div>
 
   <!-- Content Area -->
