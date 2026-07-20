@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
-  supabaseUrl: 'YOUR_SUPABASE_URL',
-  supabaseKey: 'YOUR_SUPABASE_ANON_KEY'
+  // Lê do env.js gerado dinamicamente via script e exposto em window.env
+  supabaseUrl: (window as any).env?.VITE_SUPABASE_URL || '',
+  supabaseKey: (window as any).env?.VITE_SUPABASE_ANON_KEY || ''
 };

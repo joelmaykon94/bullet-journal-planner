@@ -12,7 +12,7 @@ let envVars = {};
 
 // 1. Lê as variáveis de ambiente do sistema (Netlify / CI)
 Object.keys(process.env).forEach(key => {
-  if (key.startsWith('NG_APP_') || key.startsWith('VITE_') || key.startsWith('SUPABASE_')) {
+  if (key.startsWith('VITE_') || key.startsWith('SUPABASE_') || key.startsWith('SMTP_')) {
     envVars[key] = process.env[key];
   }
 });
@@ -31,14 +31,6 @@ if (fs.existsSync(envPath)) {
       envVars[key] = value;
     }
   });
-}
-
-// Mapeia variáveis VITE_ legadas para NG_APP_ para manter compatibilidade com environment.ts
-if (envVars['VITE_SUPABASE_URL'] && !envVars['NG_APP_SUPABASE_URL']) {
-  envVars['NG_APP_SUPABASE_URL'] = envVars['VITE_SUPABASE_URL'];
-}
-if (envVars['VITE_SUPABASE_ANON_KEY'] && !envVars['NG_APP_SUPABASE_ANON_KEY']) {
-  envVars['NG_APP_SUPABASE_ANON_KEY'] = envVars['VITE_SUPABASE_ANON_KEY'];
 }
 
 const fileContent = `window.env = ${JSON.stringify(envVars, null, 2)};`;
