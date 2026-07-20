@@ -27,7 +27,7 @@ import { BulletItemComponent } from '../bullet-item/bullet-item.component';
     }
     .page-turning-wrapper {
       perspective: 2500px;
-      width: calc(100% - 12px); /* Compensa sombras */
+      width: calc(100% - 14px); /* Compensa sombras e margin */
       height: 100%;
       transform-style: preserve-3d;
       margin-right: 12px;
