@@ -27,10 +27,11 @@ import { BulletItemComponent } from '../bullet-item/bullet-item.component';
     }
     .page-turning-wrapper {
       perspective: 2500px;
-      width: calc(100% - 4px); /* Compensa sombra de 4px na direita do 3D volume */
+      width: calc(100% - 12px); /* Compensa sombras */
       height: 100%;
       transform-style: preserve-3d;
-      margin-right: 4px;
+      margin-right: 12px;
+      margin-left: 2px;
     }
     .page-3d-volume {
       transform-style: preserve-3d;
@@ -111,7 +112,7 @@ import { BulletItemComponent } from '../bullet-item/bullet-item.component';
       <!-- Adicionado padding top extra (pt-8/sm:pt-10) para o conteúdo interno não colar no teto após as margens negativas -->
       <div class="sticky top-0 z-20 pt-8 sm:pt-10 pb-2 mb-6" style="background: var(--color-paper-bg);">
         
-        <div class="rounded-none border border-stone-300 bg-white shadow-[8px_8px_0px_rgba(41,37,36,0.1)] p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 relative transition-colors focus-within:border-stone-800">
+        <div class="rounded-none border border-stone-300 bg-white shadow-[4px_4px_0px_rgba(41,37,36,0.1)] sm:shadow-[8px_8px_0px_rgba(41,37,36,0.1)] mb-1 sm:mb-2 mr-1 sm:mr-2 p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 relative transition-colors focus-within:border-stone-800">
           
           <!-- Cabeçalho de Data -->
           <div class="border-b border-stone-200 pb-3 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
