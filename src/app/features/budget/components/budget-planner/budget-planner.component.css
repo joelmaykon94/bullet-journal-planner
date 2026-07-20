@@ -1,7 +1,7 @@
 /* CSS is handled by Tailwind classes in HTML */
 app-budget-planner {
   display: block;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   overflow-x: hidden;
 }
