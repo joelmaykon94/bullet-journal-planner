@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { DreamsService, DreamItem } from '../../services/dreams.service';
+import { ModalService } from '../../../../services/modal.service';
 
 @Component({
   selector: 'app-dream-board',
@@ -31,7 +32,7 @@ export class DreamBoardComponent implements OnInit, OnDestroy {
   
   private sub?: Subscription;
 
-  constructor(private dreamsService: DreamsService) {}
+  constructor(private dreamsService: DreamsService, private modalService: ModalService) {}
 
   ngOnInit() {
     this.sub = this.dreamsService.dreams$.subscribe(data => {
@@ -80,8 +81,8 @@ export class DreamBoardComponent implements OnInit, OnDestroy {
     this.dreamsService.toggleDreamConquered(id);
   }
 
-  handleDeleteDream(id: string, title: string) {
-    if (confirm(`Deseja realmente remover o sonho "${title}" do seu Quadro dos Sonhos?`)) {
+  async handleDeleteDream(id: string, title: string) {
+    if (await this.modalService.confirm(`Deseja realmente remover o sonho "${title}" do seu Quadro dos Sonhos?`, 'Remover Sonho', 'Remover', 'Cancelar')) {
       this.dreamsService.deleteDream(id);
     }
   }

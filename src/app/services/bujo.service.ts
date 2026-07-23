@@ -24,6 +24,12 @@ export interface BujoItem {
   subtasks?: any[];
 }
 
+export interface BujoTag {
+  id: string;
+  label: string;
+  colorClass: string;
+}
+
 export interface BujoSettings {
   theme: string;
   font: string;
@@ -88,6 +94,9 @@ export class BujoService {
   private trashSubject = new BehaviorSubject<BujoItem[]>([]);
   public trash$: Observable<BujoItem[]> = this.trashSubject.asObservable();
 
+  private tagsSubject = new BehaviorSubject<BujoTag[]>([]);
+  public tags$: Observable<BujoTag[]> = this.tagsSubject.asObservable();
+
   constructor(private authService: AuthService) {
     this.loadAllData();
   }
@@ -100,6 +109,32 @@ export class BujoService {
     this.habitLogsSubject.next(this.getParsedStorage('bujo_habit_logs', {}));
     this.dreamsSubject.next(this.getParsedStorage('bujo_dreams', []));
     this.trashSubject.next(this.getParsedStorage('bujo_focus_trash_items', []));
+    
+    const savedTags = this.getParsedStorage('bujo_tags', null);
+    if (savedTags && savedTags.length > 0) {
+      this.tagsSubject.next(savedTags);
+    } else {
+      this.tagsSubject.next(this.getDefaultTags());
+      this.saveToStorage('bujo_tags', this.tagsSubject.value);
+    }
+  }
+
+  private getDefaultTags(): BujoTag[] {
+    return [
+      { id: '@computador', label: 'computador', colorClass: 'bg-blue-500/10 text-blue-600 border-blue-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@online', label: 'online', colorClass: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@rua', label: 'rua', colorClass: 'bg-amber-500/10 text-amber-600 border-amber-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@casa', label: 'casa', colorClass: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@trabalho', label: 'trabalho', colorClass: 'bg-purple-500/10 text-purple-600 border-purple-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@trabalhando', label: 'trabalhando', colorClass: 'bg-purple-500/10 text-purple-600 border-purple-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@mestrado', label: 'mestrado', colorClass: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@programando', label: 'programando', colorClass: 'bg-orange-500/10 text-orange-600 border-orange-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@reuniao', label: 'reuniao', colorClass: 'bg-fuchsia-500/10 text-fuchsia-600 border-fuchsia-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@financeiro', label: 'financeiro', colorClass: 'bg-green-500/10 text-green-600 border-green-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@infra', label: 'infra', colorClass: 'bg-slate-500/10 text-slate-600 border-slate-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@seguranca', label: 'seguranca', colorClass: 'bg-red-500/10 text-red-600 border-red-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' },
+      { id: '@aguardando', label: 'aguardando', colorClass: 'bg-rose-500/10 text-rose-600 border-rose-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border' }
+    ];
   }
 
   private getParsedStorage(key: string, defaultValue: any): any {
@@ -217,5 +252,78 @@ export class BujoService {
 
   getBudgetNew(): any[] {
     return this.getParsedStorage('bujo_budget_new', []);
+  }
+  
+  // Tag Management
+  getTags(): BujoTag[] {
+    return this.tagsSubject.value;
+  }
+  
+  saveTags(tags: BujoTag[]) {
+    this.tagsSubject.next(tags);
+    this.saveToStorage('bujo_tags', tags);
+  }
+  
+  addTag(tag: BujoTag) {
+    this.saveTags([...this.getTags(), tag]);
+  }
+  
+  updateTag(oldId: string, newTag: BujoTag) {
+    const tags = this.getTags().map(t => t.id === oldId ? newTag : t);
+    this.saveTags(tags);
+    
+    if (oldId !== newTag.id) {
+      let items = this.getItems();
+      let updated = false;
+      items = items.map(item => {
+        let tokens = item.content.split(/(\s+)/);
+        let changed = false;
+        tokens = tokens.map(token => {
+          if (token.toLowerCase() === oldId.toLowerCase()) {
+            changed = true;
+            return newTag.id;
+          }
+          return token;
+        });
+        if (changed) {
+          updated = true;
+          return { ...item, content: tokens.join('').trim() };
+        }
+        return item;
+      });
+      if (updated) this.saveItems(items);
+    }
+  }
+  
+  deleteTag(id: string) {
+    this.saveTags(this.getTags().filter(t => t.id !== id));
+    
+    let items = this.getItems();
+    let updated = false;
+    items = items.map(item => {
+      let tokens = item.content.split(/(\s+)/);
+      let changed = false;
+      tokens = tokens.map(token => {
+        if (token.toLowerCase() === id.toLowerCase()) {
+          changed = true;
+          return ''; // remove the tag
+        }
+        return token;
+      });
+      if (changed) {
+        updated = true;
+        // fix double spaces potentially caused by removing
+        return { ...item, content: tokens.join('').replace(/\s+/g, ' ').trim() };
+      }
+      return item;
+    });
+    if (updated) this.saveItems(items);
+  }
+  
+  countItemsWithTag(id: string): number {
+    return this.getItems().filter(item => {
+      const tokens = item.content.split(/(\s+)/);
+      return tokens.some(t => t.toLowerCase() === id.toLowerCase());
+    }).length;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -149,15 +149,30 @@ import { BulletItemComponent } from '../bullet-item/bullet-item.component';
                 </select>
               </div>
 
-              <input 
-                type="text" 
-                [(ngModel)]="newItemContent" 
-                name="content" 
-                placeholder="Adicionar registro rápido..." 
-                (keydown)="handleInputKeyDown($event)"
-                class="flex-1 min-w-0 bg-transparent border-none outline-none text-stone-800 placeholder-stone-400 font-sans px-2 py-2 sm:py-1 text-sm sm:text-base"
-                autocomplete="off"
-              />
+              <div class="relative flex-1 min-w-0">
+                <input 
+                  #rapidInput
+                  type="text" 
+                  [(ngModel)]="newItemContent" 
+                  (ngModelChange)="onContentChange()"
+                  name="content" 
+                  placeholder="Adicionar registro rápido..." 
+                  (keydown)="handleInputKeyDown($event)"
+                  class="w-full bg-transparent border-none outline-none text-stone-800 placeholder-stone-400 font-sans px-2 py-2 sm:py-1 text-sm sm:text-base"
+                  autocomplete="off"
+                />
+                
+                <!-- Tag Dropdown -->
+                <div *ngIf="showTagDropdown && filteredTags.length > 0" 
+                     class="absolute top-full left-0 mt-1 w-56 bg-white border border-stone-200 shadow-[4px_4px_0px_rgba(41,37,36,0.1)] rounded-md overflow-hidden z-50">
+                  <div *ngFor="let tag of filteredTags; let i = index" 
+                       (click)="selectTag(tag.id)"
+                       class="px-3 py-2 cursor-pointer flex items-center gap-2 text-sm hover:bg-stone-50 border-b border-stone-100 last:border-0"
+                       [class.bg-stone-100]="i === selectedTagIndex">
+                    <span class="font-bold text-stone-700 font-mono text-xs">{{ tag.id }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <button type="submit" [disabled]="!newItemContent.trim()" 
@@ -195,6 +210,8 @@ import { BulletItemComponent } from '../bullet-item/bullet-item.component';
   encapsulation: ViewEncapsulation.None
 })
 export class DailyLogComponent implements OnInit, OnDestroy {
+  @ViewChild('rapidInput') rapidInput!: ElementRef<HTMLInputElement>;
+  
   items: BujoItem[] = [];
   selectedDate: string = '';
   pageTurnClass: string = '';
@@ -210,9 +227,14 @@ export class DailyLogComponent implements OnInit, OnDestroy {
   showingHistory: boolean = false;
   highlightedId: string | null = null;
   
+  selectedTagIndex: number = 0;
+  
+  availableTags: any[] = [];
+
   private sub?: Subscription;
   private dateSub?: Subscription;
   private highlightSub?: Subscription;
+  private tagsSub?: Subscription;
 
   constructor(private bujoService: BujoService, private cdr: ChangeDetectorRef) {}
 
@@ -241,12 +263,20 @@ export class DailyLogComponent implements OnInit, OnDestroy {
         }, 3000);
       }
     });
+    this.tagsSub = this.bujoService.tags$.subscribe(tags => {
+      this.availableTags = tags.map(t => ({
+        id: t.id,
+        label: t.label,
+        class: t.colorClass
+      }));
+    });
   }
 
   ngOnDestroy() {
     if (this.sub) this.sub.unsubscribe();
     if (this.dateSub) this.dateSub.unsubscribe();
     if (this.highlightSub) this.highlightSub.unsubscribe();
+    if (this.tagsSub) this.tagsSub.unsubscribe();
   }
 
   get todayItems(): BujoItem[] {
@@ -371,7 +401,64 @@ export class DailyLogComponent implements OnInit, OnDestroy {
     this.newItemContent = '';
   }
 
+  get showTagDropdown(): boolean {
+    return this.newItemContent.startsWith('@') && !this.newItemContent.includes(' ');
+  }
+
+  get filteredTags() {
+    if (!this.showTagDropdown) return [];
+    const search = this.newItemContent.toLowerCase();
+    return this.availableTags.filter(t => t.id.toLowerCase().startsWith(search));
+  }
+
+  onContentChange() {
+    this.selectedTagIndex = 0;
+  }
+
+  selectTag(tagId: string) {
+    this.newItemContent = tagId + ' ';
+    setTimeout(() => {
+      if (this.rapidInput) {
+        this.rapidInput.nativeElement.focus();
+      }
+    }, 0);
+  }
+
   handleInputKeyDown(event: KeyboardEvent) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+      event.preventDefault();
+      const input = event.target as HTMLInputElement;
+      const start = input.selectionStart || 0;
+      const end = input.selectionEnd || 0;
+      
+      const before = this.newItemContent.substring(0, start);
+      const selected = this.newItemContent.substring(start, end);
+      const after = this.newItemContent.substring(end);
+      
+      this.newItemContent = `${before}*${selected}*${after}`;
+      
+      setTimeout(() => {
+        input.setSelectionRange(start + 1, end + 1);
+      }, 0);
+      return;
+    }
+
+    if (this.showTagDropdown && this.filteredTags.length > 0) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        this.selectedTagIndex = Math.min(this.selectedTagIndex + 1, this.filteredTags.length - 1);
+        return;
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        this.selectedTagIndex = Math.max(this.selectedTagIndex - 1, 0);
+        return;
+      } else if (event.key === 'Enter' || event.key === 'Tab') {
+        event.preventDefault();
+        this.selectTag(this.filteredTags[this.selectedTagIndex].id);
+        return;
+      }
+    }
+
     if (event.key === 'ArrowUp') {
       if (!this.showingHistory && this.lastSavedContent) {
         this.draftContent = this.newItemContent;

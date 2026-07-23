@@ -5,44 +5,13 @@ import { BujoItem, BujoService } from '../../../../services/bujo.service';
 import { parseSmartTask } from '../../../../utils/smartParser';
 
 export interface ContentChunk {
-  type: 'text' | 'tag' | 'link';
+  type: 'text' | 'tag' | 'link' | 'bold';
   value: string;
   display?: string;
   tagClass?: string;
-  tagIcon?: string;
 }
 
-const tagColors: { [key: string]: string } = {
-  '@computador': 'bg-blue-500/10 text-blue-600 border-blue-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@online': 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@rua': 'bg-amber-500/10 text-amber-600 border-amber-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@casa': 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@trabalho': 'bg-purple-500/10 text-purple-600 border-purple-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@trabalhando': 'bg-purple-500/10 text-purple-600 border-purple-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@mestrado': 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@programando': 'bg-orange-500/10 text-orange-600 border-orange-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@reuniao': 'bg-fuchsia-500/10 text-fuchsia-600 border-fuchsia-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@financeiro': 'bg-green-500/10 text-green-600 border-green-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@infra': 'bg-slate-500/10 text-slate-600 border-slate-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@seguranca': 'bg-red-500/10 text-red-600 border-red-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border',
-  '@aguardando': 'bg-rose-500/10 text-rose-600 border-rose-500/20 px-1.5 py-0.5 rounded-md text-[10px] font-semibold inline-flex items-center gap-0.5 border'
-};
-
-const tagIcons: { [key: string]: string } = {
-  '@computador': '💻 ',
-  '@online': '🌐 ',
-  '@rua': '🚶 ',
-  '@casa': '🏠 ',
-  '@trabalho': '🏢 ',
-  '@trabalhando': '💼 ',
-  '@mestrado': '🎓 ',
-  '@programando': '👨‍💻 ',
-  '@reuniao': '👥 ',
-  '@financeiro': '💰 ',
-  '@infra': '⚙️ ',
-  '@seguranca': '🔒 ',
-  '@aguardando': '⏳ '
-};
+// export const tagColors and tagIcons are no longer needed here as they've moved to BujoService
 
 @Component({
   selector: 'app-bullet-item',
@@ -70,10 +39,12 @@ const tagIcons: { [key: string]: string } = {
              </span>
 
              <ng-container *ngFor="let chunk of contentChunks">
-               <span *ngIf="chunk.type === 'text'">{{ chunk.value }}</span>
+               <span *ngIf="chunk.type === 'text'" class="whitespace-pre-wrap">{{ chunk.value }}</span>
                
+               <strong *ngIf="chunk.type === 'bold'" class="font-bold">{{ chunk.value }}</strong>
+
                <span *ngIf="chunk.type === 'tag'" [class]="chunk.tagClass">
-                 {{ chunk.tagIcon }}{{ chunk.display }}
+                 {{ chunk.display }}
                </span>
                
                <a *ngIf="chunk.type === 'link'" 
@@ -102,6 +73,7 @@ const tagIcons: { [key: string]: string } = {
           type="text" 
           [(ngModel)]="editValue" 
           (blur)="saveEdit()"
+          (keydown)="handleEditKeyDown($event)"
           (keydown.enter)="saveEdit()"
           (keydown.escape)="cancelEdit()"
           (click)="$event.stopPropagation()"
@@ -180,6 +152,25 @@ export class BulletItemComponent implements OnInit {
     this.isEditing = false;
   }
 
+  handleEditKeyDown(event: KeyboardEvent) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+      event.preventDefault();
+      const input = event.target as HTMLInputElement;
+      const start = input.selectionStart || 0;
+      const end = input.selectionEnd || 0;
+      
+      const before = this.editValue.substring(0, start);
+      const selected = this.editValue.substring(start, end);
+      const after = this.editValue.substring(end);
+      
+      this.editValue = `${before}*${selected}*${after}`;
+      
+      setTimeout(() => {
+        input.setSelectionRange(start + 1, end + 1);
+      }, 0);
+    }
+  }
+
   onMigrate(event: Event, direction: 'prev' | 'next') {
     event.stopPropagation();
     if (!this.item.date) return;
@@ -206,66 +197,78 @@ export class BulletItemComponent implements OnInit {
     const raw = this.item.content || '';
     const chunks: ContentChunk[] = [];
     
-    // Simple parser splitting by spaces to find tags and links
-    const tokens = raw.split(/(\s+)/);
+    const boldTokens = raw.split(/(\*[^*]+\*)/);
     
-    let currentText = '';
-    
-    for (const token of tokens) {
-      if (!token.trim()) {
+    for (const bToken of boldTokens) {
+      if (!bToken) continue;
+      
+      if (bToken.startsWith('*') && bToken.endsWith('*') && bToken.length > 1) {
+        chunks.push({ type: 'bold', value: bToken.substring(1, bToken.length - 1) });
+        continue;
+      }
+      
+      // Simple parser splitting by spaces to find tags and links
+      const tokens = bToken.split(/(\s+)/);
+      
+      let currentText = '';
+      
+      for (const token of tokens) {
+        if (!token.trim()) {
+          currentText += token;
+          continue;
+        }
+
+        const lower = token.toLowerCase();
+        const tags = this.bujoService.getTags();
+        const foundTag = tags.find(t => t.id.toLowerCase() === lower);
+        
+        // Is it a known tag?
+        if (foundTag) {
+          if (currentText) {
+            chunks.push({ type: 'text', value: currentText });
+            currentText = '';
+          }
+          chunks.push({
+            type: 'tag',
+            value: token,
+            display: foundTag.label,
+            tagClass: foundTag.colorClass
+          });
+          continue;
+        }
+        
+        // Is it a link?
+        if (lower.startsWith('http://') || lower.startsWith('https://')) {
+          if (currentText) {
+            chunks.push({ type: 'text', value: currentText });
+            currentText = '';
+          }
+          chunks.push({
+            type: 'link',
+            value: token
+          });
+          continue;
+        }
+        
+        // Check legacy links (www.)
+        if (lower.startsWith('www.')) {
+          if (currentText) {
+            chunks.push({ type: 'text', value: currentText });
+            currentText = '';
+          }
+          chunks.push({
+            type: 'link',
+            value: 'https://' + token
+          });
+          continue;
+        }
+
         currentText += token;
-        continue;
-      }
-
-      const lower = token.toLowerCase();
-      
-      // Is it a known tag?
-      if (tagColors[lower]) {
-        if (currentText) {
-          chunks.push({ type: 'text', value: currentText });
-          currentText = '';
-        }
-        chunks.push({
-          type: 'tag',
-          value: token,
-          display: token.replace('@', ''),
-          tagClass: tagColors[lower],
-          tagIcon: tagIcons[lower]
-        });
-        continue;
       }
       
-      // Is it a link?
-      if (lower.startsWith('http://') || lower.startsWith('https://')) {
-        if (currentText) {
-          chunks.push({ type: 'text', value: currentText });
-          currentText = '';
-        }
-        chunks.push({
-          type: 'link',
-          value: token
-        });
-        continue;
+      if (currentText) {
+        chunks.push({ type: 'text', value: currentText });
       }
-      
-      // Check legacy links (www.)
-      if (lower.startsWith('www.')) {
-        if (currentText) {
-          chunks.push({ type: 'text', value: currentText });
-          currentText = '';
-        }
-        chunks.push({
-          type: 'link',
-          value: 'https://' + token
-        });
-        continue;
-      }
-
-      currentText += token;
-    }
-    
-    if (currentText) {
-      chunks.push({ type: 'text', value: currentText });
     }
     
     this.contentChunks = chunks;

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
+import { ModalService } from './modal.service';
 
 export interface User {
   id: string;
@@ -17,7 +18,7 @@ export class AuthService {
   
   private supabase: SupabaseClient;
 
-  constructor() {
+  constructor(private modalService: ModalService) {
     // Keys are now securely loaded from environment variables
     const supabaseUrl = environment.supabaseUrl;
     const supabaseKey = environment.supabaseKey;
@@ -68,11 +69,11 @@ export class AuthService {
         email: email,
       });
       if (error) throw error;
-      alert('Um link de acesso foi enviado para o seu email (' + email + '). Verifique sua caixa de entrada e clique no link para validar, em seguida volte aqui.');
+      await this.modalService.alert('Um link de acesso foi enviado para o seu email (' + email + '). Verifique sua caixa de entrada e clique no link para validar, em seguida volte aqui.', 'Acesso Enviado');
       return true;
     } catch (e) {
       console.error(e);
-      alert('Erro ao tentar enviar o email: ' + String(e));
+      await this.modalService.alert('Erro ao tentar enviar o email: ' + String(e), 'Erro');
       return false;
     }
   }
@@ -88,7 +89,7 @@ export class AuthService {
       if (error) throw error;
     } catch (e) {
       console.error(e);
-      alert('Erro ao fazer login com Google: ' + String(e));
+      await this.modalService.alert('Erro ao fazer login com Google: ' + String(e), 'Erro');
     }
   }
 
@@ -179,7 +180,7 @@ export class AuthService {
       
     } catch (e) {
       console.error(e);
-      alert('Erro ao sincronizar dados: ' + String(e));
+      await this.modalService.alert('Erro ao sincronizar dados: ' + String(e), 'Erro');
     }
   }
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { BujoService, BujoItem } from '../../../../services/bujo.service';
+import { ModalService } from '../../../../services/modal.service';
 
 interface ProposalItem {
   id: string;
@@ -33,7 +34,7 @@ export class FocusModeComponent implements OnInit, OnDestroy {
   private items: BujoItem[] = [];
   private sub?: Subscription;
 
-  constructor(private bujoService: BujoService) {}
+  constructor(private bujoService: BujoService, private modalService: ModalService) {}
 
   ngOnInit() {
     this.sub = this.bujoService.items$.subscribe(items => {
@@ -137,7 +138,7 @@ export class FocusModeComponent implements OnInit, OnDestroy {
     });
   }
 
-  applyProposal() {
+  async applyProposal() {
     this.proposal.forEach(prop => {
       const item = this.items.find(i => i.id === prop.id);
       if (item) {
@@ -145,7 +146,7 @@ export class FocusModeComponent implements OnInit, OnDestroy {
         this.bujoService.updateItem(prop.id, { date: prop.proposedDate });
       }
     });
-    alert('Planilha de Carga Cognitiva reorganizada com sucesso!');
+    await this.modalService.alert('Planilha de Carga Cognitiva reorganizada com sucesso!', 'Sucesso');
     this.step = 'inputs';
   }
 }

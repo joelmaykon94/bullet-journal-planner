@@ -12,9 +12,11 @@ import { BudgetPlannerComponent } from './features/budget/components/budget-plan
 import { FutureLogComponent } from './features/future-log/components/future-log/future-log.component';
 import { SettingsComponent } from './features/settings/components/settings/settings.component';
 import { AuthScreenComponent } from './features/auth/components/auth-screen/auth-screen.component';
+import { ModalComponent } from './shared/components/modal/modal.component';
 import { NotificationService, AppNotification } from './services/notification.service';
 import { BujoService } from './services/bujo.service';
 import { AuthService } from './services/auth.service';
+import { ModalService } from './services/modal.service';
 import { environment } from '../environments/version';
 
 export type TabId = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
@@ -36,7 +38,7 @@ interface LocalWeather {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent, WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent, FutureLogComponent, SettingsComponent, AuthScreenComponent],
+  imports: [CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent, WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent, FutureLogComponent, SettingsComponent, AuthScreenComponent, ModalComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   encapsulation: ViewEncapsulation.None
@@ -46,6 +48,7 @@ export class App implements OnInit {
   public readonly notificationService = inject(NotificationService);
   public readonly bujoService = inject(BujoService);
   public readonly authService = inject(AuthService);
+  public readonly modalService = inject(ModalService);
   protected readonly title = signal('BuJo Focus');
 
   activeTab = signal<TabId>('dashboard');
@@ -170,11 +173,12 @@ export class App implements OnInit {
   }
 
   async logout() {
-    if (confirm('Tem certeza que deseja sair?')) {
+    if (await this.modalService.confirm('Tem certeza que deseja sair?', 'Sair da conta')) {
       await this.authService.logout();
       window.location.reload();
     }
   }
+
 
   toggleSidebar() {
     this.sidebarOpen.update(v => !v);

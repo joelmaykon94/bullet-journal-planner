@@ -2,6 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CollectionsService, Collection, CollectionItem } from '../../services/collections.service';
+import { ModalService } from '../../../../services/modal.service';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 
 @Component({
@@ -23,7 +24,7 @@ export class CollectionsLibraryComponent implements OnInit {
   
   emojis = ['📚', '🎨', '💼', '💻', '📝', '📅', '🎯', '🚀', '💡', '🏃‍♂️', '🍎', '✈️', '🛒', '🎵', '🍿', '🏠', '🔑', '💬', '⚠️', '🛠️', '💰', '🏆', '🧘‍♂️', '🩺', '🍕', '🌸', '🌻', '🐶', '🐱', '🌍'];
 
-  constructor(private collectionsService: CollectionsService) {}
+  constructor(private collectionsService: CollectionsService, private modalService: ModalService) {}
 
   ngOnInit() {
     this.collectionsService.collections$.subscribe(cols => {
@@ -46,9 +47,9 @@ export class CollectionsLibraryComponent implements OnInit {
     this.handleCancelCreateCollection();
   }
 
-  handleDeleteCollection(id: string, event: Event) {
+  async handleDeleteCollection(id: string, event: Event) {
     event.stopPropagation();
-    if (confirm('Tem certeza que deseja excluir esta coleção?')) {
+    if (await this.modalService.confirm('Tem certeza que deseja excluir esta coleção?', 'Excluir Coleção', 'Excluir', 'Cancelar')) {
       this.collectionsService.deleteCollection(id);
     }
   }
@@ -63,8 +64,8 @@ export class CollectionsLibraryComponent implements OnInit {
     this.newItemsContent[colId] = '';
   }
 
-  handleDeleteCollectionItemMasonry(colId: string, itemId: string) {
-    if (confirm('Tem certeza que deseja excluir este item?')) {
+  async handleDeleteCollectionItemMasonry(colId: string, itemId: string) {
+    if (await this.modalService.confirm('Tem certeza que deseja excluir este item?', 'Excluir Item', 'Excluir', 'Cancelar')) {
       this.collectionsService.deleteCollectionItem(colId, itemId);
     }
   }

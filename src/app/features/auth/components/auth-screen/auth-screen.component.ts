@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../services/auth.service';
+import { ModalService } from '../../../../services/modal.service';
 
 @Component({
   selector: 'app-auth-screen',
@@ -15,10 +16,11 @@ export class AuthScreenComponent {
   loading = false;
   
   private authService = inject(AuthService);
+  private modalService = inject(ModalService);
 
   async loginWithEmail() {
     if (!this.email || !this.email.includes('@')) {
-      alert('Por favor, informe um e-mail válido.');
+      await this.modalService.alert('Por favor, informe um e-mail válido.', 'Aviso');
       return;
     }
     this.loading = true;

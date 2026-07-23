@@ -15,18 +15,51 @@
       <p class="set-desc">As opções de tema (Claro/Escuro) estão disponíveis no rodapé do menu lateral. Mais opções de fonte e contraste serão migradas em breve.</p>
     </div>
 
-    <!-- Data Management -->
-    <div class="set-card border-danger">
+    <!-- Gestão de Tags -->
+    <div class="set-card">
       <div class="set-card-header">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="set-icon text-bujo-red"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-        <h4 class="text-danger">Gestão de Dados</h4>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="set-icon text-stone-600"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <h4>Gestão de Tags</h4>
       </div>
-      <p class="set-desc">O aplicativo salva seus dados exclusivamente no navegador local do seu dispositivo.</p>
+      <p class="set-desc">Crie, edite ou apague as tags utilizadas em suas tarefas (ex: @trabalho). Cores são aplicadas automaticamente em tons pastéis.</p>
       
-      <button class="set-btn set-btn-danger" (click)="clearData()">
-        ⚠️ Apagar Todos os Dados Locais
+      <!-- Lista de Tags -->
+      <div class="flex flex-wrap gap-2 mt-4 mb-4">
+        <div *ngFor="let tag of tags" class="flex items-center gap-1 group relative">
+          <span [class]="tag.colorClass + ' pr-6 relative cursor-default'">
+            {{ tag.label }}
+          </span>
+          <div class="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button (click)="editTag(tag)" class="text-stone-500 hover:text-stone-800 bg-white/80 rounded p-0.5" title="Editar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </button>
+            <button (click)="deleteTag(tag)" class="text-red-500 hover:text-red-700 bg-white/80 rounded p-0.5" title="Excluir">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <button class="set-btn" (click)="openNewTagModal()" *ngIf="!isEditingTag">
+        + Nova Tag
       </button>
-    </div>
 
+      <!-- Formulário Inline de Tag -->
+      <div *ngIf="isEditingTag" class="mt-4 p-4 border border-stone-200 rounded bg-stone-50 flex flex-col gap-3">
+        <h5 class="font-bold text-sm text-stone-800">{{ currentEditingTag.oldId ? 'Editar Tag' : 'Nova Tag' }}</h5>
+        
+        <div class="flex gap-2">
+          <div class="flex-1 flex flex-col gap-1">
+            <label class="text-xs font-bold text-stone-500 uppercase">Nome (sem @)</label>
+            <input type="text" [(ngModel)]="currentEditingTag.label" class="border border-stone-300 rounded px-2 py-1 text-sm outline-none focus:border-stone-500" placeholder="ex: estudo">
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-end mt-2">
+          <button class="px-3 py-1.5 text-xs font-bold text-stone-600 hover:bg-stone-200 rounded transition-colors" (click)="cancelEditTag()">Cancelar</button>
+          <button class="px-3 py-1.5 text-xs font-bold bg-stone-800 text-white hover:bg-stone-900 rounded transition-colors" (click)="saveTag()">Salvar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
