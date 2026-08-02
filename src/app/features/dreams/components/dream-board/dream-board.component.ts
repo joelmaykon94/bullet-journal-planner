@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -33,11 +33,16 @@ export class DreamBoardComponent implements OnInit, OnDestroy {
   
   private sub?: Subscription;
 
-  constructor(private dreamsService: DreamsService, private modalService: ModalService) {}
+  constructor(
+    private dreamsService: DreamsService,
+    private modalService: ModalService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.sub = this.dreamsService.dreams$.subscribe(data => {
       this.dreams = data;
+      this.cdr.detectChanges();
     });
   }
 
@@ -99,6 +104,7 @@ export class DreamBoardComponent implements OnInit, OnDestroy {
       this.dreamsService.addDream(this.title, this.category, this.icon, this.description);
     }
     this.resetForm();
+    this.cdr.detectChanges();
   }
 
   handleConquerClick(id: string, conquered: boolean) {
@@ -106,13 +112,20 @@ export class DreamBoardComponent implements OnInit, OnDestroy {
       this.celebratingId = id;
       setTimeout(() => {
         this.celebratingId = null;
+        this.cdr.detectChanges();
       }, 2500);
     }
     this.dreamsService.toggleDreamConquered(id);
+    this.cdr.detectChanges();
   }
 
   async handleDeleteDream(id: string, title: string) {
     if (await this.modalService.confirm(`Deseja realmente remover o sonho "${title}" do seu Quadro dos Sonhos?`, 'Remover Sonho', 'Remover', 'Cancelar')) {
+      // Immediate visual removal from component state
+      this.dreams = this.dreams.filter(d => d.id !== id);
+      this.cdr.detectChanges();
+      
+      // Perform service deletion & instant cloud sync
       this.dreamsService.deleteDream(id);
     }
   }
