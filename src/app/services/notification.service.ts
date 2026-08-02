@@ -175,4 +175,26 @@ export class NotificationService {
   clearLatestNotification() {
     this.latestNotificationSubject.next(null);
   }
+
+  sendCustomNotification(title: string, message: string) {
+    const notif: AppNotification = {
+      id: Math.random().toString(36).substring(2, 9),
+      title,
+      message,
+      createdAt: new Date(),
+      read: false
+    };
+
+    const current = this.notificationsSubject.value;
+    this.notificationsSubject.next([notif, ...current]);
+    this.saveNotifications();
+    this.latestNotificationSubject.next(notif);
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body: message,
+        icon: '/assets/icons/icon-192x192.png'
+      });
+    }
+  }
 }

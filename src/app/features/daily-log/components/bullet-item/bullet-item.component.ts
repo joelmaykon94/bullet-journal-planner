@@ -42,6 +42,13 @@ export interface ContentChunk {
                <ng-container *ngIf="item.endTime">- {{ item.endTime }}</ng-container>
              </span>
 
+             <!-- Pomodoro Active Time & Count Badge -->
+             <span *ngIf="item.type === 'task' && ($any(item).pomodoroCount || $any(item).timeSpentSeconds)" 
+                   class="bg-amber-950/80 text-amber-300 px-1.5 py-0.5 rounded text-[10px] font-bold font-mono inline-flex items-center gap-1 shadow-sm border border-amber-800/60 mx-1">
+               <span *ngIf="$any(item).pomodoroCount">🍅 {{ $any(item).pomodoroCount }}</span>
+               <span *ngIf="$any(item).timeSpentSeconds">⏱️ {{ formatTimeSpent($any(item).timeSpentSeconds) }}</span>
+             </span>
+
              <ng-container *ngFor="let chunk of contentChunks">
                <span *ngIf="chunk.type === 'text'" class="whitespace-pre-wrap">{{ chunk.value }}</span>
                
@@ -335,5 +342,18 @@ export class BulletItemComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
     this.delete.emit(this.item.id);
+  }
+
+  formatTimeSpent(seconds: number = 0): string {
+    if (!seconds || seconds <= 0) return '0s';
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    if (mins < 60) {
+      const secs = seconds % 60;
+      return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+    }
+    const hrs = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return remMins > 0 ? `${hrs}h ${remMins}m` : `${hrs}h`;
   }
 }

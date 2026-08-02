@@ -1,0 +1,344 @@
+<!-- Sidebar Pomodoro Widget Container -->
+<div class="sidebar-pomodoro-wrapper w-full px-2 my-2 select-none relative">
+  
+  <!-- MAXIMIZED CARD (Matching img.png with High-Contrast Typography) -->
+  <div *ngIf="isExpanded" 
+       class="w-full bg-[#18181b] border-2 border-stone-800 text-stone-100 rounded-2xl p-3.5 shadow-2xl relative flex flex-col items-center gap-3 transition-all duration-300">
+    
+    <!-- Top Header: Mode Badge & Minimize Button -->
+    <div class="w-full flex items-center justify-between text-stone-300">
+      <div class="flex items-center gap-2 text-xs font-bold tracking-wider uppercase bg-stone-900 px-2.5 py-1 rounded-full border border-stone-800">
+        <span [ngClass]="mode === 'focus' ? 'text-amber-400' : 'text-emerald-400'" class="text-sm">●</span>
+        <span class="text-stone-100 font-mono text-[11px]">{{ getModeLabel() }}</span>
+      </div>
+      
+      <button class="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow"
+              (click)="toggleExpand()" 
+              title="Minimizar Widget">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Center Circular Timer Ring -->
+    <div class="relative w-32 h-32 flex items-center justify-center my-0.5">
+      <svg class="w-full h-full pomo-circle-svg" viewBox="0 0 110 110">
+        <defs>
+          <linearGradient id="pomoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="100%" stop-color="#ef4444" />
+          </linearGradient>
+          <linearGradient id="breakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#10b981" />
+            <stop offset="100%" stop-color="#06b6d4" />
+          </linearGradient>
+        </defs>
+        <circle class="pomo-circle-bg" cx="55" cy="55" r="48" />
+        <circle class="pomo-circle-progress" 
+                cx="55" cy="55" r="48" 
+                [attr.stroke]="mode === 'focus' ? 'url(#pomoGradient)' : 'url(#breakGradient)'"
+                stroke-dasharray="301.59" 
+                [attr.stroke-dashoffset]="getProgressOffset()" />
+      </svg>
+
+      <!-- Content inside the Circle -->
+      <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <!-- Mode Icon (Eye for focus, Coffee for break) -->
+        <div class="text-stone-300 mb-0.5">
+          <svg *ngIf="mode === 'focus'" class="w-5 h-5 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          <svg *ngIf="mode !== 'focus'" class="w-5 h-5 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3" />
+          </svg>
+        </div>
+
+        <!-- High-Contrast Timer Digits -->
+        <div class="font-bold text-2xl tracking-tight text-white leading-none mb-1 font-mono">
+          {{ formatTime(timeLeft) }}
+        </div>
+
+        <!-- 4 Session Indicators -->
+        <div class="flex items-center gap-1.5 my-1">
+          <span *ngFor="let s of [1,2,3,4]" 
+                class="w-2 h-2 rounded-full transition-colors"
+                [ngClass]="s <= sessionCount ? (mode === 'focus' ? 'bg-amber-400 shadow-sm' : 'bg-emerald-400 shadow-sm') : 'bg-stone-700'">
+          </span>
+        </div>
+
+        <span class="text-[10px] font-bold tracking-widest text-stone-300 uppercase">
+          {{ getModeLabel() }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Controls Row (Reset | Start/Pause | Settings) -->
+    <div class="w-full flex items-center justify-between px-1 mt-1">
+      <!-- Reset button -->
+      <button class="w-9 h-9 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow border border-stone-700/60"
+              (click)="resetTimer()" 
+              title="Reiniciar Timer">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+
+      <!-- Main Action Button (START / PAUSE) -->
+      <button *ngIf="timerState !== 'running'" 
+              class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold py-2 px-7 rounded-full shadow-lg transition-all transform active:scale-95 cursor-pointer uppercase tracking-wider border border-amber-400/40"
+              (click)="startTimer()">
+        START
+      </button>
+      <button *ngIf="timerState === 'running'" 
+              class="bg-stone-700 hover:bg-stone-600 text-white text-xs font-bold py-2 px-7 rounded-full shadow-lg transition-all transform active:scale-95 cursor-pointer uppercase tracking-wider border border-stone-500/40"
+              (click)="pauseTimer()">
+        PAUSE
+      </button>
+
+      <!-- Settings button -->
+      <button class="w-9 h-9 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow border border-stone-700/60"
+              (click)="openSettings()" 
+              title="Configurações">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Task Association Bar (FULL WIDTH FOR TASK NAME) -->
+    <div class="w-full bg-stone-900 hover:bg-stone-850 rounded-xl p-2.5 flex items-center justify-between border border-amber-500/30 hover:border-amber-500/70 transition-all cursor-pointer shadow-md group"
+         (click)="toggleTaskDropdown()">
+      
+      <div class="flex items-center gap-1.5 truncate flex-1 pr-1">
+        <span class="text-amber-400 text-xs shrink-0 font-bold">📌</span>
+        <span class="text-xs font-semibold text-stone-100 group-hover:text-amber-200 truncate" title="{{ getAssociatedTaskName() }}">
+          {{ getAssociatedTaskName() }}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span *ngIf="getAssociatedTaskTimeSpent()" class="bg-amber-950/90 text-amber-300 px-2 py-0.5 rounded-md text-[11px] font-bold font-mono border border-amber-700/50">
+          ⏱️ {{ getAssociatedTaskTimeSpent() }}
+        </span>
+        <span *ngIf="getAssociatedTaskPomoCount() > 0" class="text-amber-400 font-bold text-xs">
+          🍅 {{ getAssociatedTaskPomoCount() }}
+        </span>
+        
+        <svg class="w-4 h-4 text-stone-400 group-hover:text-white transition-transform duration-200 ml-1"
+             [class.rotate-90]="taskDropdownOpen"
+             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- MINIMIZED CARD (Matching img.png bottom bar state) -->
+  <div *ngIf="!isExpanded" 
+       class="w-full bg-[#18181b] border-2 border-stone-800 text-stone-100 rounded-xl p-2.5 px-3 shadow-md relative flex flex-col gap-1.5 transition-all duration-300">
+    
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-2 truncate pr-1">
+        <span class="font-bold text-sm font-mono text-white tracking-tight shrink-0">
+          {{ formatTime(timeLeft) }}
+        </span>
+        <span class="text-[10px] font-bold text-amber-400 tracking-wider uppercase bg-amber-950 px-2 py-0.5 rounded border border-amber-800/60 shrink-0">
+          {{ getModeLabel() }}
+        </span>
+        <span *ngIf="associatedTaskId && getAssociatedTaskTimeSpent()" class="text-xs text-amber-300 truncate font-mono font-bold">
+          ⏱️ {{ getAssociatedTaskTimeSpent() }}
+        </span>
+      </div>
+
+      <button class="w-7 h-7 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow"
+              (click)="toggleExpand()" 
+              title="Expandir Pomodoro">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mini Progress Line -->
+    <div class="w-full h-1.5 bg-stone-800 rounded-full overflow-hidden">
+      <div class="h-full bg-gradient-to-r from-amber-500 to-rose-500 transition-all duration-300"
+           [style.width.%]="getProgressPercent()">
+      </div>
+    </div>
+  </div>
+
+  <!-- DROPDOWN OPENING TOWARDS THE INSIDE OF THE SCREEN (Right side on Desktop, centered on Mobile) -->
+  <ng-container *ngIf="taskDropdownOpen">
+    <!-- Backdrop to close on click outside -->
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[99998]" (click)="taskDropdownOpen = false"></div>
+
+    <!-- Floating Task Picker Panel opening towards the inside of the workspace -->
+    <div class="fixed left-4 right-4 bottom-20 lg:left-[275px] lg:right-auto lg:bottom-16 w-auto lg:w-96 bg-[#1c1a18] border-2 border-stone-700 text-stone-100 rounded-2xl p-4 shadow-[0_25px_60px_rgba(0,0,0,0.85)] z-[99999] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150 max-h-[75vh]"
+         (click)="$event.stopPropagation()">
+      
+      <div class="flex items-center justify-between border-b border-stone-800 pb-2.5">
+        <span class="flex items-center gap-2 font-bold text-sm text-stone-100">
+          <svg class="w-4 h-4 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          Selecionar Tarefa para Foco
+        </span>
+        <span class="text-xs text-stone-400 font-mono">Pressione ESC para fechar</span>
+      </div>
+
+      <!-- Search Input -->
+      <div class="relative">
+        <svg class="w-4 h-4 text-stone-400 absolute left-3 top-2.5 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" 
+               [(ngModel)]="taskSearchQuery"
+               placeholder="Buscar tarefa pelo nome..." 
+               class="w-full bg-stone-900 border border-stone-700 rounded-xl pl-9 pr-3 py-2 text-xs text-stone-100 placeholder-stone-400 outline-none focus:border-amber-500 font-sans shadow-inner" 
+               autofocus />
+      </div>
+
+      <!-- Task Options List -->
+      <div class="overflow-y-auto max-h-60 flex flex-col gap-1.5 pr-1 my-1">
+        
+        <!-- Option: Free timer -->
+        <div class="p-2.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors border"
+             [ngClass]="associatedTaskId === null ? 'bg-amber-950/60 border-amber-500/70 text-amber-200 font-bold' : 'bg-stone-900/60 hover:bg-stone-800 border-stone-800 text-stone-300'"
+             (click)="selectTask(null)">
+          <span class="font-medium">Nenhuma tarefa (Timer livre)</span>
+          <span *ngIf="associatedTaskId === null" class="text-amber-400 font-bold text-sm">✓</span>
+        </div>
+
+        <!-- Task List -->
+        <div *ngFor="let task of filteredTasks" 
+             class="p-2.5 rounded-xl text-xs flex items-center justify-between gap-3 cursor-pointer transition-colors border"
+             [ngClass]="associatedTaskId === task.id ? 'bg-amber-950/60 border-amber-500/70 text-amber-200 font-bold' : 'bg-stone-900/60 hover:bg-stone-800 border-stone-800 text-stone-200'"
+             (click)="selectTask(task.id)">
+          
+          <div class="truncate flex-1">
+            <span class="text-xs font-sans font-semibold truncate block text-stone-100">{{ task.content }}</span>
+            <span *ngIf="task.date" class="text-[10px] text-stone-400 font-mono">{{ task.date }} <ng-container *ngIf="task.time">às {{ task.time }}</ng-container></span>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0 font-mono text-[11px]">
+            <span *ngIf="$any(task).timeSpentSeconds" class="bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded font-bold border border-amber-800/40">
+              ⏱️ {{ formatTimeSpent($any(task).timeSpentSeconds) }}
+            </span>
+            <span *ngIf="$any(task).pomodoroCount" class="text-amber-400 font-bold">
+              🍅 {{ $any(task).pomodoroCount }}
+            </span>
+            <span *ngIf="associatedTaskId === task.id" class="text-amber-400 font-bold ml-1 text-sm">✓</span>
+          </div>
+        </div>
+
+        <div *ngIf="filteredTasks.length === 0" class="p-4 text-center text-xs text-stone-400">
+          Nenhuma tarefa encontrada.
+        </div>
+      </div>
+
+      <div class="flex justify-end border-t border-stone-800 pt-2">
+        <button class="bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold py-1.5 px-4 rounded-xl transition-colors cursor-pointer"
+                (click)="taskDropdownOpen = false">
+          Fechar (ESC)
+        </button>
+      </div>
+
+    </div>
+  </ng-container>
+
+</div>
+
+<!-- SETTINGS MODAL OVERLAY (Matching img_1.png) -->
+<div *ngIf="settingsOpen" 
+     class="fixed inset-0 bg-black/75 backdrop-blur-xs z-[99999] flex items-center justify-center p-4">
+  
+  <div class="bg-[#18181b] border-2 border-stone-700 text-white rounded-2xl w-80 p-5 shadow-2xl flex flex-col gap-4 relative animate-in fade-in zoom-in-95 duration-200">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between border-b border-stone-800 pb-3">
+      <h3 class="font-serif text-base font-bold text-white tracking-wide">Configurações de Foco</h3>
+      <button class="w-7 h-7 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              (click)="closeSettings()">
+        ✕
+      </button>
+    </div>
+
+    <!-- Duration Options List (Matching img_1.png layout) -->
+    <div class="flex flex-col gap-3">
+      
+      <!-- Focus Session -->
+      <div class="flex items-center justify-between text-sm py-1 border-b border-stone-800/60">
+        <span class="text-stone-200 font-medium">Sessão de Foco</span>
+        <div class="flex items-center gap-2">
+          <button class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold flex items-center justify-center transition-colors cursor-pointer shadow"
+                  (click)="adjustConfig('focusMinutes', -5)">
+            -
+          </button>
+          <span class="font-mono font-bold text-amber-400 w-12 text-center text-sm">{{ config.focusMinutes }} min</span>
+          <button class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold flex items-center justify-center transition-colors cursor-pointer shadow"
+                  (click)="adjustConfig('focusMinutes', 5)">
+            +
+          </button>
+        </div>
+      </div>
+
+      <!-- Short Break -->
+      <div class="flex items-center justify-between text-sm py-1 border-b border-stone-800/60">
+        <span class="text-stone-200 font-medium">Pausa Curta</span>
+        <div class="flex items-center gap-2">
+          <button class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold flex items-center justify-center transition-colors cursor-pointer shadow"
+                  (click)="adjustConfig('shortBreakMinutes', -1)">
+            -
+          </button>
+          <span class="font-mono font-bold text-emerald-400 w-12 text-center text-sm">{{ config.shortBreakMinutes }} min</span>
+          <button class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold flex items-center justify-center transition-colors cursor-pointer shadow"
+                  (click)="adjustConfig('shortBreakMinutes', 1)">
+            +
+          </button>
+        </div>
+      </div>
+
+      <!-- Long Break -->
+      <div class="flex items-center justify-between text-sm py-1 border-b border-stone-800/60">
+        <span class="text-stone-200 font-medium">Pausa Longa</span>
+        <div class="flex items-center gap-2">
+          <button class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold flex items-center justify-center transition-colors cursor-pointer shadow"
+                  (click)="adjustConfig('longBreakMinutes', -5)">
+            -
+          </button>
+          <span class="font-mono font-bold text-cyan-400 w-12 text-center text-sm">{{ config.longBreakMinutes }} min</span>
+          <button class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold flex items-center justify-center transition-colors cursor-pointer shadow"
+                  (click)="adjustConfig('longBreakMinutes', 5)">
+            +
+          </button>
+        </div>
+      </div>
+
+      <!-- Long Break After -->
+      <div class="flex items-center justify-between text-sm py-1">
+        <span class="text-stone-200 font-medium">Pausa Longa Após</span>
+        <div class="flex items-center gap-2">
+          <button class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold flex items-center justify-center transition-colors cursor-pointer shadow"
+                  (click)="adjustConfig('longBreakAfter', -1)">
+            -
+          </button>
+          <span class="font-mono font-bold text-stone-100 w-12 text-center text-sm">{{ config.longBreakAfter }} Sess.</span>
+          <button class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold flex items-center justify-center transition-colors cursor-pointer shadow"
+                  (click)="adjustConfig('longBreakAfter', 1)">
+            +
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Save / Apply Button -->
+    <button class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold py-2.5 rounded-xl shadow-lg transition-transform active:scale-95 cursor-pointer mt-2 uppercase tracking-wider"
+            (click)="closeSettings()">
+      Salvar Configurações
+    </button>
+  </div>
+</div>

@@ -11,6 +11,7 @@ import { CollectionsLibraryComponent } from './features/collections/components/c
 import { BudgetPlannerComponent } from './features/budget/components/budget-planner/budget-planner.component';
 import { FutureLogComponent } from './features/future-log/components/future-log/future-log.component';
 import { DreamBoardComponent } from './features/dreams/components/dream-board/dream-board.component';
+import { SidebarPomodoroComponent } from './features/focus/components/sidebar-pomodoro/sidebar-pomodoro.component';
 import { SettingsComponent } from './features/settings/components/settings/settings.component';
 import { AuthScreenComponent } from './features/auth/components/auth-screen/auth-screen.component';
 import { ModalComponent } from './shared/components/modal/modal.component';
@@ -41,7 +42,7 @@ interface LocalWeather {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent, WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent, FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent],
+  imports: [CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent, WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent, FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent, SidebarPomodoroComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   encapsulation: ViewEncapsulation.None

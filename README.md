@@ -130,6 +130,12 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ⏱️ **v1.5.0** — *Widget Global de Pomodoro no Menu Lateral & Cronometragem Ativa de Tarefas* (02/08/2026)
+- **Pomodoro Global Integrado:** Novo widget visual de Pomodoro posicionado no menu lateral (entre Sonhos e Perfil do Usuário), acessível e ativo independentemente da página em navegação.
+- **Associação de Tarefas e Cronometragem Ativa:** Escolha interativa de tarefas do Daily Log via seletor flutuante com busca ao vivo (`🔍`), contabilizando automaticamente segundos ativos `(⏱️)` e ciclos concluídos `(🍅)` na tarefa.
+- **Controles e Modais no Estilo Dark Premium:** Botões de Start, Pause, Reset, minimização em 1 clique e modal de configurações de tempo (Foco, Pausas curtas/longas).
+- **Exibição dos Selos no Daily Log:** Exibição imediata de selos dourados de tempo dedicado e pomodoros acumulados nas tarefas do Daily Log.
+
 ### ⚙️ **v1.4.2** — *Correção de Cache do Service Worker e Sincronização de Estilos CSS* (02/08/2026)
 - **Atualização Instantânea de Estilos em Produção:** Atualizado o Service Worker (`bujo-focus-cache-v3`) para forçar a limpeza automática de arquivos CSS antigos em cache e garantir que o novo visual seja carregado imediatamente em produção.
 - **Sincronização de Versões:** Alinhamento da geração automática do código de versão para evitar divergências entre o ambiente local e a produção.
