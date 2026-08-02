@@ -1,0 +1,66 @@
+<!-- Minimalist Habit Tracker Bar at the Top (Streaks & Notion Inspired) -->
+<div class="habit-matrix-top mb-3.5 pb-2.5 border-b border-[#e2d5c3]/80 dark:border-[#e3dac9]/15 flex items-center justify-between gap-2.5 overflow-x-auto select-none no-scrollbar">
+  
+  <!-- Left Side: Circular Progress Summary & Label -->
+  <div class="flex items-center gap-2 shrink-0">
+    <div class="w-7 h-7 rounded-full flex items-center justify-center font-mono font-extrabold text-[10px] transition-all"
+         [ngClass]="getCompletedCount() === habits.length && habits.length > 0 
+           ? 'bg-emerald-600 text-white shadow-xs' 
+           : 'bg-[#f2ebdf] dark:bg-[#1c1917] text-[#382c25] dark:text-[#e3dac9] border border-[#e2d5c3] dark:border-[#e3dac9]/20'">
+      {{ getCompletedCount() }}/{{ habits.length }}
+    </div>
+    <span class="text-xs font-mono font-bold uppercase tracking-wider text-[#7a6656] dark:text-[#afa393] hidden md:inline">
+      Hábitos
+    </span>
+  </div>
+
+  <!-- Middle: Horizontal Habit Chips Matrix -->
+  <div class="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar flex-1">
+    <div *ngFor="let habit of habits" 
+         (click)="toggleHabit(habit)"
+         [ngClass]="isCompleted(habit) 
+           ? 'bg-[#59493d] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] border-[#47392f] dark:border-[#e3dac9] shadow-xs font-bold' 
+           : 'bg-[#faf7f5] dark:bg-[#1c1917] text-[#382c25] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20 hover:bg-[#f2ebdf] dark:hover:bg-[#e3dac9]/10 font-medium'"
+         class="group px-2.5 py-1 rounded-full border text-xs flex items-center gap-1.5 cursor-pointer transition-all duration-150 active:scale-95 shrink-0 shadow-2xs">
+      
+      <!-- Micro Indicator Dot / Check mark -->
+      <span [ngClass]="isCompleted(habit) ? 'bg-[#fdfbf7] dark:bg-[#2a2724] text-[#59493d] dark:text-[#e3dac9]' : 'bg-transparent border border-[#7a6656] dark:border-[#afa393] text-transparent'"
+            class="w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold text-[8px] shrink-0 transition-all">
+        ✓
+      </span>
+
+      <!-- Habit Text -->
+      <span class="font-sans text-xs whitespace-nowrap leading-none">{{ habit }}</span>
+
+      <!-- Remove Icon (Only on hover/focus) -->
+      <button class="opacity-0 group-hover:opacity-100 text-[10px] hover:text-rose-500 transition-opacity -mr-1 ml-0.5"
+              (click)="removeHabit(habit, $event)"
+              title="Excluir hábito">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Right Side: + Quick Add Habit Button -->
+  <div class="flex items-center gap-1 shrink-0">
+    <div *ngIf="showAddInput" class="flex items-center gap-1 animate-in fade-in duration-150">
+      <input type="text" 
+             [(ngModel)]="newHabitName" 
+             placeholder="Novo hábito..." 
+             class="bg-[#faf7f5] dark:bg-[#2a2724] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg px-2 py-1 text-xs text-[#292524] dark:text-[#f5f5f4] outline-none focus:border-[#59493d] font-sans w-28 sm:w-36"
+             (keydown.enter)="addHabit()" />
+      <button class="bg-[#59493d] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold px-2 py-1 rounded-lg cursor-pointer shrink-0"
+              (click)="addHabit()">
+        +
+      </button>
+    </div>
+
+    <button *ngIf="!showAddInput" 
+            class="w-7 h-7 rounded-full bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] border border-[#e2d5c3] dark:border-[#e3dac9]/20 flex items-center justify-center transition-colors cursor-pointer text-xs font-bold shadow-2xs"
+            (click)="showAddInput = true"
+            title="Adicionar hábito à régua">
+      +
+    </button>
+  </div>
+
+</div>

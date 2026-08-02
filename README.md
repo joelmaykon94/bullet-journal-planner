@@ -130,6 +130,11 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ✨ **v1.8.0** — *Recurso 3: Régua Diária de Hábitos (Habit Tracker Matrix)* (02/08/2026)
+- **Barra de Hábitos Minimalista no Topo (`HabitTrackerMatrixComponent`):** Posicionada no topo do Log Diário (estilo Streaks e Notion), permitindo a marcação em 1-clique dos hábitos diários sem poluir a lista de tarefas.
+- **Micro-Indicadores e Badge de Progresso:** Badge circular com contador de hábitos cumpridos (`3/4`) que fica verde-esmeralda ao atingir 100% de hábitos do dia.
+- **Gestão em Tempo Real:** Adição e remoção dinâmica de hábitos personalizados direto na régua.
+
 ### ⏳ **v1.7.0** — *Recurso 2: Painel Centralizado de "@aguardando" e Delegados* (02/08/2026)
 - **Central de Cobranças (`DelegatesPanelComponent`):** Nova aba dedicada no menu lateral (`Cobranças / Delegados`) com badge dinâmico que agrupa entregas pendentes por responsável ou instituição (`@pessoa`).
 - **Ações GTD em 1-Clique:** Botão `🔔 Cobrar Hoje` para enviar lembretes diretos para o Log Diário de Hoje, `✓ Recebido` para concluir entregas e `➕ Nova Cobrança`.

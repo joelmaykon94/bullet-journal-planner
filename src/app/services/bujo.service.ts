@@ -254,7 +254,14 @@ export class BujoService {
 
   // Habits Actions
   getHabits(): string[] {
-    return this.habitsSubject.value;
+    const habits = this.habitsSubject.value;
+    if (!habits || habits.length === 0) {
+      const defaultHabits = ['💧 Beber 2L de Água', '🏋️ Exercício Físico', '🧘 Meditação', '📚 15min de Leitura'];
+      this.habitsSubject.next(defaultHabits);
+      this.saveToStorage('bujo_habits', defaultHabits);
+      return defaultHabits;
+    }
+    return habits;
   }
 
   addHabit(habit: string) {
@@ -264,6 +271,42 @@ export class BujoService {
       this.habitsSubject.next(newHabits);
       this.saveToStorage('bujo_habits', newHabits);
     }
+  }
+
+  removeHabit(habit: string) {
+    const habits = this.getHabits().filter(h => h !== habit);
+    this.habitsSubject.next(habits);
+    this.saveToStorage('bujo_habits', habits);
+  }
+
+  getHabitLogs(): Record<string, string[]> {
+    return this.habitLogsSubject.value || {};
+  }
+
+  isHabitCompleted(dateStr: string, habitName: string): boolean {
+    const logs = this.getHabitLogs();
+    const dateLogs = logs[dateStr] || [];
+    return dateLogs.includes(habitName);
+  }
+
+  toggleHabitForDate(dateStr: string, habitName: string): boolean {
+    const logs = { ...this.getHabitLogs() };
+    const dateLogs = logs[dateStr] ? [...logs[dateStr]] : [];
+
+    const index = dateLogs.indexOf(habitName);
+    let isCompleted = false;
+    if (index >= 0) {
+      dateLogs.splice(index, 1);
+      isCompleted = false;
+    } else {
+      dateLogs.push(habitName);
+      isCompleted = true;
+    }
+
+    logs[dateStr] = dateLogs;
+    this.habitLogsSubject.next(logs);
+    this.saveToStorage('bujo_habit_logs', logs);
+    return isCompleted;
   }
 
   // Budget storage items getters (returns arrays)

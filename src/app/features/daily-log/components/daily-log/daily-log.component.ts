@@ -5,11 +5,12 @@ import { Subscription } from 'rxjs';
 import { BujoService, BujoItem } from '../../../../services/bujo.service';
 import { parseSmartTask, getLocalDateString } from '../../../../utils/smartParser';
 import { BulletItemComponent } from '../bullet-item/bullet-item.component';
+import { HabitTrackerMatrixComponent } from '../habit-tracker-matrix/habit-tracker-matrix.component';
 
 @Component({
   selector: 'app-daily-log',
   standalone: true,
-  imports: [CommonModule, FormsModule, BulletItemComponent],
+  imports: [CommonModule, FormsModule, BulletItemComponent, HabitTrackerMatrixComponent],
   styles: [`
     :host {
       display: block;
@@ -136,6 +137,9 @@ import { BulletItemComponent } from '../bullet-item/bullet-item.component';
               </button>
             </div>
           </div>
+
+          <!-- Minimalist Habit Tracker Bar at the Top -->
+          <app-habit-tracker-matrix [selectedDate]="selectedDate"></app-habit-tracker-matrix>
 
           <!-- Rapid Logging Input -->
           <form (submit)="handleAddItem($event)" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
