@@ -128,26 +128,26 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 ## 📜 Changelog de Releases & Versões Aprovadas
 
-Registro de todas as versões testadas, validadas e aprovadas pelo usuário:
+Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
-### 🚀 **v1.4.0** — *Preloader Motivacional, Ícone PWA & Limpeza da Codebase* (02/08/2026)
-- **Preloader com Frases Motivacionais:** Adicionada tela de carregamento de 2.0s com 365 frases motivacionais de 5 palavras para recepção diária sem FOUC.
-- **Ícone Responsivo Sem Distorção:** Renderização otimizada com `<img srcset>` utilizando os ícones PWA nativos (`128x128`, `192x192`, `512x512`).
-- **Sincronização com API de Clima:** Preloader aguarda o carregamento dos dados de geolocalização e Open-Meteo com fallback de segurança de 4.0s.
-- **Limpeza de Código Legado:** Remoção de 8 arquivos rascunho e assets não utilizados, reduzindo o bundle de CSS em ~36 kB.
+### 🚀 **v1.4.0** — *Tela de Recepção Motivacional, Ícones Nítidos e Melhoria de Desempenho* (02/08/2026)
+- **Tela de Boas-Vindas Motivacional:** Adicionada uma tela inicial de carregamento de 2 segundos que sorteia uma entre 365 frases motivacionais curtas para inspirar o seu dia a cada atualização.
+- **Ícone Nítido em Qualquer Tela:** O ícone do aplicativo agora se ajusta automaticamente a computadores, celulares e telas de alta resolução sem ficar esticado ou borrado.
+- **Carregamento Inteligente do Clima:** A tela inicial aguarda o carregamento das informações do tempo e da sua cidade para o aplicativo abrir totalmente pronto para uso.
+- **Navegação Mais Leve e Rápida:** Limpeza interna no sistema que deixou o aplicativo mais leve e rápido para carregar.
 
-### ⚡ **v1.3.1** — *Correção de Exclusão Instantânea do Quadro dos Sonhos* (02/08/2026)
-- **Exclusão Instantânea (0ms):** Remoção visual síncrona de itens no `DreamBoardComponent` com disparo imediato de `ChangeDetectorRef`.
-- **Prevenção de Ressuscitação de Itens:** Gravação na lixeira (`deletedAt`) e disparo síncrono de `syncLocalToCloud` para garantir que o item permaneça excluído após F5 em produção.
+### ⚡ **v1.3.1** — *Exclusão Instantânea no Quadro dos Sonhos* (02/08/2026)
+- **Exclusão Instantânea de Sonhos:** Ao apagar uma meta ou sonho no Quadro dos Sonhos, o item desaparece da tela no mesmo instante sem nenhum travamento.
+- **Garantia de Remoção Permanente:** Corrigido o comportamento em que um sonho excluído voltava a aparecer na tela ao recarregar a página (F5) ou ao sincronizar com a nuvem.
 
-### 🎨 **v1.3.0** — *Ajustes de Layout da Sidebar & Cards do Dashboard* (02/08/2026)
-- **Sidebar Sem Scroll Vertical:** Redução de fontes (13.5px) e paddings para caber 100% dos 9 itens na tela do Desktop.
-- **Grade de Cards do Dashboard:** Alinhamento dos 8 cards de acesso rápido em **1 linha horizontal no Desktop (`lg:grid-cols-8`)** e **2 linhas no Mobile (`grid-cols-4`)**.
+### 🎨 **v1.3.0** — *Ajustes de Layout no Menu Lateral e no Painel Inicial* (02/08/2026)
+- **Menu Lateral Ajustado:** Todos os itens do menu lateral agora cabem perfeitamente na tela do computador sem precisar rolar a página para baixo.
+- **Painel Inicial Mais Organizado:** No computador, os botões de acesso rápido ficam alinhados em uma única linha horizontal elegante. No celular, ficam organizados em duas linhas de fácil toque.
 
-### 🌟 **v1.2.1** — *Hotfix da Sincronização da Lixeira e Exclusão de Tarefas em Nuvem* (02/08/2026)
-- **Correção da Flag `allowDeleted`:** Ajuste no `mergeArraysByTimestamp` para que itens deletados na lixeira não sejam descartados durante o merge da nuvem, resolvendo o bug de tarefas excluídas que reapareciam após a sincronização.
+### 🌟 **v1.2.1** — *Correção na Sincronização de Tarefas Excluídas* (02/08/2026)
+- **Sincronização Confiável da Lixeira:** Resolvido o problema em que tarefas apagadas no aplicativo voltavam a aparecer na lista ao sincronizar com a nuvem ou ao acessar em outro dispositivo.
 
-### 🏆 **v1.2.0** — *Quadro dos Sonhos (Dream Board CRUD) & Exportador Markdown* (02/08/2026)
-- **CRUD do Dream Board:** Módulo completo de Quadro dos Sonhos em `/dreams` (Criar, Editar, Conquistar, Deletar e Filtrar por Categoria).
-- **Exportador Markdown para NotebookLM:** Serviço `MarkdownExporterService` e botão em Settings para baixar o contexto consolidado em `.md`.
-- **Navegação Integrada:** Aba "Sonhos" na barra lateral e botão de acesso rápido no Dashboard ao lado de Coleções.
+### 🏆 **v1.2.0** — *Quadro dos Sonhos (Dream Board) e Exportação para Inteligência Artificial* (02/08/2026)
+- **Quadro dos Sonhos (Dream Board):** Novo espaço exclusivo para cadastrar, editar, organizar por categorias e marcar como "Conquistado" todos os seus sonhos e objetivos de longo prazo.
+- **Exportação de Dados para Inteligência Artificial:** Botão nas Configurações que permite baixar todo o histórico e planejamento do seu aplicativo em formato texto (`.md`) para enviar ao NotebookLM ou a outras ferramentas de IA.
+- **Acesso Rápido Facilitado:** Novo botão "Sonhos" inserido no menu principal e no painel inicial do sistema.
