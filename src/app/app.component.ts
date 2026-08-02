@@ -104,16 +104,42 @@ export class App implements OnInit {
     setInterval(() => this.currentTime.set(new Date()), 1000);
   }
 
+  private isPreloaderDismissed = false;
+  private preloaderStartTime = Date.now();
+
   ngOnInit() {
     if (this.isDark()) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    // Safety fallback: dismiss preloader after max 4.0s if weather or geolocation takes long
+    setTimeout(() => this.dismissPreloader(), 4000);
+
     this.fetchLocalWeather();
     this.notificationService.clickedNotification$.subscribe(notif => {
       this.handleNotificationClick(notif);
     });
+  }
+
+  private dismissPreloader() {
+    if (this.isPreloaderDismissed) return;
+    this.isPreloaderDismissed = true;
+
+    const MIN_DISPLAY_MS = 2000; // Garantir no mínimo 2 segundos para leitura da frase
+    const elapsed = Date.now() - this.preloaderStartTime;
+    const remainingDelay = Math.max(0, MIN_DISPLAY_MS - elapsed);
+
+    setTimeout(() => {
+      if (typeof document !== 'undefined') {
+        const preloader = document.getElementById('app-preloader');
+        if (preloader) {
+          preloader.classList.add('fade-out');
+          setTimeout(() => preloader.remove(), 500);
+        }
+      }
+    }, remainingDelay);
   }
 
   private fetchLocalWeather() {
@@ -157,12 +183,18 @@ export class App implements OnInit {
             });
           } catch (e) {
             console.error('Failed to load local weather:', e);
+          } finally {
+            this.dismissPreloader();
           }
         },
         (error) => {
           console.error('Geolocation error:', error);
-        }
+          this.dismissPreloader();
+        },
+        { timeout: 3000 }
       );
+    } else {
+      this.dismissPreloader();
     }
   }
 
