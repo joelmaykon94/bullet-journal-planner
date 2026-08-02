@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ⚡ **v1.5.1** — *Sincronização em Tempo Real do Tempo de Foco no Log Diário* (02/08/2026)
+- **Atualização Instantânea no Log Diário:** Correção no ciclo de vida dos componentes para renderizar instantaneamente os selos de tempo acumulado (`⏱️`) e pomodoros (`🍅`) nas tarefas do Log Diário/Agenda assim que o timer é pausado, reiniciado, alterado ou finalizado.
+- **Selo com Visual Destacado:** Estilização de alto contraste (dourado/âmbar em negrito) garantindo leitura clara e nítida no tema claro e escuro.
+
 ### ⏱️ **v1.5.0** — *Widget Global de Pomodoro no Menu Lateral & Cronometragem Ativa de Tarefas* (02/08/2026)
 - **Pomodoro Global Integrado:** Novo widget visual de Pomodoro posicionado no menu lateral (entre Sonhos e Perfil do Usuário), acessível e ativo independentemente da página em navegação.
 - **Associação de Tarefas e Cronometragem Ativa:** Escolha interativa de tarefas do Daily Log via seletor flutuante com busca ao vivo (`🔍`), contabilizando automaticamente segundos ativos `(⏱️)` e ciclos concluídos `(🍅)` na tarefa.

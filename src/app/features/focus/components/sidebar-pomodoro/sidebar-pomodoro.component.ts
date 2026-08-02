@@ -77,6 +77,7 @@ export class SidebarPomodoroComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.syncActiveTaskTime();
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
@@ -126,6 +127,9 @@ export class SidebarPomodoroComponent implements OnInit, OnDestroy {
   }
 
   selectTask(taskId: string | null) {
+    // Sincroniza a tarefa anterior antes de mudar a seleção
+    this.syncActiveTaskTime();
+
     this.associatedTaskId = taskId;
     if (taskId) {
       this.associatedTaskIndex = this.availableTasks.findIndex(t => t.id === taskId);
@@ -142,7 +146,7 @@ export class SidebarPomodoroComponent implements OnInit, OnDestroy {
       if (this.timeLeft > 0) {
         this.timeLeft--;
 
-        // Se estiver rodando no modo FOCO e houver tarefa associada, contabiliza o tempo ativo!
+        // Se estiver rodando no modo FOCO e houver tarefa associada, atualiza em TEMPO REAL (a cada segundo)!
         if (this.mode === 'focus' && this.associatedTaskId) {
           const task = this.availableTasks.find(t => t.id === this.associatedTaskId);
           if (task) {
@@ -150,12 +154,10 @@ export class SidebarPomodoroComponent implements OnInit, OnDestroy {
             const newSeconds = currentSeconds + 1;
             (task as any).timeSpentSeconds = newSeconds;
 
-            // Sincroniza com o bujoService a cada 5 segundos para não gerar chamadas excessivas
-            if (newSeconds % 5 === 0) {
-              this.bujoService.updateItem(task.id, {
-                timeSpentSeconds: newSeconds
-              } as any);
-            }
+            // Atualiza em tempo real no bujoService para refletir instantaneamente no Daily Log / Agenda
+            this.bujoService.updateItem(task.id, {
+              timeSpentSeconds: newSeconds
+            } as any);
           }
         }
 
@@ -174,21 +176,15 @@ export class SidebarPomodoroComponent implements OnInit, OnDestroy {
     }
     this.timerState = 'paused';
 
-    // Garante que o tempo acumulado final seja salvo na tarefa ao pausar
-    if (this.mode === 'focus' && this.associatedTaskId) {
-      const task = this.availableTasks.find(t => t.id === this.associatedTaskId);
-      if (task && (task as any).timeSpentSeconds) {
-        this.bujoService.updateItem(task.id, {
-          timeSpentSeconds: (task as any).timeSpentSeconds
-        } as any);
-      }
-    }
+    // Sincroniza o tempo acumulado exato na tarefa ao pausar
+    this.syncActiveTaskTime();
 
     this.cdr.markForCheck();
     this.saveState();
   }
 
   resetTimer() {
+    this.syncActiveTaskTime();
     this.pauseTimer();
     this.timerState = 'idle';
     this.setTimeForCurrentMode();
@@ -197,12 +193,24 @@ export class SidebarPomodoroComponent implements OnInit, OnDestroy {
   }
 
   switchMode(newMode: 'focus' | 'short_break' | 'long_break') {
+    this.syncActiveTaskTime();
     this.pauseTimer();
     this.mode = newMode;
     this.timerState = 'idle';
     this.setTimeForCurrentMode();
     this.cdr.markForCheck();
     this.saveState();
+  }
+
+  private syncActiveTaskTime() {
+    if (!this.associatedTaskId) return;
+    const task = this.availableTasks.find(t => t.id === this.associatedTaskId);
+    if (task && (task as any).timeSpentSeconds !== undefined) {
+      this.bujoService.updateItem(task.id, {
+        timeSpentSeconds: (task as any).timeSpentSeconds,
+        pomodoroCount: (task as any).pomodoroCount || 0
+      } as any);
+    }
   }
 
   private setTimeForCurrentMode() {
@@ -228,6 +236,7 @@ export class SidebarPomodoroComponent implements OnInit, OnDestroy {
         if (task) {
           const currentCount = (task as any).pomodoroCount || 0;
           const timeSpent = (task as any).timeSpentSeconds || 0;
+          (task as any).pomodoroCount = currentCount + 1;
           this.bujoService.updateItem(task.id, {
             pomodoroCount: currentCount + 1,
             timeSpentSeconds: timeSpent

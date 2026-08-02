@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewEncapsulation, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewEncapsulation, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BujoItem, BujoService } from '../../../../services/bujo.service';
@@ -42,9 +42,9 @@ export interface ContentChunk {
                <ng-container *ngIf="item.endTime">- {{ item.endTime }}</ng-container>
              </span>
 
-             <!-- Pomodoro Active Time & Count Badge -->
+             <!-- Pomodoro Active Time & Count Badge (High Contrast Premium Style) -->
              <span *ngIf="item.type === 'task' && ($any(item).pomodoroCount || $any(item).timeSpentSeconds)" 
-                   class="bg-amber-950/80 text-amber-300 px-1.5 py-0.5 rounded text-[10px] font-bold font-mono inline-flex items-center gap-1 shadow-sm border border-amber-800/60 mx-1">
+                   class="bg-amber-600 text-white dark:bg-amber-950/90 dark:text-amber-300 font-bold px-2 py-0.5 rounded-md text-xs shadow-sm border border-amber-700 dark:border-amber-700/60 inline-flex items-center gap-1.5 mx-1 font-mono">
                <span *ngIf="$any(item).pomodoroCount">🍅 {{ $any(item).pomodoroCount }}</span>
                <span *ngIf="$any(item).timeSpentSeconds">⏱️ {{ formatTimeSpent($any(item).timeSpentSeconds) }}</span>
              </span>
@@ -106,14 +106,14 @@ export interface ContentChunk {
         <button *ngIf="item.type === 'task'" 
                 (click)="onMigrate($event, 'next')" 
                 class="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-orange-600 active:text-orange-700 hover:bg-orange-50 rounded transition-colors bujo-tooltip touch-manipulation active:scale-95" 
-                data-tooltip="Migrar">
+                data-tooltip="Adiar">
           <svg class="w-4 h-4 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
         </button>
         <button (click)="onDelete($event)" 
                 class="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-red-600 active:text-red-700 hover:bg-red-50 rounded transition-colors bujo-tooltip touch-manipulation active:scale-95" 
-                data-tooltip="Deletar">
+                data-tooltip="Excluir">
           <svg class="w-4 h-4 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
@@ -123,7 +123,7 @@ export interface ContentChunk {
   `,
   encapsulation: ViewEncapsulation.None
 })
-export class BulletItemComponent implements OnInit {
+export class BulletItemComponent implements OnInit, OnChanges {
   @Input({ required: true }) item!: BujoItem;
   @Output() statusChange = new EventEmitter<BujoItem>();
   @Output() delete = new EventEmitter<string>();
@@ -133,14 +133,15 @@ export class BulletItemComponent implements OnInit {
   isEditing = false;
   editValue = '';
 
-  constructor(private bujoService: BujoService) {}
+  constructor(private bujoService: BujoService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.parseContent();
   }
   
-  ngOnChanges() {
+  ngOnChanges(changes: SimpleChanges) {
     this.parseContent();
+    this.cdr.markForCheck();
   }
 
   onEdit(event: Event) {

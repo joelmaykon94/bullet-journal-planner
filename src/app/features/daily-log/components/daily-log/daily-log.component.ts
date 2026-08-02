@@ -240,7 +240,8 @@ export class DailyLogComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.sub = this.bujoService.items$.subscribe(items => {
-      this.items = items;
+      this.items = [...items];
+      this.cdr.markForCheck();
     });
     this.dateSub = this.bujoService.selectedDate$.subscribe(date => {
       this.selectedDate = date;
