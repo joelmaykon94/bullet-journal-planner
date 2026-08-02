@@ -152,7 +152,7 @@ export class AuthService {
       // Build trash map first from local & cloud trash
       const localTrash = Array.isArray(localData['bujo_focus_trash_items']) ? localData['bujo_focus_trash_items'] : [];
       const cloudTrash = Array.isArray(cloudData['bujo_focus_trash_items']) ? cloudData['bujo_focus_trash_items'] : [];
-      const mergedTrash = mergeArraysByTimestamp(localTrash, cloudTrash);
+      const mergedTrash = mergeArraysByTimestamp(localTrash, cloudTrash, undefined, true);
       mergedData['bujo_focus_trash_items'] = mergedTrash;
 
       const trashMap = new Map<string, any>();
@@ -194,10 +194,18 @@ export class AuthService {
         }
       }
 
-      // Remove restored items from trash
+      // Remove restored items from trash ONLY if active item was updated after being trashed
       if (Array.isArray(mergedData['bujo_items'])) {
-        const activeItemIds = new Set(mergedData['bujo_items'].map((i: any) => i.id));
-        mergedData['bujo_focus_trash_items'] = (mergedData['bujo_focus_trash_items'] || []).filter((t: any) => !activeItemIds.has(t.id));
+        const activeMap = new Map<string, any>();
+        mergedData['bujo_items'].forEach((i: any) => activeMap.set(i.id, i));
+
+        mergedData['bujo_focus_trash_items'] = (mergedData['bujo_focus_trash_items'] || []).filter((t: any) => {
+          if (!activeMap.has(t.id)) return true;
+          const activeItem = activeMap.get(t.id);
+          const activeTime = new Date(activeItem.updatedAt || activeItem.createdAt || 0).getTime();
+          const trashTime = new Date(t.deletedAt || t.updatedAt || 0).getTime();
+          return activeTime <= trashTime;
+        });
       }
 
       // 4. Save merged data back to localStorage

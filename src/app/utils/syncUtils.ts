@@ -34,7 +34,8 @@ export function isNewer(a: { updatedAt?: string }, b: { updatedAt?: string }): b
 export function mergeArraysByTimestamp<T extends { id: string; updatedAt?: string; createdAt?: string; deletedAt?: string }>(
   localList: T[],
   cloudList: T[],
-  trashMap?: Map<string, any>
+  trashMap?: Map<string, any>,
+  allowDeleted = false
 ): T[] {
   const map = new Map<string, T>();
 
@@ -42,8 +43,8 @@ export function mergeArraysByTimestamp<T extends { id: string; updatedAt?: strin
     if (!item || !item.id) return;
     const sanitized = ensureTimestamps(item);
 
-    // Skip item if it is explicitly marked as deleted
-    if (sanitized.deletedAt) {
+    // Skip item if it is explicitly marked as deleted (unless merging trash list itself)
+    if (sanitized.deletedAt && !allowDeleted) {
       return;
     }
 
