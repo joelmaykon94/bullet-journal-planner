@@ -355,4 +355,20 @@ export class BujoService {
       return tokens.some(t => t.toLowerCase() === id.toLowerCase());
     }).length;
   }
+
+  // Collections Management
+  getCollections(): any[] {
+    return this.collectionsSubject.value;
+  }
+
+  saveCollections(collections: any[]) {
+    this.collectionsSubject.next(collections);
+    this.saveToStorage('bujo_collections', collections);
+  }
+
+  updateCollection(collection: any) {
+    const cols = this.getCollections();
+    const updated = cols.map(c => c.id === collection.id ? collection : c);
+    this.saveCollections(updated);
+  }
 }

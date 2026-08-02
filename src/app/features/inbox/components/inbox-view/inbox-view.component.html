@@ -1,0 +1,181 @@
+<div class="inbox-container w-full max-w-4xl mx-auto p-4 sm:p-6 flex flex-col gap-6 select-none">
+  
+  <!-- Header Panel (Bege Suave & Couro Claro) -->
+  <div class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] rounded-xl p-5 shadow-[4px_4px_0px_rgba(139,115,85,0.08)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-xl bg-[#f2ebdf] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] flex items-center justify-center shrink-0 shadow-xs">
+        <svg class="w-5 h-5 text-[#7a6656] dark:text-[#afa393]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+          <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h1 class="font-serif text-2xl font-bold text-[#292524] dark:text-[#f5f5f4] tracking-tight">Caixa de Entrada (Inbox Zero)</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border bg-[#f2ebdf] dark:bg-[#1c1917] text-[#382c25] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20">
+            {{ inboxItems.length }} {{ inboxItems.length === 1 ? 'pendência' : 'pendências' }}
+          </span>
+        </div>
+        <p class="text-xs text-[#7a6656] dark:text-[#afa393] mt-1 font-sans font-medium">
+          Grave pensamentos rapidamente e processe suas pendências diariamente.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+      <span class="text-xs text-[#7a6656] dark:text-[#afa393] font-mono font-bold bg-[#f2ebdf] dark:bg-[#1c1917] px-3 py-1 rounded-lg border border-[#e2d5c3] dark:border-[#e3dac9]/20 hidden md:inline">
+        Atalho: Ctrl + K
+      </span>
+    </div>
+  </div>
+
+  <!-- STATE 1: INBOX ZERO CELEBRATION SCREEN -->
+  <div *ngIf="inboxItems.length === 0" 
+       class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-dashed border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-xl p-10 text-center flex flex-col items-center justify-center gap-4 shadow-[4px_4px_0px_rgba(139,115,85,0.08)] my-2">
+    <div class="w-14 h-14 rounded-full bg-[#f2ebdf] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 flex items-center justify-center text-[#382c25] dark:text-[#e3dac9]">
+      <svg class="w-7 h-7 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+    <div class="max-w-md">
+      <h2 class="font-serif text-xl font-bold text-[#292524] dark:text-[#e3dac9]">Inbox Zero</h2>
+      <p class="text-xs text-[#7a6656] dark:text-[#afa393] mt-1 font-medium leading-relaxed">
+        Sua caixa de entrada está limpa. Todas as pendências foram organizadas no seu Bullet Journal.
+      </p>
+    </div>
+    <div class="bg-[#f2ebdf] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-xl p-3 px-5 text-xs text-[#7a6656] dark:text-[#afa393] font-mono mt-1 flex items-center gap-2 shadow-xs">
+      <span class="text-[#382c25] dark:text-[#e3dac9] font-bold">Dica:</span>
+      <span>Pressione <strong class="text-[#292524] dark:text-[#f5f5f4]">Ctrl + K</strong> a qualquer momento para capturar pensamentos.</span>
+    </div>
+  </div>
+
+  <!-- STATE 2: INBOX ITEMS LIST (GTD Triage) -->
+  <div *ngIf="inboxItems.length > 0" class="flex flex-col gap-3.5">
+    
+    <div class="flex items-center justify-between text-xs font-bold text-[#7a6656] dark:text-[#afa393] uppercase tracking-wider px-1">
+      <span>Pendências na caixa ({{ inboxItems.length }})</span>
+      <span class="text-[11px] font-mono font-medium text-[#8c7765] dark:text-[#82776a]">Triagem rápida</span>
+    </div>
+
+    <!-- Cards Loop (Fundo Creme Claro #faf7f5 com texto bem escuro e legível #292524) -->
+    <div *ngFor="let item of inboxItems" 
+         class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-[#e2d5c3] dark:border-[#e3dac9]/20 hover:border-[#59493d]/50 text-[#292524] dark:text-[#e3dac9] rounded-xl p-4.5 shadow-[4px_4px_0px_rgba(139,115,85,0.06)] transition-all flex flex-col gap-3.5">
+      
+      <!-- Item Content Row -->
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start gap-3 flex-1 min-w-0">
+          <!-- Item Type Icon -->
+          <span class="shrink-0 mt-1 text-[#7a6656] dark:text-[#afa393]" [title]="item.type">
+            <ng-container [ngSwitch]="item.type">
+              <svg *ngSwitchCase="'task'" class="w-4 h-4 text-[#382c25] dark:text-[#e3dac9]" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>
+              <svg *ngSwitchCase="'event'" class="w-4 h-4 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/></svg>
+              <svg *ngSwitchDefault class="w-4 h-4 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="18" y2="12"/></svg>
+            </ng-container>
+          </span>
+
+          <div class="flex flex-col min-w-0">
+            <span class="text-base font-serif font-bold text-[#292524] dark:text-[#f5f5f4] leading-snug break-words">
+              {{ item.content }}
+            </span>
+            <span class="text-xs text-[#7a6656] dark:text-[#afa393] font-mono mt-1 font-medium">
+              Capturado em: {{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Quick Complete & Delete Buttons -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button class="w-8 h-8 rounded-lg bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] flex items-center justify-center transition-colors cursor-pointer border border-[#e2d5c3] dark:border-[#e3dac9]/20 font-bold"
+                  (click)="completeItem(item)" 
+                  title="Concluir">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="w-8 h-8 rounded-lg bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#7a6656] dark:text-[#afa393] hover:text-[#382c25] flex items-center justify-center transition-colors cursor-pointer border border-[#e2d5c3] dark:border-[#e3dac9]/20"
+                  (click)="deleteItem(item)" 
+                  title="Excluir">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- GTD TRIAGE ACTION BUTTONS BAR (Couro Suave #59493d & Bege #f2ebdf) -->
+      <div *ngIf="activeTriageItemId !== item.id" class="flex flex-wrap items-center gap-2 border-t border-[#e2d5c3] dark:border-[#e3dac9]/20 pt-3">
+        <!-- 1. Move to Today -->
+        <button class="bg-[#59493d] hover:bg-[#47392f] dark:bg-[#e3dac9] dark:hover:bg-[#f5f5f4] text-[#fdfbf7] dark:text-[#2a2724] px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs border border-[#59493d] dark:border-[#e3dac9]"
+                (click)="moveToToday(item)">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Mover p/ Hoje
+        </button>
+
+        <!-- 2. Schedule -->
+        <button class="bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] border border-[#e2d5c3] dark:border-[#e3dac9]/20 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                (click)="openSchedule(item)">
+          <svg class="w-4 h-4 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Agendar
+        </button>
+
+        <!-- 3. Move to Collection -->
+        <button class="bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] border border-[#e2d5c3] dark:border-[#e3dac9]/20 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                (click)="openCollection(item)">
+          <svg class="w-4 h-4 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Coleção
+        </button>
+
+        <!-- 4. Delegate -->
+        <button class="bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] border border-[#e2d5c3] dark:border-[#e3dac9]/20 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                (click)="openDelegate(item)">
+          <svg class="w-4 h-4 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Delegar
+        </button>
+
+        <!-- 5. Someday / Maybe -->
+        <button class="bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] border border-[#e2d5c3] dark:border-[#e3dac9]/20 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                (click)="moveToSomeday(item)">
+          <svg class="w-4 h-4 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/></svg>
+          Algum Dia / Talvez
+        </button>
+      </div>
+
+      <!-- INLINE TRIAGE OPTIONS PANEL -->
+      <div *ngIf="activeTriageItemId === item.id" class="bg-[#f2ebdf] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-xl p-3.5 flex flex-col gap-3 animate-in fade-in duration-150 mt-1 shadow-inner">
+        
+        <!-- Mode 1: Schedule -->
+        <div *ngIf="triageMode === 'schedule'" class="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <span class="text-xs font-bold text-[#382c25] dark:text-[#e3dac9]">Escolha a data para agendar:</span>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="date" [(ngModel)]="scheduleDate" class="bg-[#faf7f5] dark:bg-[#2a2724] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg px-3 py-1.5 text-xs text-[#292524] dark:text-[#f5f5f4] outline-none focus:border-[#59493d] font-mono font-bold" />
+            <button class="bg-[#59493d] hover:bg-[#47392f] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold px-3.5 py-1.5 rounded-lg cursor-pointer" (click)="confirmSchedule(item)">Confirmar</button>
+            <button class="bg-[#e6dbcd] dark:bg-[#2a2724] text-[#382c25] dark:text-[#e3dac9] text-xs px-2.5 py-1.5 rounded-lg cursor-pointer font-bold" (click)="resetTriage()">Cancelar</button>
+          </div>
+        </div>
+
+        <!-- Mode 2: Delegate -->
+        <div *ngIf="triageMode === 'delegate'" class="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <span class="text-xs font-bold text-[#382c25] dark:text-[#e3dac9]">Delegar para (Nome/Empresa):</span>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="text" [(ngModel)]="delegateName" placeholder="ex: João Silva" class="bg-[#faf7f5] dark:bg-[#2a2724] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg px-3 py-1.5 text-xs text-[#292524] dark:text-[#f5f5f4] outline-none focus:border-[#59493d] font-sans font-medium" />
+            <button class="bg-[#59493d] hover:bg-[#47392f] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold px-3.5 py-1.5 rounded-lg cursor-pointer" (click)="confirmDelegate(item)">Confirmar</button>
+            <button class="bg-[#e6dbcd] dark:bg-[#2a2724] text-[#382c25] dark:text-[#e3dac9] text-xs px-2.5 py-1.5 rounded-lg cursor-pointer font-bold" (click)="resetTriage()">Cancelar</button>
+          </div>
+        </div>
+
+        <!-- Mode 3: Collection -->
+        <div *ngIf="triageMode === 'collection'" class="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <span class="text-xs font-bold text-[#382c25] dark:text-[#e3dac9]">Selecione a Coleção:</span>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <select [(ngModel)]="selectedCollectionId" class="bg-[#faf7f5] dark:bg-[#2a2724] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg px-3 py-1.5 text-xs text-[#292524] dark:text-[#f5f5f4] outline-none focus:border-[#59493d] font-sans font-medium">
+              <option *ngFor="let c of collections" [value]="c.id">{{ c.icon }} {{ c.title }}</option>
+            </select>
+            <button class="bg-[#59493d] hover:bg-[#47392f] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold px-3.5 py-1.5 rounded-lg cursor-pointer" (click)="confirmCollection(item)">Confirmar</button>
+            <button class="bg-[#e6dbcd] dark:bg-[#2a2724] text-[#382c25] dark:text-[#e3dac9] text-xs px-2.5 py-1.5 rounded-lg cursor-pointer font-bold" (click)="resetTriage()">Cancelar</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

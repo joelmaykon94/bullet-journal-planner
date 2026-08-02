@@ -130,6 +130,11 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 📥 **v1.6.0** — *Recurso 1: Captura Rápida (Inbox Zero Unificado)* (02/08/2026)
+- **Modal Global de Captura Rápida (`Ctrl + K`):** Atalho rápido de altíssima velocidade para registrar tarefas, notas ou eventos a qualquer momento em qualquer tela.
+- **Painel & Rota de Triagem da Caixa de Entrada (`inbox-view`):** Tela dedicada com visual de papel bege suave (`#faf7f5`) e tinta sépia nanquim (`#382c25`), incluindo 1-clique GTD triage (`Mover p/ Hoje`, `Agendar`, `Coleção`, `Delegar`, `Algum Dia`).
+- **Harmonização Estética & Tipografia:** Texto digitado e títulos no exato tom escuro sépia (`#382c25`), garantindo perfeita legibilidade e alinhamento com a estética do Bullet Journal.
+
 ### 🧹 **v1.5.4** — *Alinhamento de Publicação no Netlify e Limpeza de Arquivos Legados no Build* (02/08/2026)
 - **Remoção de Arquivos Legados em `dist`:** Adicionada rotina de limpeza automatizada (`rm -rf dist`) que elimina arquivos HTML/CSS antigos residuais que causavam erros 404 em produção.
 - **Saída Direta em `dist/`:** Reconfiguração do `outputPath` no `angular.json` e `netlify.toml` para publicar a aplicação Angular diretamente na raiz da pasta `dist/`, eliminando subpastas conflitantes (`dist/frontend/browser`).

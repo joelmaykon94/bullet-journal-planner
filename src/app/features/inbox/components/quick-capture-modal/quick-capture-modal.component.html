@@ -1,0 +1,93 @@
+<!-- Global Quick Capture Modal Overlay (Ctrl + K) - Removed Cancel Button -->
+<div *ngIf="isOpen" 
+     class="fixed inset-0 bg-[#292524]/40 dark:bg-black/80 backdrop-blur-xs z-[999999] flex items-center justify-center p-4"
+     (click)="closeModal()">
+  
+  <div class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[#1c1917] dark:text-[#e3dac9] rounded-xl w-full max-w-lg p-5 shadow-[8px_8px_0px_rgba(139,115,85,0.12)] dark:shadow-[8px_8px_0px_rgba(0,0,0,0.5)] flex flex-col gap-4 relative animate-in fade-in zoom-in-95 duration-150"
+       (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between border-b border-[#e2d5c3] dark:border-[#e3dac9]/20 pb-3.5">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-[#f2ebdf] dark:bg-[#1c1917] text-[#59493d] dark:text-[#e3dac9] flex items-center justify-center border border-[#e2d5c3] dark:border-[#e3dac9]/20 shadow-xs">
+          <svg class="w-5 h-5 text-[#7a6656] dark:text-[#afa393]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="font-serif text-lg font-bold text-[#1c1917] dark:text-[#f5f5f4] tracking-tight">Captura Rápida</h3>
+          <p class="text-xs text-[#7a6656] dark:text-[#afa393] font-sans">Grave pendências no seu caderno sem perder o foco</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] text-[#7a6656] dark:text-[#afa393] font-mono bg-[#f2ebdf] dark:bg-[#1c1917] px-2 py-0.5 rounded border border-[#e2d5c3] dark:border-[#e3dac9]/20 hidden sm:inline">Ctrl + K</span>
+        <button class="w-7 h-7 rounded-lg bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#1c1917] dark:text-[#e3dac9] flex items-center justify-center transition-colors cursor-pointer border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-xs font-bold"
+                (click)="closeModal()">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Content Input (Strict Input Font Color #1c1917) -->
+    <div class="flex flex-col gap-2.5">
+      <div class="relative">
+        <textarea 
+          #captureInput
+          [(ngModel)]="content"
+          placeholder="Digite sua tarefa, ideia ou nota... (ex: Comprar café #pessoal @joao 15:00)"
+          rows="3"
+          class="w-full bg-[#fdfbf7] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-xl p-3.5 text-sm text-[#1c1917] focus:text-[#1c1917] font-semibold placeholder-[#8c7765] outline-none focus:bg-[#ffffff] focus:border-[#59493d] focus:ring-1 focus:ring-[#59493d]/20 font-sans resize-none transition-all shadow-inner"
+          style="color: #1c1917 !important;"
+          (keydown.enter)="$event.preventDefault(); saveToInbox()">
+        </textarea>
+      </div>
+
+      <!-- Item Type Selection -->
+      <div class="flex items-center justify-between text-xs px-1">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-[#7a6656] dark:text-[#afa393] mr-1">Tipo:</span>
+          
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border flex items-center gap-1.5 shadow-xs"
+                  [ngClass]="itemType === 'task' ? 'bg-[#59493d] text-[#fcf9f2] border-[#42362d] dark:bg-[#e3dac9] dark:text-[#2a2724]' : 'bg-[#f2ebdf] dark:bg-[#1c1917] text-[#1c1917] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/10'"
+                  (click)="itemType = 'task'">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>
+            Tarefa
+          </button>
+
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border flex items-center gap-1.5 shadow-xs"
+                  [ngClass]="itemType === 'event' ? 'bg-[#59493d] text-[#fcf9f2] border-[#42362d] dark:bg-[#e3dac9] dark:text-[#2a2724]' : 'bg-[#f2ebdf] dark:bg-[#1c1917] text-[#1c1917] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/10'"
+                  (click)="itemType = 'event'">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/></svg>
+            Evento
+          </button>
+
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border flex items-center gap-1.5 shadow-xs"
+                  [ngClass]="itemType === 'note' ? 'bg-[#59493d] text-[#fcf9f2] border-[#42362d] dark:bg-[#e3dac9] dark:text-[#2a2724]' : 'bg-[#f2ebdf] dark:bg-[#1c1917] text-[#1c1917] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/10'"
+                  (click)="itemType = 'note'">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="18" y2="12"/></svg>
+            Nota
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons (Removed Cancel button as requested) -->
+    <div class="flex items-center justify-end gap-2.5 border-t border-[#e2d5c3] dark:border-[#e3dac9]/20 pt-3">
+      <button class="flex-1 sm:flex-none bg-[#f2ebdf] dark:bg-[#1c1917] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#1c1917] dark:text-[#e3dac9] border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-xs font-bold py-2.5 px-4 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+              (click)="saveToToday()"
+              title="Salvar diretamente no Log Diário de hoje">
+        <svg class="w-3.5 h-3.5 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Mover p/ Hoje
+      </button>
+
+      <button class="flex-1 sm:flex-none bg-[#59493d] hover:bg-[#47392f] dark:bg-[#e3dac9] dark:hover:bg-[#f5f5f4] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold py-2.5 px-5 rounded-xl shadow-[2px_2px_0px_rgba(41,37,36,0.1)] transition-transform active:scale-95 cursor-pointer uppercase tracking-wider flex items-center justify-center gap-1.5 border border-[#59493d] dark:border-[#e3dac9]"
+              (click)="saveToInbox()">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+        Capturar p/ Caixa
+      </button>
+    </div>
+
+  </div>
+</div>

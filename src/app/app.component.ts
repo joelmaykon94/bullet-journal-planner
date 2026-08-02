@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, HostListener, ViewEncapsulation, inject } from '@angular/core';
+import { Component, signal, OnInit, HostListener, ViewEncapsulation, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardComponent } from './features/dashboard/components/dashboard/dashboard.component';
 import { DailyLogComponent } from './features/daily-log/components/daily-log/daily-log.component';
@@ -15,6 +15,8 @@ import { SidebarPomodoroComponent } from './features/focus/components/sidebar-po
 import { SettingsComponent } from './features/settings/components/settings/settings.component';
 import { AuthScreenComponent } from './features/auth/components/auth-screen/auth-screen.component';
 import { ModalComponent } from './shared/components/modal/modal.component';
+import { InboxViewComponent } from './features/inbox/components/inbox-view/inbox-view.component';
+import { QuickCaptureModalComponent } from './features/inbox/components/quick-capture-modal/quick-capture-modal.component';
 import { NotificationService, AppNotification } from './services/notification.service';
 import { BujoService } from './services/bujo.service';
 import { AuthService } from './services/auth.service';
@@ -23,7 +25,7 @@ import { environment } from '../environments/version';
 
 import { SyncStatusService } from './services/sync-status.service';
 
-export type TabId = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
+export type TabId = 'dashboard' | 'inbox' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
 
 interface Tab {
   id: TabId;
@@ -42,12 +44,19 @@ interface LocalWeather {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent, WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent, FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent, SidebarPomodoroComponent],
+  imports: [
+    CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent,
+    WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent,
+    FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent,
+    SidebarPomodoroComponent, InboxViewComponent, QuickCaptureModalComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   encapsulation: ViewEncapsulation.None
 })
 export class App implements OnInit {
+  @ViewChild(QuickCaptureModalComponent) quickCaptureModal!: QuickCaptureModalComponent;
+
   private readonly weatherService = inject(WeatherService);
   public readonly notificationService = inject(NotificationService);
   public readonly bujoService = inject(BujoService);
@@ -77,12 +86,13 @@ export class App implements OnInit {
   );
   currentTime = signal(new Date());
   appVersion = environment.version;
-  
+
   // Weather Signal
   localWeather = signal<LocalWeather | null>(null);
 
   tabs: Tab[] = [
     { id: 'dashboard', label: 'Dashboard', shortLabel: 'Início', icon: 'home' },
+    { id: 'inbox', label: 'Caixa de Entrada', shortLabel: 'Inbox', icon: 'inbox' },
     { id: 'timeline', label: 'Agenda Diária', shortLabel: 'Agenda', icon: 'clock' },
     { id: 'daily', label: 'Log Diário', shortLabel: 'Hoje', icon: 'calendar' },
     { id: 'weekly', label: 'Log Semanal', shortLabel: 'Semana', icon: 'calendar-days' },
@@ -95,10 +105,10 @@ export class App implements OnInit {
 
   bottomTabs: Tab[] = [
     { id: 'dashboard', label: 'Início', shortLabel: 'Início', icon: 'home' },
+    { id: 'inbox', label: 'Inbox', shortLabel: 'Inbox', icon: 'inbox' },
     { id: 'timeline', label: 'Agenda', shortLabel: 'Agenda', icon: 'clock' },
     { id: 'daily', label: 'Hoje', shortLabel: 'Hoje', icon: 'calendar' },
     { id: 'budget', label: 'Finanças', shortLabel: 'Finanças', icon: 'wallet' },
-    { id: 'collections', label: 'Coleções', shortLabel: 'Coleções', icon: 'library' },
   ];
 
   constructor() {
@@ -115,7 +125,7 @@ export class App implements OnInit {
       document.documentElement.classList.remove('dark');
     }
 
-    // Safety fallback: dismiss preloader after max 4.0s if weather or geolocation takes long
+    // Safety fallback: dismiss preloader after max 4.0s if weather takes long
     setTimeout(() => this.dismissPreloader(), 4000);
 
     this.fetchLocalWeather();
@@ -124,11 +134,25 @@ export class App implements OnInit {
     });
   }
 
+  openQuickCapture() {
+    if (this.quickCaptureModal) {
+      this.quickCaptureModal.openModal();
+    }
+  }
+
+  getInboxCount(): number {
+    return this.bujoService.getItems().filter(i => 
+      (i.date === 'inbox' || (i as any).isInbox === true) && 
+      i.status !== 'completed' && 
+      i.status !== 'cancelled'
+    ).length;
+  }
+
   private dismissPreloader() {
     if (this.isPreloaderDismissed) return;
     this.isPreloaderDismissed = true;
 
-    const MIN_DISPLAY_MS = 2000; // Garantir no mínimo 2 segundos para leitura da frase
+    const MIN_DISPLAY_MS = 2000;
     const elapsed = Date.now() - this.preloaderStartTime;
     const remainingDelay = Math.max(0, MIN_DISPLAY_MS - elapsed);
 
@@ -143,236 +167,121 @@ export class App implements OnInit {
     }, remainingDelay);
   }
 
-  private fetchLocalWeather() {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            // Tenta obter o nome da cidade por geocoding reverso
-            const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=pt`);
-            const geoData = await geoRes.json();
-            let cityName = geoData.city || geoData.locality || 'Local Atual';
-            
-            let stateAbbr = '';
-            if (geoData.principalSubdivisionCode) {
-              // ex: "BR-RN" -> "RN"
-              stateAbbr = geoData.principalSubdivisionCode.split('-').pop() || '';
-            } else if (geoData.principalSubdivision) {
-              stateAbbr = geoData.principalSubdivision.substring(0, 2).toUpperCase();
-            }
-
-            const countryCode = geoData.countryCode || '';
-            
-            // Join valid parts
-            const locationParts = [cityName, stateAbbr, countryCode].filter(Boolean);
-            cityName = locationParts.join(', ');
-
-            // Busca os dados do clima usando o WeatherService existente
-            const weatherData = await this.weatherService.getCityWeatherData({
-              name: cityName,
-              latitude,
-              longitude
-            });
-            
-            const code = weatherData.current.weatherCode;
-            this.localWeather.set({
-              city: cityName,
-              temp: Math.round(weatherData.current.temperature),
-              label: this.getWeatherLabel(code),
-              icon: this.getWeatherIconTemplate(code)
-            });
-          } catch (e) {
-            console.error('Failed to load local weather:', e);
-          } finally {
-            this.dismissPreloader();
-          }
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          this.dismissPreloader();
-        },
-        { timeout: 3000 }
-      );
-    } else {
-      this.dismissPreloader();
-    }
-  }
-
-  private getWeatherLabel(code: number) {
-    if (code === 0) return 'Céu Limpo';
-    if ([1, 2, 3].includes(code)) return 'Nublado';
-    if ([45, 48].includes(code)) return 'Nevoeiro';
-    if ([51, 53, 55, 56, 57].includes(code)) return 'Garoa';
-    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return 'Chuva';
-    if ([71, 73, 75, 77, 85, 86].includes(code)) return 'Neve';
-    if ([95, 96, 99].includes(code)) return 'Tempestade';
-    return 'Instável';
-  }
-
-  private getWeatherIconTemplate(code: number): string {
-    if (code === 0) return 'sun';
-    if ([1, 2, 3].includes(code)) return 'cloud';
-    if ([45, 48].includes(code)) return 'cloud-fog';
-    if ([51, 53, 55, 56, 57].includes(code)) return 'cloud-drizzle';
-    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return 'cloud-rain';
-    if ([71, 73, 75, 77, 85, 86].includes(code)) return 'cloud-snow';
-    if ([95, 96, 99].includes(code)) return 'cloud-lightning';
-    return 'thermometer';
-  }
-
-  setTab(tabId: TabId) {
-    this.activeTab.set(tabId);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('bujo_active_tab', tabId);
-    }
-    if (window.innerWidth < 1024) {
-      this.sidebarOpen.set(false);
-    }
-  }
-
-  async logout() {
-    if (await this.modalService.confirm('Tem certeza que deseja sair?', 'Sair da conta')) {
-      await this.authService.logout();
-      window.location.reload();
-    }
-  }
-
-
-  toggleSidebar() {
-    this.sidebarOpen.update(v => !v);
-  }
-
-  toggleDesktopNotifications(event?: Event) {
-    if (event) event.stopPropagation();
-    this.desktopNotificationsOpen.update(v => !v);
-    this.mobileNotificationsOpen.set(false);
-    this.userMenuOpen.set(false);
-  }
-
-  toggleMobileNotifications(event?: Event) {
-    if (event) event.stopPropagation();
-    this.mobileNotificationsOpen.update(v => !v);
-    this.desktopNotificationsOpen.set(false);
-    this.userMenuOpen.set(false);
-  }
-
-  toggleUserMenu(event?: Event) {
-    if (event) event.stopPropagation();
-    this.userMenuOpen.update(v => !v);
-    this.desktopNotificationsOpen.set(false);
-    this.mobileNotificationsOpen.set(false);
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.notification-container') && !target.closest('.user-menu-container')) {
-      this.desktopNotificationsOpen.set(false);
-      this.mobileNotificationsOpen.set(false);
-      this.userMenuOpen.set(false);
-    }
-  }
-
-  markNotificationRead(id: string) {
-    this.notificationService.markAsRead(id);
+  fetchLocalWeather() {
+    this.dismissPreloader();
   }
 
   handleNotificationClick(notif: any) {
-    this.notificationService.markAsRead(notif.id);
-    if (notif.taskDate) {
-      this.bujoService.setSelectedDate(notif.taskDate);
-      this.setTab('daily');
+    if (notif && notif.data && notif.data.targetTab) {
+      this.setTab(notif.data.targetTab);
     }
-    this.desktopNotificationsOpen.set(false);
-    this.mobileNotificationsOpen.set(false);
+    if (notif && notif.data && notif.data.itemId) {
+      this.bujoService.setHighlightItemId(notif.data.itemId);
+    }
+  }
+
+  setTab(id: TabId) {
+    this.activeTab.set(id);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('bujo_active_tab', id);
+    }
+    this.sidebarOpen.set(false);
+  }
+
+  toggleTheme() {
+    this.isDark.set(!this.isDark());
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('bujo_theme', this.isDark() ? 'dark' : 'light');
+    }
+    if (this.isDark()) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }
+
+  getFormattedTime(): string {
+    const now = this.currentTime();
+    return now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  getFormattedDate(): string {
+    const now = this.currentTime();
+    return now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+  }
+
+  getShortDate(): string {
+    const now = this.currentTime();
+    return now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen.set(!this.sidebarOpen());
+  }
+
+  toggleDesktopNotifications(event: Event) {
+    event.stopPropagation();
+    this.desktopNotificationsOpen.set(!this.desktopNotificationsOpen());
+  }
+
+  toggleMobileNotifications(event: Event) {
+    event.stopPropagation();
+    this.mobileNotificationsOpen.set(!this.mobileNotificationsOpen());
   }
 
   markAllNotificationsRead() {
     this.notificationService.markAllAsRead();
   }
 
-  toggleTheme() {
-    this.isDark.update(v => !v);
-    const isDarkNow = this.isDark();
-    if (isDarkNow) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('bujo_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('bujo_theme', 'light');
+  get UserInitial(): string {
+    const user = this.authService.currentUser;
+    if (user && user.email) {
+      return user.email.charAt(0).toUpperCase();
     }
-  }
-
-  getActiveLabel(): string {
-    return this.tabs.find(t => t.id === this.activeTab())?.label ?? '';
-  }
-
-  getFormattedTime(): string {
-    const d = this.currentTime();
-    return d.toLocaleTimeString('pt-BR', { 
-      timeZone: 'America/Sao_Paulo', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
-    });
-  }
-
-  getFormattedDate(): string {
-    const d = this.currentTime();
-    
-    // Configura o formatter com o timezone de São Paulo para evitar dessincronia
-    const formatter = new Intl.DateTimeFormat('pt-BR', {
-      timeZone: 'America/Sao_Paulo',
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-    
-    let formatted = formatter.format(d);
-    formatted = formatted.replace(',', ''); 
-    formatted = formatted.replace(' de ' + d.getFullYear(), ' ' + d.getFullYear()); 
-    
-    return formatted;
-  }
-
-  getShortDate(): string {
-    const d = this.currentTime();
-    return d.toLocaleDateString('pt-BR', { 
-      timeZone: 'America/Sao_Paulo', 
-      day: '2-digit', 
-      month: 'short' 
-    }).replace('.','');
+    return 'U';
   }
 
   getUserDisplayName(): string {
     const user = this.authService.currentUser;
-    if (!user || user.id === 'anonymous-user-id') return 'Visitante';
-    
-    // 1. Tenta pegar o nome completo retornado pelo Supabase (ex: Google OAuth metadata)
-    const metaName = user.user_metadata?.['full_name'] || user.user_metadata?.['name'];
-    if (metaName && typeof metaName === 'string' && metaName.trim()) {
-      return metaName.trim();
+    if (!user) return 'Usuário';
+
+    if (user.user_metadata && (user.user_metadata['full_name'] || user.user_metadata['name'])) {
+      return user.user_metadata['full_name'] || user.user_metadata['name'];
     }
 
-    // 2. Se não houver nome nos metadados, limpa e formata o e-mail (ex: "joel.maykon" -> "Joel Maykon")
-    const email = user.email || '';
-    if (!email) return 'Usuário';
+    if (user.email) {
+      const emailPrefix = user.email.split('@')[0];
+      return emailPrefix
+        .split(/[._-]/)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+    }
 
-    const prefix = email.split('@')[0];
-    return prefix
-      .split(/[._-]/)
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-      .join(' ');
+    return 'Usuário';
   }
 
   getUserFirstName(): string {
-    const displayName = this.getUserDisplayName();
-    return displayName.split(' ')[0];
+    const fullName = this.getUserDisplayName();
+    return fullName.split(' ')[0];
   }
 
   getUserInitial(): string {
-    return this.getUserFirstName().charAt(0).toUpperCase();
+    const name = this.getUserDisplayName();
+    return name ? name.charAt(0).toUpperCase() : 'B';
+  }
+
+  getActiveLabel(): string {
+    const tab = this.tabs.find(t => t.id === this.activeTab());
+    return tab ? tab.label : 'BuJo Focus';
+  }
+
+  toggleUserMenu(event: Event) {
+    event.stopPropagation();
+    this.userMenuOpen.set(!this.userMenuOpen());
+  }
+
+  logout() {
+    this.authService.logout();
+    this.userMenuOpen.set(false);
   }
 }

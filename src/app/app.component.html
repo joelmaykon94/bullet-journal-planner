@@ -58,11 +58,22 @@
       </div>
     </div>
 
+    <!-- Quick Capture Trigger Button (Desktop Sidebar only) -->
+    <div class="px-2.5 py-2 w-full border-b border-stone-200 dark:border-stone-800 hidden sm:block">
+      <button class="w-full bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-stone-200 text-white dark:text-stone-900 font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider border border-stone-900 dark:border-stone-100"
+              (click)="openQuickCapture()">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+        <span>+ Captura Rápida</span>
+        <span class="text-[10px] opacity-75 font-mono font-normal lowercase">(ctrl+k)</span>
+      </button>
+    </div>
+
     <!-- Nav -->
     <nav class="sidebar-nav">
       <button *ngFor="let tab of tabs" class="nav-item" [class.active]="activeTab() === tab.id" (click)="setTab(tab.id)">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <ng-container *ngIf="tab.icon === 'home'"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'inbox'"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></ng-container>
           <ng-container *ngIf="tab.icon === 'calendar'"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></ng-container>
           <ng-container *ngIf="tab.icon === 'calendar-days'"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/></ng-container>
           <ng-container *ngIf="tab.icon === 'calendar-range'"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></ng-container>
@@ -75,7 +86,11 @@
           <ng-container *ngIf="tab.icon === 'settings'"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></ng-container>
           <ng-container *ngIf="tab.icon === 'trash-2'"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></ng-container>
         </svg>
-        {{ tab.label }}
+        <span>{{ tab.label }}</span>
+        <span *ngIf="tab.id === 'inbox' && getInboxCount() > 0" 
+              class="ml-auto bg-amber-600 text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded-full shadow-xs">
+          {{ getInboxCount() }}
+        </span>
       </button>
 
       <!-- Sidebar Pomodoro Global Widget -->
@@ -328,6 +343,7 @@
     <!-- Tab Content -->
     <main class="content-scroll">
       <app-dashboard *ngIf="activeTab() === 'dashboard'" (tabChange)="setTab($any($event))"></app-dashboard>
+      <app-inbox-view *ngIf="activeTab() === 'inbox'"></app-inbox-view>
       <app-daily-log *ngIf="activeTab() === 'daily'"></app-daily-log>
       <app-timeline *ngIf="activeTab() === 'timeline'"></app-timeline>
       <app-weekly-log *ngIf="activeTab() === 'weekly'" (tabChange)="setTab($any($event))"></app-weekly-log>
@@ -339,7 +355,7 @@
       <app-dream-board *ngIf="activeTab() === 'dream_board'"></app-dream-board>
       <app-settings *ngIf="activeTab() === 'settings'" class="p-6 block"></app-settings>
 
-      <div class="flex flex-col items-center justify-center p-12 text-stone-400 gap-4 mt-20" *ngIf="activeTab() !== 'dashboard' && activeTab() !== 'daily' && activeTab() !== 'timeline' && activeTab() !== 'trash' && activeTab() !== 'weekly' && activeTab() !== 'monthly' && activeTab() !== 'collections' && activeTab() !== 'budget' && activeTab() !== 'future_log' && activeTab() !== 'dream_board' && activeTab() !== 'settings'">
+      <div class="flex flex-col items-center justify-center p-12 text-stone-400 gap-4 mt-20" *ngIf="activeTab() !== 'dashboard' && activeTab() !== 'inbox' && activeTab() !== 'daily' && activeTab() !== 'timeline' && activeTab() !== 'trash' && activeTab() !== 'weekly' && activeTab() !== 'monthly' && activeTab() !== 'collections' && activeTab() !== 'budget' && activeTab() !== 'future_log' && activeTab() !== 'dream_board' && activeTab() !== 'settings'">
         <div class="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center border border-stone-200">
           <svg class="w-8 h-8 text-stone-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </div>
@@ -385,4 +401,15 @@
   </div>
 </div>
 
+<!-- Mobile Floating Action Button (FAB) for Quick Capture -->
+<button class="fixed bottom-20 right-4 sm:hidden z-[99999] bg-[#59493d] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] p-3.5 rounded-full shadow-[4px_4px_16px_rgba(0,0,0,0.35)] border border-[#59493d] dark:border-[#e3dac9] flex items-center justify-center cursor-pointer transition-transform active:scale-90"
+        (click)="openQuickCapture()"
+        title="Captura Rápida">
+  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+  </svg>
+</button>
+
 <app-modal></app-modal>
+<app-quick-capture-modal></app-quick-capture-modal>
