@@ -97,11 +97,11 @@ html, body {
 
 .sidebar-logo {
   display: flex; align-items: center; gap: 12px;
-  padding: clamp(12px, 2vh, 24px) 20px;
+  padding: clamp(8px, 1.2vh, 16px) 16px;
   border-bottom: 1px dashed rgba(0,0,0,0.1);
 }
 .sidebar-logo-icon {
-  width: 36px; height: 36px;
+  width: 32px; height: 32px;
   border-radius: 8px;
   background: var(--color-paper-bg);
   color: var(--color-ink-main);
@@ -110,19 +110,19 @@ html, body {
   display: flex; align-items: center; justify-content: center;
 }
 .sidebar-logo h2 {
-  font-size: 16px; font-weight: 700; color: var(--color-ink-main);
+  font-size: 15px; font-weight: 700; color: var(--color-ink-main);
   font-family: var(--font-serif);
   margin: 0;
   letter-spacing: 0.05em;
 }
 .sidebar-logo p {
-  font-size: 11px; color: var(--color-ink-muted); margin: 2px 0 0 0;
+  font-size: 10px; color: var(--color-ink-muted); margin: 2px 0 0 0;
   font-family: var(--font-mono);
   text-transform: uppercase;
 }
 
 .sidebar-clock {
-  padding: clamp(12px, 2vh, 20px);
+  padding: clamp(6px, 1vh, 12px);
   border-bottom: 1px dashed rgba(0,0,0,0.1);
   text-align: center;
 }
@@ -131,7 +131,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 10px;
   color: var(--color-ink-muted);
   font-family: var(--font-mono);
@@ -141,32 +141,32 @@ html, body {
   height: 14px;
 }
 .sidebar-clock .time {
-  font-size: clamp(24px, 4vh, 32px); font-weight: 400; color: var(--color-ink-main);
+  font-size: clamp(20px, 3vh, 26px); font-weight: 400; color: var(--color-ink-main);
   font-family: var(--font-serif);
   font-variant-numeric: tabular-nums;
 }
 .sidebar-clock .date {
-  font-size: 11px; color: var(--color-ink-muted);
+  font-size: 10px; color: var(--color-ink-muted);
   text-transform: uppercase;
-  margin-top: 4px;
+  margin-top: 2px;
   font-family: var(--font-mono);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
 }
 
 .sidebar-nav {
   flex: 1; overflow-y: auto;
-  padding: clamp(8px, 1.5vh, 16px) 12px;
-  display: flex; flex-direction: column; gap: clamp(2px, 0.5vh, 4px);
+  padding: clamp(4px, 0.8vh, 8px) 10px;
+  display: flex; flex-direction: column; gap: clamp(1px, 0.3vh, 2px);
 }
 
 .nav-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: clamp(8px, 1.3vh, 12px);
+  display: flex; align-items: center; gap: 10px;
+  padding: clamp(5px, 0.9vh, 8px) 10px;
   border-radius: 6px;
   color: var(--color-ink-muted);
   text-decoration: none;
   font-family: var(--font-serif);
-  font-size: 16px !important; font-weight: 500;
+  font-size: 13.5px !important; font-weight: 500;
   transition: all .2s;
   border: 1px solid transparent;
 }
@@ -181,7 +181,7 @@ html, body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   font-weight: 600;
 }
-.nav-item svg { width: 20px !important; height: 20px !important; }
+.nav-item svg { width: 17px !important; height: 17px !important; }
 
 /* MAIN CONTENT */
 .main-content {
