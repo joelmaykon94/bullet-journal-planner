@@ -68,7 +68,11 @@ export class App implements OnInit {
   desktopNotificationsOpen = signal(false);
   mobileNotificationsOpen = signal(false);
   userMenuOpen = signal(false);
-  isDark = signal(true);
+  isDark = signal<boolean>(
+    typeof localStorage !== 'undefined'
+      ? (localStorage.getItem('bujo_theme') ? localStorage.getItem('bujo_theme') === 'dark' : true)
+      : true
+  );
   currentTime = signal(new Date());
   appVersion = environment.version;
   
@@ -99,6 +103,11 @@ export class App implements OnInit {
   }
 
   ngOnInit() {
+    if (this.isDark()) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     this.fetchLocalWeather();
     this.notificationService.clickedNotification$.subscribe(notif => {
       this.handleNotificationClick(notif);
@@ -250,7 +259,14 @@ export class App implements OnInit {
 
   toggleTheme() {
     this.isDark.update(v => !v);
-    document.documentElement.classList.toggle('dark');
+    const isDarkNow = this.isDark();
+    if (isDarkNow) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('bujo_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('bujo_theme', 'light');
+    }
   }
 
   getActiveLabel(): string {

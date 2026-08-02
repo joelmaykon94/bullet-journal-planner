@@ -29,18 +29,36 @@ export function isNewer(a: { updatedAt?: string }, b: { updatedAt?: string }): b
 
 /**
  * Merges two arrays of items by `id` using `updatedAt` timestamp comparison.
- * The item with the latest `updatedAt` wins.
- * If an item exists in one array only, it is included.
+ * Respects `deletedAt` timestamps and trashMap to prevent deleted items from reappearing during sync.
  */
 export function mergeArraysByTimestamp<T extends { id: string; updatedAt?: string; createdAt?: string; deletedAt?: string }>(
   localList: T[],
-  cloudList: T[]
+  cloudList: T[],
+  trashMap?: Map<string, any>
 ): T[] {
   const map = new Map<string, T>();
 
   const processItem = (item: T) => {
     if (!item || !item.id) return;
     const sanitized = ensureTimestamps(item);
+
+    // Skip item if it is explicitly marked as deleted
+    if (sanitized.deletedAt) {
+      return;
+    }
+
+    // Check if the item is present in the trash map
+    if (trashMap && trashMap.has(sanitized.id)) {
+      const trashItem = trashMap.get(sanitized.id);
+      const trashTime = new Date(trashItem.deletedAt || trashItem.updatedAt || 0).getTime();
+      const itemTime = new Date(sanitized.updatedAt || sanitized.createdAt || 0).getTime();
+
+      // If trash timestamp is newer than or equal to active item timestamp, keep item deleted
+      if (trashTime >= itemTime) {
+        return;
+      }
+    }
+
     const existing = map.get(sanitized.id);
 
     if (!existing) {
@@ -57,3 +75,4 @@ export function mergeArraysByTimestamp<T extends { id: string; updatedAt?: strin
 
   return Array.from(map.values());
 }
+

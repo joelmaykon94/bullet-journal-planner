@@ -214,9 +214,9 @@ export class BujoService {
         updatedAt: now,
         deletedAt: now
       };
-      // Add to trash
+      // Add to trash without duplicate ID
       const currentTrash = this.trashSubject.value;
-      const newTrash = [...currentTrash, trashedItem];
+      const newTrash = [...currentTrash.filter(i => i.id !== id), trashedItem];
       this.trashSubject.next(newTrash);
       this.saveToStorage('bujo_focus_trash_items', newTrash);
       

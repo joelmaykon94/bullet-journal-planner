@@ -93,8 +93,8 @@ import { getLocalDateString } from '../../../../utils/smartParser';
                   </button>
                   <span class="text-stone-800 truncate font-sans flex-1 min-w-0" [title]="item.content">{{ item.content }}</span>
                 </div>
-                <button (click)="removeItemTime(item.id)" class="text-stone-300 hover:text-red-500 flex-shrink-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity bujo-tooltip" data-tooltip="Remover horário">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <button (click)="removeItemTime(item.id, $event)" class="text-stone-300 hover:text-red-500 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bujo-tooltip touch-manipulation z-10" data-tooltip="Remover horário">
+                  <svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
               </div>
               
@@ -250,7 +250,11 @@ export class TimelineComponent implements OnInit, OnDestroy {
     this.bujoService.updateItem(id, { time: timeStr });
   }
 
-  removeItemTime(id: string) {
+  removeItemTime(id: string, event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     // In Angular/TS to remove a key we might need to set it to undefined or empty string.
     // Setting to empty string works well with truthiness checks.
     this.bujoService.updateItem(id, { time: '' });

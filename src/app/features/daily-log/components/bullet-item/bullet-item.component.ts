@@ -26,7 +26,11 @@ export interface ContentChunk {
       </button>
       
       <!-- Content (View Mode) -->
-      <div *ngIf="!isEditing" class="flex-1 flex flex-col pt-[3px] pr-14" (dblclick)="onEdit($event)">
+      <div *ngIf="!isEditing" 
+           class="flex-1 flex flex-col pt-[3px]"
+           [class.pr-28]="item.type === 'task'"
+           [class.pr-10]="item.type !== 'task'"
+           (dblclick)="onEdit($event)">
         <div class="text-[15px] font-sans leading-snug flex flex-wrap gap-1 items-center" 
              [class.line-through]="item.status === 'completed' || item.status === 'cancelled'"
              [class.text-stone-400]="item.status === 'completed' || item.status === 'cancelled'"
@@ -53,7 +57,7 @@ export interface ContentChunk {
                   rel="noopener noreferrer" 
                   class="text-blue-600 hover:underline inline-flex items-center gap-1 font-medium bg-blue-50 px-1 rounded mx-1"
                   (click)="$event.stopPropagation()">
-                 <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                 <svg class="w-3 h-3 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                  Link
                </a>
              </ng-container>
@@ -82,20 +86,28 @@ export interface ContentChunk {
         />
       </div>
 
-      <!-- Actions -->
-      <div *ngIf="!isEditing" class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-        <button *ngIf="item.type === 'task'" (click)="onMigrate($event, 'prev')" class="text-stone-400 hover:text-orange-600 p-1 hover:bg-orange-50 rounded transition-colors bujo-tooltip" data-tooltip="Antecipar">
-          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <!-- Actions (Always visible on mobile / touch, hover on desktop) -->
+      <div *ngIf="!isEditing" class="absolute right-1 top-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-0.5 z-10 pointer-events-auto">
+        <button *ngIf="item.type === 'task'" 
+                (click)="onMigrate($event, 'prev')" 
+                class="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-orange-600 active:text-orange-700 hover:bg-orange-50 rounded transition-colors bujo-tooltip touch-manipulation active:scale-95" 
+                data-tooltip="Antecipar">
+          <svg class="w-4 h-4 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </button>
-        <button *ngIf="item.type === 'task'" (click)="onMigrate($event, 'next')" class="text-stone-400 hover:text-orange-600 p-1 hover:bg-orange-50 rounded transition-colors bujo-tooltip" data-tooltip="Migrar">
-          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <button *ngIf="item.type === 'task'" 
+                (click)="onMigrate($event, 'next')" 
+                class="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-orange-600 active:text-orange-700 hover:bg-orange-50 rounded transition-colors bujo-tooltip touch-manipulation active:scale-95" 
+                data-tooltip="Migrar">
+          <svg class="w-4 h-4 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
         </button>
-        <button (click)="onDelete($event)" class="text-stone-400 hover:text-red-600 p-1 hover:bg-red-50 rounded transition-colors bujo-tooltip" data-tooltip="Deletar">
-          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <button (click)="onDelete($event)" 
+                class="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-red-600 active:text-red-700 hover:bg-red-50 rounded transition-colors bujo-tooltip touch-manipulation active:scale-95" 
+                data-tooltip="Deletar">
+          <svg class="w-4 h-4 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
@@ -172,6 +184,7 @@ export class BulletItemComponent implements OnInit {
   }
 
   onMigrate(event: Event, direction: 'prev' | 'next') {
+    event.preventDefault();
     event.stopPropagation();
     if (!this.item.date) return;
     
@@ -306,6 +319,7 @@ export class BulletItemComponent implements OnInit {
   }
 
   toggleStatus(event: Event) {
+    event.preventDefault();
     event.stopPropagation();
     if (this.item.type !== 'task') return;
 
@@ -318,6 +332,7 @@ export class BulletItemComponent implements OnInit {
   }
 
   onDelete(event: Event) {
+    event.preventDefault();
     event.stopPropagation();
     this.delete.emit(this.item.id);
   }

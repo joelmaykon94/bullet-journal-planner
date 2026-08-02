@@ -15,7 +15,20 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private getInitialUser(): User | null {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
+    const saved = localStorage.getItem('bujo_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        localStorage.removeItem('bujo_user');
+      }
+    }
+    return null;
+  }
+
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getInitialUser());
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
   
   private supabase: SupabaseClient;
@@ -44,18 +57,10 @@ export class AuthService {
       }
     });
 
-    // Check local storage for session fallback
-    const savedUser = localStorage.getItem('bujo_user');
-    if (savedUser) {
-      try {
-        const userObj = JSON.parse(savedUser);
-        this.currentUserSubject.next(userObj);
-        if (userObj && userObj.id && userObj.id !== 'anonymous-user-id') {
-          this.syncLocalToCloud(userObj.id, false, false);
-        }
-      } catch {
-        localStorage.removeItem('bujo_user');
-      }
+    // Check local storage for session fallback & sync trigger
+    const userObj = this.currentUserSubject.value;
+    if (userObj && userObj.id && userObj.id !== 'anonymous-user-id') {
+      this.syncLocalToCloud(userObj.id, false, false);
     }
 
     // Auto-sync whenever mobile / desktop app regains focus or visibility
@@ -144,18 +149,41 @@ export class AuthService {
       const allKeys = new Set([...Object.keys(cloudData), ...Object.keys(localData)]);
       const mergedData: any = {};
 
+      // Build trash map first from local & cloud trash
+      const localTrash = Array.isArray(localData['bujo_focus_trash_items']) ? localData['bujo_focus_trash_items'] : [];
+      const cloudTrash = Array.isArray(cloudData['bujo_focus_trash_items']) ? cloudData['bujo_focus_trash_items'] : [];
+      const mergedTrash = mergeArraysByTimestamp(localTrash, cloudTrash);
+      mergedData['bujo_focus_trash_items'] = mergedTrash;
+
+      const trashMap = new Map<string, any>();
+      mergedTrash.forEach(item => {
+        if (item && item.id) {
+          trashMap.set(item.id, item);
+        }
+      });
+
       for (const key of allKeys) {
+        if (key === 'bujo_focus_trash_items') continue;
+
         const cVal = cloudData[key];
         const lVal = localData[key];
 
         if (!cVal) {
-          mergedData[key] = lVal;
+          if (Array.isArray(lVal) && lVal.length > 0 && typeof lVal[0] === 'object' && 'id' in lVal[0]) {
+            mergedData[key] = mergeArraysByTimestamp(lVal, [], trashMap);
+          } else {
+            mergedData[key] = lVal;
+          }
         } else if (!lVal) {
-          mergedData[key] = cVal;
+          if (Array.isArray(cVal) && cVal.length > 0 && typeof cVal[0] === 'object' && 'id' in cVal[0]) {
+            mergedData[key] = mergeArraysByTimestamp([], cVal, trashMap);
+          } else {
+            mergedData[key] = cVal;
+          }
         } else if (Array.isArray(lVal) && Array.isArray(cVal)) {
           if ((lVal.length > 0 && lVal[0] && typeof lVal[0] === 'object' && 'id' in lVal[0]) ||
               (cVal.length > 0 && cVal[0] && typeof cVal[0] === 'object' && 'id' in cVal[0])) {
-            mergedData[key] = mergeArraysByTimestamp(lVal, cVal);
+            mergedData[key] = mergeArraysByTimestamp(lVal, cVal, trashMap);
           } else {
             mergedData[key] = Array.from(new Set([...cVal, ...lVal]));
           }
@@ -164,6 +192,12 @@ export class AuthService {
         } else {
           mergedData[key] = lVal || cVal;
         }
+      }
+
+      // Remove restored items from trash
+      if (Array.isArray(mergedData['bujo_items'])) {
+        const activeItemIds = new Set(mergedData['bujo_items'].map((i: any) => i.id));
+        mergedData['bujo_focus_trash_items'] = (mergedData['bujo_focus_trash_items'] || []).filter((t: any) => !activeItemIds.has(t.id));
       }
 
       // 4. Save merged data back to localStorage
