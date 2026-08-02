@@ -1,0 +1,159 @@
+<div class="delegates-container w-full max-w-4xl mx-auto p-4 sm:p-6 flex flex-col gap-6 select-none">
+  
+  <!-- Header Panel (Warm Paper & Sepia Ink) -->
+  <div class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] rounded-xl p-5 shadow-[4px_4px_0px_rgba(139,115,85,0.08)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-xl bg-[#f2ebdf] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[#59493d] dark:text-[#e3dac9] flex items-center justify-center shrink-0 shadow-xs">
+        <svg class="w-5 h-5 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h1 class="font-serif text-2xl font-bold text-[#292524] dark:text-[#f5f5f4] tracking-tight">Painel de @Aguardando & Delegados</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border bg-[#f2ebdf] dark:bg-[#1c1917] text-[#382c25] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20">
+            {{ waitingItems.length }} {{ waitingItems.length === 1 ? 'cobrança' : 'cobranças' }}
+          </span>
+        </div>
+        <p class="text-xs text-[#7a6656] dark:text-[#afa393] mt-1 font-sans font-medium">
+          Acompanhe entregas pendentes com terceiros, parceiros e instituições sem perder prazos.
+        </p>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+      <button class="bg-[#59493d] hover:bg-[#47392f] dark:bg-[#e3dac9] dark:hover:bg-[#f5f5f4] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold py-2.5 px-4 rounded-xl shadow-[2px_2px_0px_rgba(41,37,36,0.1)] transition-transform active:scale-95 cursor-pointer uppercase tracking-wider flex items-center gap-1.5 border border-[#59493d] dark:border-[#e3dac9]"
+              (click)="showAddModal = true">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova Cobrança
+      </button>
+    </div>
+  </div>
+
+  <!-- STATE 1: ZERO WAITING ITEMS SCREEN -->
+  <div *ngIf="waitingItems.length === 0" 
+       class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-dashed border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-xl p-10 text-center flex flex-col items-center justify-center gap-4 shadow-[4px_4px_0px_rgba(139,115,85,0.08)] my-2">
+    <div class="w-14 h-14 rounded-full bg-[#f2ebdf] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 flex items-center justify-center text-[#382c25] dark:text-[#e3dac9]">
+      <svg class="w-7 h-7 text-[#7a6656] dark:text-[#afa393]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+    <div class="max-w-md">
+      <h2 class="font-serif text-xl font-bold text-[#292524] dark:text-[#e3dac9]">Nenhuma Cobrança Pendente</h2>
+      <p class="text-xs text-[#7a6656] dark:text-[#afa393] mt-1 font-medium leading-relaxed">
+        Você não possui entregas pendentes com terceiros no momento.
+      </p>
+    </div>
+  </div>
+
+  <!-- STATE 2: GROUPED DELEGATES LIST -->
+  <div *ngIf="waitingItems.length > 0" class="flex flex-col gap-5">
+    
+    <div class="flex items-center justify-between text-xs font-bold text-[#7a6656] dark:text-[#afa393] uppercase tracking-wider px-1">
+      <span>Cobranças agrupadas por responsável ({{ groupedDelegates.length }})</span>
+      <span class="text-[11px] font-mono font-medium text-[#8c7765] dark:text-[#82776a]">Acompanhamento ativo</span>
+    </div>
+
+    <!-- Person Groups Loop -->
+    <div *ngFor="let group of groupedDelegates" 
+         class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-xl p-4.5 shadow-[4px_4px_0px_rgba(139,115,85,0.06)] flex flex-col gap-3">
+      
+      <!-- Person Group Header -->
+      <div class="flex items-center justify-between border-b border-[#e2d5c3] dark:border-[#e3dac9]/20 pb-2.5">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-[#f2ebdf] dark:bg-[#1c1917] text-[#382c25] dark:text-[#e3dac9] font-mono font-bold text-xs flex items-center justify-center border border-[#e2d5c3]">
+            @
+          </div>
+          <h3 class="font-serif text-base font-bold text-[#292524] dark:text-[#f5f5f4]">
+            {{ group.personName }}
+          </h3>
+        </div>
+        <span class="text-xs font-mono font-semibold text-[#7a6656] dark:text-[#afa393]">
+          {{ group.items.length }} {{ group.items.length === 1 ? 'item' : 'itens' }}
+        </span>
+      </div>
+
+      <!-- Items Loop inside Person Group -->
+      <div class="flex flex-col gap-2.5">
+        <div *ngFor="let item of group.items" 
+             class="bg-[#fcf9f2] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          
+          <div class="flex flex-col min-w-0 flex-1">
+            <span class="text-sm font-serif font-bold text-[#292524] dark:text-[#f5f5f4] leading-snug break-words">
+              {{ item.content }}
+            </span>
+            <span class="text-xs text-[#7a6656] dark:text-[#afa393] font-mono mt-0.5">
+              Registrado em: {{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-1.5 shrink-0 w-full sm:w-auto justify-end">
+            <!-- Cobrar Hoje -->
+            <button class="bg-[#f2ebdf] dark:bg-[#2a2724] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#382c25] dark:text-[#e3dac9] border border-[#e2d5c3] text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                    (click)="followUpToday(item)"
+                    title="Criar um lembrete de cobrança no Log Diário de Hoje">
+              <svg class="w-3.5 h-3.5 text-[#7a6656]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              Cobrar Hoje
+            </button>
+
+            <!-- Marcar como Recebido -->
+            <button class="bg-[#59493d] hover:bg-[#47392f] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                    (click)="markAsReceived(item)"
+                    title="Marcar como recebido / concluído">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Recebido
+            </button>
+
+            <!-- Excluir -->
+            <button class="w-8 h-8 rounded-lg bg-[#f2ebdf] dark:bg-[#2a2724] hover:bg-[#e6dbcd] text-[#7a6656] flex items-center justify-center transition-colors cursor-pointer border border-[#e2d5c3]"
+                    (click)="deleteItem(item)"
+                    title="Excluir">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ADD NEW WAITING ITEM MODAL -->
+  <div *ngIf="showAddModal" 
+       class="fixed inset-0 bg-[#292524]/40 dark:bg-black/80 backdrop-blur-xs z-[999999] flex items-center justify-center p-4"
+       (click)="showAddModal = false">
+    
+    <div class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[#1c1917] dark:text-[#e3dac9] rounded-xl w-full max-w-lg p-5 shadow-2xl flex flex-col gap-4 relative"
+         (click)="$event.stopPropagation()">
+      
+      <div class="flex items-center justify-between border-b border-[#e2d5c3] dark:border-[#e3dac9]/20 pb-3">
+        <h3 class="font-serif text-lg font-bold text-[#1c1917] dark:text-[#f5f5f4]">Registrar Nova Cobrança (@aguardando)</h3>
+        <button class="w-7 h-7 rounded-lg bg-[#f2ebdf] text-[#1c1917] font-bold text-xs" (click)="showAddModal = false">✕</button>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-[#382c25]">Responsável / Empresa (opcional):</label>
+          <input type="text" [(ngModel)]="newPersonName" placeholder="ex: João Silva, Banco Itaú" class="w-full bg-[#fdfbf7] border border-[#e2d5c3] rounded-lg p-2.5 text-sm text-[#1c1917] font-medium outline-none focus:border-[#59493d]" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-[#382c25]">O que está aguardando?:</label>
+          <textarea [(ngModel)]="newContent" placeholder="ex: Envio da planilha de orçamento mensal" rows="3" class="w-full bg-[#fdfbf7] border border-[#e2d5c3] rounded-lg p-2.5 text-sm text-[#1c1917] font-medium outline-none focus:border-[#59493d] resize-none"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 border-t border-[#e2d5c3] pt-3">
+        <button class="bg-[#f2ebdf] text-[#1c1917] text-xs font-bold py-2 px-4 rounded-xl border border-[#e2d5c3]" (click)="showAddModal = false">Cancelar</button>
+        <button class="bg-[#59493d] text-[#fdfbf7] text-xs font-bold py-2 px-5 rounded-xl border border-[#59493d]" (click)="addWaitingItem()">Registrar</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

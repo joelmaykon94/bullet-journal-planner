@@ -17,6 +17,7 @@ import { AuthScreenComponent } from './features/auth/components/auth-screen/auth
 import { ModalComponent } from './shared/components/modal/modal.component';
 import { InboxViewComponent } from './features/inbox/components/inbox-view/inbox-view.component';
 import { QuickCaptureModalComponent } from './features/inbox/components/quick-capture-modal/quick-capture-modal.component';
+import { DelegatesPanelComponent } from './features/delegates/components/delegates-panel/delegates-panel.component';
 import { NotificationService, AppNotification } from './services/notification.service';
 import { BujoService } from './services/bujo.service';
 import { AuthService } from './services/auth.service';
@@ -25,7 +26,7 @@ import { environment } from '../environments/version';
 
 import { SyncStatusService } from './services/sync-status.service';
 
-export type TabId = 'dashboard' | 'inbox' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
+export type TabId = 'dashboard' | 'inbox' | 'delegates' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
 
 interface Tab {
   id: TabId;
@@ -48,7 +49,7 @@ interface LocalWeather {
     CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent,
     WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent,
     FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent,
-    SidebarPomodoroComponent, InboxViewComponent, QuickCaptureModalComponent
+    SidebarPomodoroComponent, InboxViewComponent, QuickCaptureModalComponent, DelegatesPanelComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
@@ -87,12 +88,12 @@ export class App implements OnInit {
   currentTime = signal(new Date());
   appVersion = environment.version;
 
-  // Weather Signal
   localWeather = signal<LocalWeather | null>(null);
 
   tabs: Tab[] = [
     { id: 'dashboard', label: 'Dashboard', shortLabel: 'Início', icon: 'home' },
     { id: 'inbox', label: 'Caixa de Entrada', shortLabel: 'Inbox', icon: 'inbox' },
+    { id: 'delegates', label: 'Cobranças / Delegados', shortLabel: '@Aguardando', icon: 'user-check' },
     { id: 'timeline', label: 'Agenda Diária', shortLabel: 'Agenda', icon: 'clock' },
     { id: 'daily', label: 'Log Diário', shortLabel: 'Hoje', icon: 'calendar' },
     { id: 'weekly', label: 'Log Semanal', shortLabel: 'Semana', icon: 'calendar-days' },
@@ -106,9 +107,9 @@ export class App implements OnInit {
   bottomTabs: Tab[] = [
     { id: 'dashboard', label: 'Início', shortLabel: 'Início', icon: 'home' },
     { id: 'inbox', label: 'Inbox', shortLabel: 'Inbox', icon: 'inbox' },
+    { id: 'delegates', label: 'Delegados', shortLabel: '@Aguardando', icon: 'user-check' },
     { id: 'timeline', label: 'Agenda', shortLabel: 'Agenda', icon: 'clock' },
     { id: 'daily', label: 'Hoje', shortLabel: 'Hoje', icon: 'calendar' },
-    { id: 'budget', label: 'Finanças', shortLabel: 'Finanças', icon: 'wallet' },
   ];
 
   constructor() {
@@ -125,7 +126,6 @@ export class App implements OnInit {
       document.documentElement.classList.remove('dark');
     }
 
-    // Safety fallback: dismiss preloader after max 4.0s if weather takes long
     setTimeout(() => this.dismissPreloader(), 4000);
 
     this.fetchLocalWeather();
@@ -143,6 +143,14 @@ export class App implements OnInit {
   getInboxCount(): number {
     return this.bujoService.getItems().filter(i => 
       (i.date === 'inbox' || (i as any).isInbox === true) && 
+      i.status !== 'completed' && 
+      i.status !== 'cancelled'
+    ).length;
+  }
+
+  getDelegatesCount(): number {
+    return this.bujoService.getItems().filter(i => 
+      (i.delegatedTo || /@aguardando|@esperando|@cobrar/i.test(i.content)) &&
       i.status !== 'completed' && 
       i.status !== 'cancelled'
     ).length;

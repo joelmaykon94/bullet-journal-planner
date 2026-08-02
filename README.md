@@ -130,6 +130,11 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ⏳ **v1.7.0** — *Recurso 2: Painel Centralizado de "@aguardando" e Delegados* (02/08/2026)
+- **Central de Cobranças (`DelegatesPanelComponent`):** Nova aba dedicada no menu lateral (`Cobranças / Delegados`) com badge dinâmico que agrupa entregas pendentes por responsável ou instituição (`@pessoa`).
+- **Ações GTD em 1-Clique:** Botão `🔔 Cobrar Hoje` para enviar lembretes diretos para o Log Diário de Hoje, `✓ Recebido` para concluir entregas e `➕ Nova Cobrança`.
+- **Harmonização Estética:** Design em papel bege claro suave (`#faf7f5`) e tinta nanquim sépia (`#382c25`).
+
 ### 📥 **v1.6.0** — *Recurso 1: Captura Rápida (Inbox Zero Unificado)* (02/08/2026)
 - **Modal Global de Captura Rápida (`Ctrl + K`):** Atalho rápido de altíssima velocidade para registrar tarefas, notas ou eventos a qualquer momento em qualquer tela.
 - **Painel & Rota de Triagem da Caixa de Entrada (`inbox-view`):** Tela dedicada com visual de papel bege suave (`#faf7f5`) e tinta sépia nanquim (`#382c25`), incluindo 1-clique GTD triage (`Mover p/ Hoje`, `Agendar`, `Coleção`, `Delegar`, `Algum Dia`).
