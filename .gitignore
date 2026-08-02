@@ -51,3 +51,4 @@ cron_report.log
 inspect-db.mjs
 src/environments/version.ts
 public/env.js
+src/compiled-styles.css

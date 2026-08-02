@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-@source "./**/*.{html,ts}";
+@source "../src";
 
 /* ======================================================
    PAPER/JOURNAL UI THEME

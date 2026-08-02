@@ -53,7 +53,7 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/compiled-styles.css"
             ]
           },
           "configurations": {

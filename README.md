@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🎨 **v1.5.3** — *Compilação Prévia do Tailwind CSS e Correção Definitiva de Layout em Produção* (02/08/2026)
+- **Pré-compilação do Tailwind CSS (`build-css.mjs`):** Implementada a geração automatizada e completa das utilidades Tailwind v4 via PostCSS antes da execução do Angular CLI.
+- **Resolução da Discrepância de Layout (img_2):** Solução para a falha onde o servidor de produção renderizava elementos sem estilos. O bundle final agora contém 100% dos seletores e utilidades CSS compiladas (101 kB), idêntico ao ambiente local.
+
 ### ⚙️ **v1.5.2** — *Solução Definitiva para Cache de Estilos CSS e Service Worker em Produção* (02/08/2026)
 - **Controle Rigoroso de Cabeçalhos HTTP no Netlify:** Configuração de diretivas `Cache-Control: no-cache, no-store, must-revalidate` em `netlify.toml` para `index.html` e `sw.js`, impedindo que o navegador armazene referências desatualizadas a arquivos CSS antigos.
 - **Service Worker v4 (`bujo-focus-cache-v4`):** Atualização do Service Worker para forçar a purga de todas as versões de cache anteriores e proibir o cache do documento HTML principal.
