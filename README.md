@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🧹 **v1.5.4** — *Alinhamento de Publicação no Netlify e Limpeza de Arquivos Legados no Build* (02/08/2026)
+- **Remoção de Arquivos Legados em `dist`:** Adicionada rotina de limpeza automatizada (`rm -rf dist`) que elimina arquivos HTML/CSS antigos residuais que causavam erros 404 em produção.
+- **Saída Direta em `dist/`:** Reconfiguração do `outputPath` no `angular.json` e `netlify.toml` para publicar a aplicação Angular diretamente na raiz da pasta `dist/`, eliminando subpastas conflitantes (`dist/frontend/browser`).
+
 ### 🎨 **v1.5.3** — *Compilação Prévia do Tailwind CSS e Correção Definitiva de Layout em Produção* (02/08/2026)
 - **Pré-compilação do Tailwind CSS (`build-css.mjs`):** Implementada a geração automatizada e completa das utilidades Tailwind v4 via PostCSS antes da execução do Angular CLI.
 - **Resolução da Discrepância de Layout (img_2):** Solução para a falha onde o servidor de produção renderizava elementos sem estilos. O bundle final agora contém 100% dos seletores e utilidades CSS compiladas (101 kB), idêntico ao ambiente local.

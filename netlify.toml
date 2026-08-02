@@ -1,5 +1,5 @@
 [build]
-  publish = "dist/frontend/browser"
+  publish = "dist"
   command = "pnpm build"
 
 [build.environment]
