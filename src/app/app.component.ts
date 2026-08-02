@@ -10,6 +10,7 @@ import { WeatherService } from './features/weather/services/weather.service';
 import { CollectionsLibraryComponent } from './features/collections/components/collections-library/collections-library.component';
 import { BudgetPlannerComponent } from './features/budget/components/budget-planner/budget-planner.component';
 import { FutureLogComponent } from './features/future-log/components/future-log/future-log.component';
+import { DreamBoardComponent } from './features/dreams/components/dream-board/dream-board.component';
 import { SettingsComponent } from './features/settings/components/settings/settings.component';
 import { AuthScreenComponent } from './features/auth/components/auth-screen/auth-screen.component';
 import { ModalComponent } from './shared/components/modal/modal.component';
@@ -40,7 +41,7 @@ interface LocalWeather {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent, WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent, FutureLogComponent, SettingsComponent, AuthScreenComponent, ModalComponent],
+  imports: [CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent, WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent, FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   encapsulation: ViewEncapsulation.None
@@ -88,6 +89,7 @@ export class App implements OnInit {
     { id: 'future_log', label: 'Log do Futuro', shortLabel: 'Futuro', icon: 'book-open' },
     { id: 'budget', label: 'Financeiro', shortLabel: 'Finanças', icon: 'wallet' },
     { id: 'collections', label: 'Coleções', shortLabel: 'Coleções', icon: 'library' },
+    { id: 'dream_board', label: 'Sonhos', shortLabel: 'Sonhos', icon: 'sparkles' },
   ];
 
   bottomTabs: Tab[] = [

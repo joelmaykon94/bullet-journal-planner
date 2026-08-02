@@ -57,6 +57,7 @@ export class DashboardComponent implements OnInit {
     { tab: 'future_log', label: 'Futuro', iconPath: 'M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z' },
     { tab: 'budget', label: 'Finanças', iconPath: 'M21 12V7H5a2 2 0 010-4h14v4M3 5v14a2 2 0 002 2h16v-5M18 12a2 2 0 000 4h4v-4Z' },
     { tab: 'collections', label: 'Coleções', iconPath: 'M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z' },
+    { tab: 'dream_board', label: 'Sonhos', iconPath: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' },
   ];
 
   constructor(private bujoService: BujoService) {}

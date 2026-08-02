@@ -70,6 +70,7 @@
           <ng-container *ngIf="tab.icon === 'book-open'"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></ng-container>
           <ng-container *ngIf="tab.icon === 'wallet'"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></ng-container>
           <ng-container *ngIf="tab.icon === 'library'"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></ng-container>
+          <ng-container *ngIf="tab.icon === 'sparkles'"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></ng-container>
           <ng-container *ngIf="tab.icon === 'zap'"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></ng-container>
           <ng-container *ngIf="tab.icon === 'settings'"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></ng-container>
           <ng-container *ngIf="tab.icon === 'trash-2'"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></ng-container>
@@ -329,9 +330,10 @@
       <app-collections-library *ngIf="activeTab() === 'collections'"></app-collections-library>
       <app-budget-planner *ngIf="activeTab() === 'budget'"></app-budget-planner>
       <app-future-log *ngIf="activeTab() === 'future_log'"></app-future-log>
+      <app-dream-board *ngIf="activeTab() === 'dream_board'"></app-dream-board>
       <app-settings *ngIf="activeTab() === 'settings'" class="p-6 block"></app-settings>
 
-      <div class="flex flex-col items-center justify-center p-12 text-stone-400 gap-4 mt-20" *ngIf="activeTab() !== 'dashboard' && activeTab() !== 'daily' && activeTab() !== 'timeline' && activeTab() !== 'trash' && activeTab() !== 'weekly' && activeTab() !== 'monthly' && activeTab() !== 'collections' && activeTab() !== 'budget' && activeTab() !== 'future_log' && activeTab() !== 'settings'">
+      <div class="flex flex-col items-center justify-center p-12 text-stone-400 gap-4 mt-20" *ngIf="activeTab() !== 'dashboard' && activeTab() !== 'daily' && activeTab() !== 'timeline' && activeTab() !== 'trash' && activeTab() !== 'weekly' && activeTab() !== 'monthly' && activeTab() !== 'collections' && activeTab() !== 'budget' && activeTab() !== 'future_log' && activeTab() !== 'dream_board' && activeTab() !== 'settings'">
         <div class="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center border border-stone-200">
           <svg class="w-8 h-8 text-stone-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </div>

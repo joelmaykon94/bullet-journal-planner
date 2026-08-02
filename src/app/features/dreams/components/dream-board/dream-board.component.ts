@@ -21,6 +21,7 @@ export class DreamBoardComponent implements OnInit, OnDestroy {
   category = 'Pessoal';
   icon = '🏆';
   showAddForm = false;
+  editingDreamId: string | null = null;
   
   selectedCategoryFilter = 'Todos';
   statusFilter: 'all' | 'active' | 'conquered' = 'all';
@@ -60,15 +61,44 @@ export class DreamBoardComponent implements OnInit, OnDestroy {
     });
   }
 
-  handleFormSubmit(e: Event) {
-    e.preventDefault();
-    if (!this.title.trim()) return;
-    this.dreamsService.addDream(this.title, this.category, this.icon, this.description);
+  openAddForm() {
+    this.resetForm();
+    this.showAddForm = true;
+  }
+
+  openEditForm(dream: DreamItem) {
+    this.editingDreamId = dream.id;
+    this.title = dream.title;
+    this.category = dream.category || 'Pessoal';
+    this.icon = dream.icon || '🏆';
+    this.description = dream.description || '';
+    this.showAddForm = true;
+  }
+
+  resetForm() {
     this.title = '';
     this.description = '';
     this.category = 'Pessoal';
     this.icon = '🏆';
+    this.editingDreamId = null;
     this.showAddForm = false;
+  }
+
+  handleFormSubmit(e: Event) {
+    e.preventDefault();
+    if (!this.title.trim()) return;
+
+    if (this.editingDreamId) {
+      this.dreamsService.updateDream(this.editingDreamId, {
+        title: this.title,
+        category: this.category,
+        icon: this.icon,
+        description: this.description
+      });
+    } else {
+      this.dreamsService.addDream(this.title, this.category, this.icon, this.description);
+    }
+    this.resetForm();
   }
 
   handleConquerClick(id: string, conquered: boolean) {

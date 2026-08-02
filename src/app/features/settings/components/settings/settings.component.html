@@ -6,6 +6,20 @@
   </div>
 
   <div class="set-grid">
+    <!-- Exportação para NotebookLM / Markdown -->
+    <div class="set-card border-2 border-emerald-500/20 bg-emerald-500/5">
+      <div class="set-card-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="set-icon text-emerald-600"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <h4 class="text-emerald-900 font-bold">Exportar Contexto para NotebookLM</h4>
+      </div>
+      <p class="set-desc">Exporte todos os seus dados cadastrados no BuJo Focus (Daily Logs, Dreams, Coleções, Tags e Orçamento) em um único arquivo Markdown (<code>.md</code>) otimizado para carregar no NotebookLM.</p>
+      
+      <button (click)="exportMarkdown()" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Baixar Contexto Markdown (.md)
+      </button>
+    </div>
+
     <!-- Visual Options -->
     <div class="set-card">
       <div class="set-card-header">

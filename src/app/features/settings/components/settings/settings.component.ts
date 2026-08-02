@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../services/auth.service';
 import { BujoService, BujoTag } from '../../../../services/bujo.service';
 import { ModalService } from '../../../../services/modal.service';
+import { MarkdownExporterService } from '../../../../services/markdown-exporter.service';
 import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
@@ -26,7 +27,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     'blue', 'cyan', 'amber', 'emerald', 'purple', 'indigo', 'orange', 'fuchsia', 'green', 'slate', 'red', 'rose'
   ];
   
-  constructor(private authService: AuthService, private bujoService: BujoService, private modalService: ModalService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private authService: AuthService,
+    private bujoService: BujoService,
+    private modalService: ModalService,
+    private markdownExporter: MarkdownExporterService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.tagsSub = this.bujoService.tags$.subscribe(t => this.tags = t);
@@ -103,5 +110,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
     this.bujoService.deleteTag(tag.id);
     this.cdr.detectChanges();
+  }
+
+  exportMarkdown() {
+    this.markdownExporter.exportContextToMarkdown();
   }
 }

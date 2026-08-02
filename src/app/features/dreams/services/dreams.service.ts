@@ -82,4 +82,12 @@ export class DreamsService {
     const updated = this.dreams.filter(d => d.id !== id);
     this.saveDreams(updated);
   }
+
+  updateDream(id: string, updates: Partial<DreamItem>) {
+    const now = getIsoTimestamp();
+    const updated = this.dreams.map(d => 
+      d.id === id ? { ...d, ...updates, updatedAt: now } : d
+    );
+    this.saveDreams(updated);
+  }
 }
