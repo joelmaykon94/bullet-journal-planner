@@ -1,11 +1,11 @@
-const CACHE_NAME = 'bujo-focus-cache-v2';
+const CACHE_NAME = 'bujo-focus-cache-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/styles.css',
   '/manifest.webmanifest',
   '/assets/icons/icon-192x192.png',
   '/assets/icons/icon-512x512.png',
+  '/assets/loading-phrases.js',
   '/favicon.ico'
 ];
 
@@ -19,13 +19,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate Event
+// Activate Event - Deletes old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[SW] Clearing old cache:', key);
             return caches.delete(key);
           }
         })
@@ -37,11 +38,12 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Event (Network First Strategy)
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // If successful, update the cache
-        if (event.request.method === 'GET') {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const clonedResponse = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, clonedResponse);
@@ -50,12 +52,10 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // Fallback to cache if network fails
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          // Fallback for document navigation when offline
           if (event.request.mode === 'navigate') {
             return caches.match('/index.html');
           }
@@ -64,7 +64,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Background Push Notification Event (Windows & Smartfone)
+// Background Push Notification Event
 self.addEventListener('push', (event) => {
   let data = { title: 'BuJo Focus', body: 'Nova notificação de foco!', icon: '/assets/icons/icon-192x192.png' };
 
@@ -91,7 +91,7 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification Click Event (Open App)
+// Notification Click Event
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(

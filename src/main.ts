@@ -4,14 +4,11 @@ import { App } from './app/app.component';
 
 bootstrapApplication(App, appConfig)
   .then(() => {
-    // Para desenvolvimento, desativar o Service Worker para que ele não cacheie o CSS antigo
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (let registration of registrations) {
-          registration.unregister();
-          console.log('Service Worker unregistered to prevent CSS caching issues.');
-        }
-      });
+    // Registrar o Service Worker em produção se suportado
+    if ('serviceWorker' in navigator && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('[Service Worker] Registrado com sucesso:', reg.scope))
+        .catch(err => console.error('[Service Worker] Falha no registro:', err));
     }
   })
   .catch((err) => console.error(err));

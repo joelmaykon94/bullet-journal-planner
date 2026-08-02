@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ⚙️ **v1.4.2** — *Correção de Cache do Service Worker e Sincronização de Estilos CSS* (02/08/2026)
+- **Atualização Instantânea de Estilos em Produção:** Atualizado o Service Worker (`bujo-focus-cache-v3`) para forçar a limpeza automática de arquivos CSS antigos em cache e garantir que o novo visual seja carregado imediatamente em produção.
+- **Sincronização de Versões:** Alinhamento da geração automática do código de versão para evitar divergências entre o ambiente local e a produção.
+
 ### 👤 **v1.4.1** — *Correção do Nome de Usuário e Avatar no Celular* (02/08/2026)
 - **Avatar e Nome no Celular:** O menu mobile agora exibe a letra inicial correta do avatar e o nome amigável do usuário (extraído do Google OAuth via Supabase ou formatado a partir do e-mail), alinhando o cabeçalho mobile perfeitamente com o computador.
 
