@@ -1,7 +1,5 @@
-const CACHE_NAME = 'bujo-focus-cache-v3';
+const CACHE_NAME = 'bujo-focus-cache-v4';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
   '/manifest.webmanifest',
   '/assets/icons/icon-192x192.png',
   '/assets/icons/icon-512x512.png',
@@ -9,7 +7,7 @@ const ASSETS_TO_CACHE = [
   '/favicon.ico'
 ];
 
-// Install Event
+// Install Event - Pre-cache static icons
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -19,14 +17,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate Event - Deletes old caches
+// Activate Event - Purge all previous caches immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('[SW] Clearing old cache:', key);
+            console.log('[SW] Deleting old cache version:', key);
             return caches.delete(key);
           }
         })
@@ -36,10 +34,21 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch Event (Network First Strategy)
+// Fetch Event (Network First for document & HTML, Cache First for static media)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  const url = new URL(event.request.url);
+
+  // Never cache HTML documents or root page in SW cache to prevent stale CSS references
+  if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname.endsWith('/sw.js')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Network First for assets with fallback
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
@@ -52,14 +61,7 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-        });
+        return caches.match(event.request);
       })
   );
 });
@@ -98,7 +100,7 @@ self.addEventListener('notificationclick', (event) => {
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       const targetUrl = event.notification.data.url || '/';
       for (const client of clientList) {
-        if (client.url.includes(targetUrl) && 'focus' in client) {
+        if (client.url === targetUrl && 'focus' in client) {
           return client.focus();
         }
       }

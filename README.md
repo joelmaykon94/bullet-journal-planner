@@ -130,6 +130,11 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ⚙️ **v1.5.2** — *Solução Definitiva para Cache de Estilos CSS e Service Worker em Produção* (02/08/2026)
+- **Controle Rigoroso de Cabeçalhos HTTP no Netlify:** Configuração de diretivas `Cache-Control: no-cache, no-store, must-revalidate` em `netlify.toml` para `index.html` e `sw.js`, impedindo que o navegador armazene referências desatualizadas a arquivos CSS antigos.
+- **Service Worker v4 (`bujo-focus-cache-v4`):** Atualização do Service Worker para forçar a purga de todas as versões de cache anteriores e proibir o cache do documento HTML principal.
+- **Detecção e Atualização Automática no Navegador:** Adicionada verificação de atualização no `main.ts` que recarrega a página automaticamente quando um novo deploy for publicado em produção.
+
 ### ⚡ **v1.5.1** — *Sincronização em Tempo Real do Tempo de Foco no Log Diário* (02/08/2026)
 - **Atualização Instantânea no Log Diário:** Correção no ciclo de vida dos componentes para renderizar instantaneamente os selos de tempo acumulado (`⏱️`) e pomodoros (`🍅`) nas tarefas do Log Diário/Agenda assim que o timer é pausado, reiniciado, alterado ou finalizado.
 - **Selo com Visual Destacado:** Estilização de alto contraste (dourado/âmbar em negrito) garantindo leitura clara e nítida no tema claro e escuro.
