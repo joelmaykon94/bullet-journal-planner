@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { getIsoTimestamp, ensureTimestamps } from '../../../utils/syncUtils';
+import { SyncStatusService } from '../../../services/sync-status.service';
 
 export interface DreamItem {
   id: string;
@@ -9,6 +11,8 @@ export interface DreamItem {
   description: string;
   conquered: boolean;
   createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }
 
 @Injectable({
@@ -20,20 +24,31 @@ export class DreamsService {
   private dreamsSubject = new BehaviorSubject<DreamItem[]>(this.loadDreams());
   public dreams$ = this.dreamsSubject.asObservable();
 
-  constructor() {}
+  constructor(private syncStatusService: SyncStatusService) {
+    this.syncStatusService.dataSynced$.subscribe(() => {
+      this.reloadDreams();
+    });
+  }
+
+  public reloadDreams() {
+    this.dreamsSubject.next(this.loadDreams());
+  }
 
   private loadDreams(): DreamItem[] {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      if (!data) return [];
+      const parsed: DreamItem[] = JSON.parse(data);
+      return parsed.map(d => ensureTimestamps(d));
     } catch {
       return [];
     }
   }
 
   private saveDreams(dreams: DreamItem[]) {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(dreams));
-    this.dreamsSubject.next(dreams);
+    const sanitized = dreams.map(d => ensureTimestamps(d));
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sanitized));
+    this.dreamsSubject.next(sanitized);
   }
 
   get dreams(): DreamItem[] {
@@ -41,6 +56,7 @@ export class DreamsService {
   }
 
   addDream(title: string, category: string, icon: string, description: string) {
+    const now = getIsoTimestamp();
     const newDream: DreamItem = {
       id: `dream-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       title,
@@ -48,14 +64,16 @@ export class DreamsService {
       icon,
       description,
       conquered: false,
-      createdAt: new Date().toISOString()
+      createdAt: now,
+      updatedAt: now
     };
     this.saveDreams([...this.dreams, newDream]);
   }
 
   toggleDreamConquered(id: string) {
+    const now = getIsoTimestamp();
     const updated = this.dreams.map(d => 
-      d.id === id ? { ...d, conquered: !d.conquered } : d
+      d.id === id ? { ...d, conquered: !d.conquered, updatedAt: now } : d
     );
     this.saveDreams(updated);
   }

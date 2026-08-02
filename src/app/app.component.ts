@@ -19,6 +19,8 @@ import { AuthService } from './services/auth.service';
 import { ModalService } from './services/modal.service';
 import { environment } from '../environments/version';
 
+import { SyncStatusService } from './services/sync-status.service';
+
 export type TabId = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
 
 interface Tab {
@@ -49,9 +51,19 @@ export class App implements OnInit {
   public readonly bujoService = inject(BujoService);
   public readonly authService = inject(AuthService);
   public readonly modalService = inject(ModalService);
+  public readonly syncStatusService = inject(SyncStatusService);
   protected readonly title = signal('BuJo Focus');
 
-  activeTab = signal<TabId>('dashboard');
+  manualSync() {
+    const user = this.authService.currentUser;
+    if (user && user.id && user.id !== 'anonymous-user-id') {
+      this.authService.syncLocalToCloud(user.id, false, true);
+    } else {
+      this.syncStatusService.showToast({ type: 'offline', message: 'Você está no Modo Offline.' });
+    }
+  }
+
+  activeTab = signal<TabId>((typeof localStorage !== 'undefined' && localStorage.getItem('bujo_active_tab') as TabId) || 'dashboard');
   sidebarOpen = signal(false);
   desktopNotificationsOpen = signal(false);
   mobileNotificationsOpen = signal(false);
@@ -167,6 +179,9 @@ export class App implements OnInit {
 
   setTab(tabId: TabId) {
     this.activeTab.set(tabId);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('bujo_active_tab', tabId);
+    }
     if (window.innerWidth < 1024) {
       this.sidebarOpen.set(false);
     }

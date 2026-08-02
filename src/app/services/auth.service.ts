@@ -3,6 +3,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { ModalService } from './modal.service';
+import { mergeArraysByTimestamp, getIsoTimestamp } from '../utils/syncUtils';
+import { SyncStatusService } from './sync-status.service';
 
 export interface User {
   id: string;
@@ -18,8 +20,10 @@ export class AuthService {
   
   private supabase: SupabaseClient;
 
-  constructor(private modalService: ModalService) {
-    // Keys are now securely loaded from environment variables
+  constructor(
+    private modalService: ModalService,
+    private syncStatusService: SyncStatusService
+  ) {
     const supabaseUrl = environment.supabaseUrl;
     const supabaseKey = environment.supabaseKey;
     this.supabase = createClient(supabaseUrl, supabaseKey);
@@ -30,16 +34,9 @@ export class AuthService {
         localStorage.setItem('bujo_user', JSON.stringify(loggedUser));
         this.currentUserSubject.next(loggedUser);
         
-        if (event === 'SIGNED_IN') {
-          // Use sessionStorage to prevent infinite reload loops.
-          // This ensures sync only happens ONCE per tab session when logging in.
-          if (!sessionStorage.getItem('bujo_synced_' + session.user.id)) {
-            sessionStorage.setItem('bujo_synced_' + session.user.id, 'true');
-            this.syncLocalToCloud(session.user.id);
-          }
-        }
+        // Sync with cloud immediately on auth change / app load
+        this.syncLocalToCloud(session.user.id, false, false);
       } else {
-        // If not anonymous mode, log out
         const savedUser = localStorage.getItem('bujo_user');
         if (!savedUser || !savedUser.includes('anonymous-user-id')) {
           this.currentUserSubject.next(null);
@@ -51,10 +48,30 @@ export class AuthService {
     const savedUser = localStorage.getItem('bujo_user');
     if (savedUser) {
       try {
-        this.currentUserSubject.next(JSON.parse(savedUser));
+        const userObj = JSON.parse(savedUser);
+        this.currentUserSubject.next(userObj);
+        if (userObj && userObj.id && userObj.id !== 'anonymous-user-id') {
+          this.syncLocalToCloud(userObj.id, false, false);
+        }
       } catch {
         localStorage.removeItem('bujo_user');
       }
+    }
+
+    // Auto-sync whenever mobile / desktop app regains focus or visibility
+    if (typeof window !== 'undefined') {
+      const handleRefresh = () => {
+        const user = this.currentUserSubject.value;
+        if (user && user.id && user.id !== 'anonymous-user-id') {
+          this.syncLocalToCloud(user.id, false, false);
+        }
+      };
+      window.addEventListener('focus', handleRefresh);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          handleRefresh();
+        }
+      });
     }
   }
 
@@ -64,7 +81,6 @@ export class AuthService {
 
   async loginSupabase(email: string): Promise<boolean> {
     try {
-      // Usando magic link ou OTP
       const { data, error } = await this.supabase.auth.signInWithOtp({
         email: email,
       });
@@ -93,9 +109,13 @@ export class AuthService {
     }
   }
 
-  async syncLocalToCloud(userId: string, shouldReload = true) {
+  async syncLocalToCloud(userId: string, shouldReload = false, showToast = false) {
+    if (!userId || userId === 'anonymous-user-id') return;
+
+    this.syncStatusService.setSyncState('syncing');
+
     try {
-      // 1. Download existing data from Cloud
+      // 1. Download existing data from Cloud FIRST
       const { data: cloudRow, error: fetchError } = await this.supabase
         .from('bujo_user_data')
         .select('data')
@@ -120,30 +140,29 @@ export class AuthService {
         }
       }
 
-      // 3. Merge data (Cloud takes precedence if local is empty, or simple merge)
-      // Here we do a simple object merge where cloud overrides local if conflicts, 
-      // but if we want local to not overwrite cloud with empty arrays, we can do a smart merge.
-      const mergedData: any = { ...cloudData };
-      for (const key of Object.keys(localData)) {
-        // Only override cloud data if local data is not "empty" (like empty array or string)
-        const lVal = localData[key];
+      // 3. Smart Timestamp Merge
+      const allKeys = new Set([...Object.keys(cloudData), ...Object.keys(localData)]);
+      const mergedData: any = {};
+
+      for (const key of allKeys) {
         const cVal = cloudData[key];
+        const lVal = localData[key];
+
         if (!cVal) {
           mergedData[key] = lVal;
-        } else if (Array.isArray(lVal) && lVal.length > 0) {
-          // Both have arrays? We should merge them by unique ID if possible, but for simplicity, we concat and deduplicate by ID
-          if (Array.isArray(cVal)) {
-            const map = new Map();
-            cVal.forEach((item: any) => { if (item && item.id) map.set(item.id, item); });
-            lVal.forEach((item: any) => { if (item && item.id) map.set(item.id, item); });
-            mergedData[key] = Array.from(map.values());
-            if (mergedData[key].length === 0) {
-              // If it's just strings/numbers array
-              mergedData[key] = Array.from(new Set([...cVal, ...lVal]));
-            }
+        } else if (!lVal) {
+          mergedData[key] = cVal;
+        } else if (Array.isArray(lVal) && Array.isArray(cVal)) {
+          if ((lVal.length > 0 && lVal[0] && typeof lVal[0] === 'object' && 'id' in lVal[0]) ||
+              (cVal.length > 0 && cVal[0] && typeof cVal[0] === 'object' && 'id' in cVal[0])) {
+            mergedData[key] = mergeArraysByTimestamp(lVal, cVal);
           } else {
-            mergedData[key] = lVal;
+            mergedData[key] = Array.from(new Set([...cVal, ...lVal]));
           }
+        } else if (typeof lVal === 'object' && typeof cVal === 'object') {
+          mergedData[key] = { ...cVal, ...lVal };
+        } else {
+          mergedData[key] = lVal || cVal;
         }
       }
 
@@ -151,14 +170,17 @@ export class AuthService {
       for (const key of Object.keys(mergedData)) {
         if (key.startsWith('bujo_')) {
           const val = mergedData[key];
-          localStorage.setItem(key, typeof val === 'object' ? JSON.stringify(val) : val);
+          localStorage.setItem(key, typeof val === 'object' ? JSON.stringify(val) : String(val));
         }
       }
+
+      // Notify services to reload state from localStorage
+      this.syncStatusService.notifyDataSynced();
 
       // 5. Upload merged data to Cloud
       const { error: upsertError } = await this.supabase
         .from('bujo_user_data')
-        .upsert({ user_id: userId, data: mergedData, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        .upsert({ user_id: userId, data: mergedData, updated_at: getIsoTimestamp() }, { onConflict: 'user_id' });
         
       if (upsertError) throw upsertError;
 
@@ -166,12 +188,17 @@ export class AuthService {
       const loggedUser: User = { id: userId, email: this.currentUserSubject.value?.email || 'user@bujofocus.com' };
       localStorage.setItem('bujo_user', JSON.stringify(loggedUser));
       
-      // Prevent infinite loop from OAuth redirects by clearing the URL hash
+      // Clear URL auth parameters if present
       if (window.location.hash.includes('access_token') || window.location.hash.includes('type=recovery') || window.location.hash.includes('type=magiclink')) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
       
-      // We only reload if we actually merged something or if it's a fresh login
+      if (showToast) {
+        this.syncStatusService.notifySyncSuccess('Dados sincronizados com a nuvem com sucesso');
+      } else {
+        this.syncStatusService.setSyncState('synced');
+      }
+
       if (shouldReload) {
         setTimeout(() => {
           window.location.reload();
@@ -179,33 +206,14 @@ export class AuthService {
       }
       
     } catch (e) {
-      console.error(e);
-      await this.modalService.alert('Erro ao sincronizar dados: ' + String(e), 'Erro');
+      console.error('Erro na sincronização de dados:', e);
+      this.syncStatusService.setSyncState(this.syncStatusService.isOnline ? 'error' : 'offline');
     }
   }
 
   async uploadLocalToCloud(userId: string) {
-    try {
-      const localData: any = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('bujo_') && key !== 'bujo_user' && key !== 'bujo_supabase_config') {
-          try {
-            localData[key] = JSON.parse(localStorage.getItem(key) || '""');
-          } catch {
-            localData[key] = localStorage.getItem(key);
-          }
-        }
-      }
-
-      const { error: upsertError } = await this.supabase
-        .from('bujo_user_data')
-        .upsert({ user_id: userId, data: localData, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
-        
-      if (upsertError) throw upsertError;
-    } catch (e) {
-      console.error('Failed to auto-sync to cloud:', e);
-    }
+    // Instead of blind overwrite, perform cloud-first timestamp merge
+    return this.syncLocalToCloud(userId, false);
   }
 
   loginAnonymous(): void {

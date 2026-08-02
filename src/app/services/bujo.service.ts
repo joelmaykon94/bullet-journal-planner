@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { getLocalDateString } from '../utils/smartParser';
 import { AuthService } from './auth.service';
+import { getIsoTimestamp, ensureTimestamps } from '../utils/syncUtils';
+import { SyncStatusService } from './sync-status.service';
 
 export interface BujoItem {
   id: string;
@@ -16,6 +18,8 @@ export interface BujoItem {
   energy?: number;
   complexity?: number;
   createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
   icon?: string;
   link?: string;
   description?: string;
@@ -28,6 +32,9 @@ export interface BujoTag {
   id: string;
   label: string;
   colorClass: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }
 
 export interface BujoSettings {
@@ -97,17 +104,23 @@ export class BujoService {
   private tagsSubject = new BehaviorSubject<BujoTag[]>([]);
   public tags$: Observable<BujoTag[]> = this.tagsSubject.asObservable();
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    private syncStatusService: SyncStatusService
+  ) {
     this.loadAllData();
+    this.syncStatusService.dataSynced$.subscribe(() => {
+      this.loadAllData();
+    });
   }
 
-  private loadAllData() {
+  public loadAllData() {
     this.itemsSubject.next(this.getParsedStorage('bujo_items', []));
     this.settingsSubject.next(this.getParsedStorage('bujo_settings', this.settingsSubject.value));
     this.collectionsSubject.next(this.getParsedStorage('bujo_collections', []));
     this.habitsSubject.next(this.getParsedStorage('bujo_habits', []));
     this.habitLogsSubject.next(this.getParsedStorage('bujo_habit_logs', {}));
-    this.dreamsSubject.next(this.getParsedStorage('bujo_dreams', []));
+    this.dreamsSubject.next(this.getParsedStorage('bujo_focus_dreams', []));
     this.trashSubject.next(this.getParsedStorage('bujo_focus_trash_items', []));
     
     const savedTags = this.getParsedStorage('bujo_tags', null);
@@ -170,19 +183,22 @@ export class BujoService {
   }
 
   saveItems(newItems: BujoItem[]) {
-    this.itemsSubject.next(newItems);
-    this.saveToStorage('bujo_items', newItems);
+    const sanitized = newItems.map(item => ensureTimestamps(item));
+    this.itemsSubject.next(sanitized);
+    this.saveToStorage('bujo_items', sanitized);
   }
 
   addItem(item: Partial<BujoItem>) {
     const items = this.getItems();
+    const now = getIsoTimestamp();
     const newItem: BujoItem = {
       id: item.id || Math.random().toString(36).substring(2, 9),
       content: item.content || 'Nova tarefa',
       type: item.type || 'task',
       status: item.status || 'todo',
       date: item.date || new Date().toISOString().split('T')[0],
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
       ...item
     };
     this.saveItems([...items, newItem]);
@@ -192,9 +208,15 @@ export class BujoService {
     const items = this.getItems();
     const itemToDelete = items.find(i => i.id === id);
     if (itemToDelete) {
+      const now = getIsoTimestamp();
+      const trashedItem: BujoItem = {
+        ...itemToDelete,
+        updatedAt: now,
+        deletedAt: now
+      };
       // Add to trash
       const currentTrash = this.trashSubject.value;
-      const newTrash = [...currentTrash, itemToDelete];
+      const newTrash = [...currentTrash, trashedItem];
       this.trashSubject.next(newTrash);
       this.saveToStorage('bujo_focus_trash_items', newTrash);
       
@@ -207,6 +229,12 @@ export class BujoService {
     const currentTrash = this.trashSubject.value;
     const itemToRestore = currentTrash.find(i => i.id === id);
     if (itemToRestore) {
+      const now = getIsoTimestamp();
+      const restoredItem: BujoItem = {
+        ...itemToRestore,
+        updatedAt: now,
+        deletedAt: undefined
+      };
       // Remove from trash
       const newTrash = currentTrash.filter(i => i.id !== id);
       this.trashSubject.next(newTrash);
@@ -214,13 +242,14 @@ export class BujoService {
       
       // Add back to active
       const items = this.getItems();
-      this.saveItems([...items, itemToRestore]);
+      this.saveItems([...items, restoredItem]);
     }
   }
 
   updateItem(id: string, updates: Partial<BujoItem>) {
     const items = this.getItems();
-    this.saveItems(items.map(item => item.id === id ? { ...item, ...updates } : item));
+    const now = getIsoTimestamp();
+    this.saveItems(items.map(item => item.id === id ? { ...item, ...updates, updatedAt: now } : item));
   }
 
   // Habits Actions

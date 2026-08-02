@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { getIsoTimestamp, ensureTimestamps } from '../../../utils/syncUtils';
+import { SyncStatusService } from '../../../services/sync-status.service';
 
 export interface Subtask {
   id: string;
   content: string;
   completed: boolean;
   icon?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Media {
@@ -13,6 +17,8 @@ export interface Media {
   type: 'image' | 'link';
   name: string;
   url: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CollectionItem {
@@ -23,6 +29,9 @@ export interface CollectionItem {
   media: Media[];
   subtasks: Subtask[];
   icon?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }
 
 export interface Collection {
@@ -31,6 +40,9 @@ export interface Collection {
   description: string;
   icon: string;
   items: CollectionItem[];
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }
 
 @Injectable({
@@ -42,16 +54,45 @@ export class CollectionsService {
   private collectionsSubject = new BehaviorSubject<Collection[]>(this.loadCollections());
   public collections$ = this.collectionsSubject.asObservable();
 
-  constructor() {}
+  constructor(private syncStatusService: SyncStatusService) {
+    this.syncStatusService.dataSynced$.subscribe(() => {
+      this.reloadCollections();
+    });
+  }
+
+  public reloadCollections() {
+    this.collectionsSubject.next(this.loadCollections());
+  }
 
   private loadCollections(): Collection[] {
     const saved = localStorage.getItem(this.STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    try {
+      const parsed: Collection[] = JSON.parse(saved);
+      const now = getIsoTimestamp();
+      return parsed.map(c => {
+        const col = ensureTimestamps(c, now);
+        return {
+          ...col,
+          items: (col.items || []).map(i => ensureTimestamps(i, now))
+        };
+      });
+    } catch {
+      return [];
+    }
   }
 
   private saveCollections(collections: Collection[]) {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(collections));
-    this.collectionsSubject.next(collections);
+    const now = getIsoTimestamp();
+    const sanitized = collections.map(c => {
+      const colWithTime = ensureTimestamps(c, now);
+      return {
+        ...colWithTime,
+        items: (colWithTime.items || []).map(i => ensureTimestamps(i, now))
+      };
+    });
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sanitized));
+    this.collectionsSubject.next(sanitized);
   }
 
   get collections(): Collection[] {
@@ -59,12 +100,15 @@ export class CollectionsService {
   }
 
   createCollection(name: string, description: string, icon: string) {
+    const now = getIsoTimestamp();
     const newCol: Collection = {
       id: `col-${Date.now()}`,
       name: name.trim(),
       description: description.trim(),
       icon,
-      items: []
+      items: [],
+      createdAt: now,
+      updatedAt: now
     };
     this.saveCollections([...this.collections, newCol]);
   }
@@ -74,6 +118,7 @@ export class CollectionsService {
   }
 
   createCollectionItem(colId: string, title: string, icon?: string, notes: string = '') {
+    const now = getIsoTimestamp();
     const newItem: CollectionItem = {
       id: `item-${Date.now()}-${Math.random()}`,
       title: title.trim(),
@@ -81,34 +126,41 @@ export class CollectionsService {
       notes: notes.trim(),
       media: [],
       subtasks: [],
-      icon
+      icon,
+      createdAt: now,
+      updatedAt: now
     };
     
     this.saveCollections(this.collections.map(c => 
-      c.id === colId ? { ...c, items: [...c.items, newItem] } : c
+      c.id === colId ? { ...c, updatedAt: now, items: [...c.items, newItem] } : c
     ));
   }
 
   deleteCollectionItem(colId: string, itemId: string) {
+    const now = getIsoTimestamp();
     this.saveCollections(this.collections.map(c => 
-      c.id === colId ? { ...c, items: c.items.filter(i => i.id !== itemId) } : c
+      c.id === colId ? { ...c, updatedAt: now, items: c.items.filter(i => i.id !== itemId) } : c
     ));
   }
 
   updateCollectionItemStatus(colId: string, itemId: string, status: 'todo' | 'doing' | 'done') {
+    const now = getIsoTimestamp();
     this.saveCollections(this.collections.map(c => 
       c.id === colId ? {
         ...c,
-        items: c.items.map(i => i.id === itemId ? { ...i, status } : i)
+        updatedAt: now,
+        items: c.items.map(i => i.id === itemId ? { ...i, status, updatedAt: now } : i)
       } : c
     ));
   }
 
   updateCollectionItem(colId: string, itemId: string, updates: Partial<CollectionItem>) {
+    const now = getIsoTimestamp();
     this.saveCollections(this.collections.map(c => 
       c.id === colId ? {
         ...c,
-        items: c.items.map(i => i.id === itemId ? { ...i, ...updates } : i)
+        updatedAt: now,
+        items: c.items.map(i => i.id === itemId ? { ...i, ...updates, updatedAt: now } : i)
       } : c
     ));
   }

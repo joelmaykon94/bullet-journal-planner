@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
 import { BujoService, BujoItem } from '../../../services/bujo.service';
+import { getIsoTimestamp, ensureTimestamps } from '../../../utils/syncUtils';
+import { SyncStatusService } from '../../../services/sync-status.service';
 
 export interface BudgetItem {
   id: string;
@@ -13,8 +15,9 @@ export interface BudgetItem {
   totalInstallments?: number;
   date: string; // Transaction/Created Date (YYYY-MM-DD)
   dueDate?: string; // Due Date (YYYY-MM-DD)
-  createdAt: string; // Record Creation Date (YYYY-MM-DD)
+  createdAt: string; // Record Creation Date ISO
   updatedAt?: string;
+  deletedAt?: string;
   owner: string;
   category: string;
   macroCategory: 'Essenciais' | 'Estilo de Vida' | 'Investimentos/Dívidas' | 'Outros';
@@ -55,6 +58,7 @@ export const getMacroCategoryForCategory = (cat: string): 'Essenciais' | 'Estilo
 
 const sanitizeBudgetItems = (items: any[], defaultType: 'income' | 'fixed' | 'installment' | 'arrears' | 'variable'): BudgetItem[] => {
   const todayStr = new Date().toISOString().split('T')[0];
+  const now = getIsoTimestamp();
   return items.map(item => ({
     id: item.id || `budget-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
     description: item.description || '',
@@ -66,7 +70,9 @@ const sanitizeBudgetItems = (items: any[], defaultType: 'income' | 'fixed' | 'in
     totalInstallments: item.totalInstallments,
     date: item.date || todayStr,
     dueDate: item.dueDate || undefined,
-    createdAt: item.createdAt || todayStr,
+    createdAt: item.createdAt || now,
+    updatedAt: item.updatedAt || item.createdAt || now,
+    deletedAt: item.deletedAt,
     owner: item.owner || 'Geral',
     category: item.category || 'Geral',
     macroCategory: item.macroCategory || 'Outros',
@@ -102,11 +108,17 @@ export class BudgetService {
   private settingsSubject = new BehaviorSubject<BudgetSettings>({ dailyReportEnabled: false, emails: 'email@exemplo.com', reportHour: 6 });
   public settings$ = this.settingsSubject.asObservable();
 
-  constructor(private bujoService: BujoService) {
+  constructor(
+    private bujoService: BujoService,
+    private syncStatusService: SyncStatusService
+  ) {
     this.loadData();
+    this.syncStatusService.dataSynced$.subscribe(() => {
+      this.loadData();
+    });
   }
 
-  private loadData() {
+  public loadData() {
     this.incomesSubject.next(sanitizeBudgetItems(this.getParsedStorage('bujo_budget_income', []), 'income'));
     this.fixedBillsSubject.next(sanitizeBudgetItems(this.getParsedStorage('bujo_budget_fixed', []), 'fixed'));
     this.installmentsSubject.next(sanitizeBudgetItems(this.getParsedStorage('bujo_budget_installments', []), 'installment'));
@@ -138,8 +150,9 @@ export class BudgetService {
 
   // Generic updater
   private updateCollection(subject: BehaviorSubject<BudgetItem[]>, key: string, newItems: BudgetItem[]) {
-    subject.next(newItems);
-    this.saveToStorage(key, newItems);
+    const sanitized = sanitizeBudgetItems(newItems, 'variable');
+    subject.next(sanitized);
+    this.saveToStorage(key, sanitized);
   }
 
   getIncomes(): BudgetItem[] { return this.incomesSubject.value; }

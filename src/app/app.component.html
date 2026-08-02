@@ -203,7 +203,50 @@
         <h1 class="flex-1 text-center font-serif text-lg font-bold text-stone-900 truncate">{{ title() }}</h1>
       </ng-template>
 
-      <div class="top-bar-right flex-shrink-0 flex items-center gap-3 relative">
+      <div class="top-bar-right flex-shrink-0 flex items-center gap-2 sm:gap-3 relative">
+        <!-- Modern Sync Status Indicator -->
+        <button (click)="manualSync()" 
+                title="Clique para sincronizar manualmente com a nuvem"
+                class="inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-tight transition-all border cursor-pointer select-none shadow-xs"
+                [ngClass]="{
+                  'bg-emerald-50/90 text-emerald-700 border-emerald-300 hover:bg-emerald-100': (syncStatusService.syncState$ | async) === 'synced',
+                  'bg-blue-50/90 text-blue-700 border-blue-300 animate-pulse': (syncStatusService.syncState$ | async) === 'syncing',
+                  'bg-amber-50/90 text-amber-700 border-amber-300': (syncStatusService.syncState$ | async) === 'offline',
+                  'bg-red-50/90 text-red-700 border-red-300': (syncStatusService.syncState$ | async) === 'error'
+                }">
+          <ng-container [ngSwitch]="syncStatusService.syncState$ | async">
+            <!-- Syncing -->
+            <span *ngSwitchCase="'syncing'" class="flex items-center gap-1">
+              <svg class="w-3 h-3 animate-spin text-blue-600 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="font-sans">Salvando...</span>
+            </span>
+
+            <!-- Synced -->
+            <span *ngSwitchCase="'synced'" class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+              <span class="font-sans hidden xs:inline">Nuvem</span>
+              <svg class="w-3 h-3 text-emerald-600 xs:hidden flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z" />
+              </svg>
+            </span>
+
+            <!-- Offline -->
+            <span *ngSwitchCase="'offline'" class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+              <span class="font-sans">Offline</span>
+            </span>
+
+            <!-- Error -->
+            <span *ngSwitchDefault class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>
+              <span class="font-sans">Erro</span>
+            </span>
+          </ng-container>
+        </button>
+
         <!-- Notification Bell -->
         <div class="relative notification-container">
           <button class="relative p-1.5 text-stone-500 hover:bg-stone-100 rounded-full transition-colors"
@@ -316,5 +359,22 @@
 <ng-template #authScreen>
   <app-auth-screen></app-auth-screen>
 </ng-template>
+
+<!-- Floating Sync Toast Notification (Bottom Banner / Modal) -->
+<div *ngIf="(syncStatusService.toast$ | async) as syncToast" 
+     class="fixed bottom-16 sm:bottom-6 left-1/2 -translate-x-1/2 z-[99999] transition-all duration-300 pointer-events-auto max-w-[90vw]">
+  <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-full shadow-xl border backdrop-blur-md text-xs font-medium tracking-tight"
+       [ngClass]="{
+         'bg-stone-900/95 text-stone-100 border-stone-700': syncToast.type === 'success',
+         'bg-amber-900/95 text-amber-100 border-amber-700': syncToast.type === 'offline',
+         'bg-red-900/95 text-red-100 border-red-700': syncToast.type === 'error'
+       }">
+    <span *ngIf="syncToast.type === 'success'" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping flex-shrink-0"></span>
+    <span *ngIf="syncToast.type === 'offline'" class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+    <span *ngIf="syncToast.type === 'error'" class="w-2 h-2 rounded-full bg-red-400 flex-shrink-0"></span>
+    <span class="font-sans text-[12px] font-semibold truncate">{{ syncToast.message }}</span>
+    <button class="ml-1 text-stone-400 hover:text-white text-base leading-none flex-shrink-0 px-1" (click)="syncStatusService.dismissToast()">×</button>
+  </div>
+</div>
 
 <app-modal></app-modal>
