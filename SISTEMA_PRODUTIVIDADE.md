@@ -1,156 +1,129 @@
-# 🚀 Sistema Integrado de Produtividade (Bullet Journal + GTD + NotebookLM)
-
-Este documento reúne a análise completa do seu software atual, o prompt mestre para o **NotebookLM**, o plano de evolução de funcionalidades e a estratégia segura para disponibilização de dados via **Supabase**.
+# 📘 SISTEMA INTEGRADO DE PRODUTIVIDADE E MAESTRIA GTD (DIGITAL)
+> **Guia Definitivo: Análise do Livro "A Arte de Fazer Acontecer" (Apêndice e Págs. 383-389), Dicas de Software e Status do BuJo Focus**  
+> *Documento único e consolidado reunindo a análise da ferramenta, o plano de maestria e a adaptação digital.*
 
 ---
 
 ## 📌 Sumário
-1. [Prompt Mestre para o NotebookLM](#1--prompt-mestre-para-o-notebooklm)
-2. [Análise das Funcionalidades Reais do Software Atual](#2--análise-das-funcionalidades-reais-do-software-atual)
-3. [Proposta de Novas Funcionalidades Internas (GTD + BuJo)](#3--proposta-de-novas-funcionalidades-internas-gtd--bujo)
-4. [Tabela de Limitações e Lacunas do Sistema](#4--tabela-de-limitações-e-lacunas-do-sistema)
-5. [Estratégia de Integração Segura de Dados (Supabase ➔ NotebookLM)](#5--estratégia-de-integração-segura-de-dados-supabase--notebooklm)
+1. [Dicas de Ouro de David Allen para Softwares e Ferramentas Digitais (Pág. 383-389 & Apêndice)](#1-dicas-de-ouro-de-david-allen-para-softwares-e-ferramentas-digitais-pág-383-389--apêndice)
+2. [Lista Consolidada: O que Existe vs. O que Falta no BuJo Focus](#2-lista-consolidada-o-que-existe-vs-o-que-falta-no-bujo-focus)
+3. [Roteiro de Implementação por Grau de Importância](#3-roteiro-de-implementação-por-grau-de-importância)
+4. [Prompt Mestre para o NotebookLM (Painel Studio)](#4-prompt-mestre-para-o-notebooklm-painel-studio)
 
 ---
 
-## 1. 📋 Prompt Mestre para o Mapa Mental no NotebookLM (Painel Studio)
+## 1. 📖 Dicas de Ouro de David Allen para Softwares e Ferramentas Digitais (Pág. 383-389 & Apêndice)
 
-Copie e cole o comando abaixo no chat do **NotebookLM** para que ele gere o **Mapa Mental interativo diretamente no seu painel Studio**:
+No apêndice e nas páginas 383 a 389 do livro *"A Arte de Fazer Acontecer"*, David Allen detalha **como adaptar o GTD para softwares e aplicativos digitais** sem cair na armadilha da sobrecarga cognitiva:
+
+1. **Captura sem Fricção (Zero Friction Capture):**
+   * *O que o livro diz:* A ferramenta digital deve permitir digitar uma ideia em menos de 2 segundos. Se o app exigir preencher data, categoria, projeto e contexto logo no momento de capturar, o usuário desiste e volta a guardar as coisas na cabeça.
+2. **A Agenda é Sagrada (Hard Landscape):**
+   * *O que o livro diz:* Apenas compromissos com **hora exata** ou **prazos fatais** devem ter data no calendário. Colocar tarefas genéricas na agenda cria uma falsa sensação de atraso e gera estresse mental. As tarefas do dia a dia pertencem a **Listas de Contexto**.
+3. **Separação Rígida entre Projetos e Próximas Ações:**
+   * *O que o livro diz:* Um "Projeto" é qualquer objetivo que exige mais de 1 passo. O software nunca deve misturar a lista de projetos com as ações do dia. Cada projeto ativo precisa ter **pelo menos 1 próxima ação física e visível** vinculada em um contexto.
+4. **Lista Dedicada de "@Aguardando" (Waiting For):**
+   * *O que o livro diz:* É fundamental ter um local único para registrar o que você delegou ou o que está esperando de terceiros (respostas de professores, colegas, documentos, entregas). Cada item deve conter a data e o nome do responsável.
+5. **Incubadora "Algum Dia / Talvez" (Someday / Maybe):**
+   * *O que o livro diz:* Ideias que você *talvez* queira fazer no futuro (viagens, livros para ler, cursos, projetos de vida) precisam de uma lista própria para não poluir a visão das tarefas ativas da semana.
+6. **Revisão Semanal é o Motor do Sistema Digital:**
+   * *O que o livro diz:* Ferramentas digitais acumulam "lixo digital" muito rápido. Sem uma revisão semanal rápida para limpar a caixa de entrada, revisar projetos e alinhar metas, o sistema perde a confiança.
+7. **Simplicidade Visual e Velocidade:**
+   * *O que o livro diz:* A ferramenta deve ser extremamente rápida. Buscas instantâneas, visual limpo estilo papel e zero travamentos são pré-requisitos para evitar fadiga mental.
+
+---
+
+## 2. 📋 Lista Consolidada: O que Existe vs. O que Falta no BuJo Focus
+
+Tabela simples e direta mapeando os ensinamentos do livro com o estado real do seu aplicativo:
+
+| Requisito do Livro GTD | Funcionalidade Ideal no Software | Status no BuJo Focus Atual | Ação Recomendada |
+| :--- | :--- | :--- | :--- |
+| **1. Captura Rápida (Inbox)** | Caixa de entrada simples onde se digita tudo em 1 clique sem exigir data. | ❌ **Não existe nativamente** (Toda tarefa hoje exige data de início no Daily Log). | 🔴 **Criar Caixa de Entrada Geral (Inbox Zero)** com atalho `Ctrl+K`. |
+| **2. Triagem e Processamento** | Botão *"Processar Inbox"* que faz as perguntas do GTD (*É acionável? < 2 min?*). | 🟡 **Parcial** (Existem prioridades e status, mas a triagem é manual item a item). | 🟡 **Criar Assistente de Processamento (Inbox Wizard)**. |
+| **3. Listas por Contexto** | Organizar ações por contextos como `@computador`, `@rua`, `@trabalho`, `@mestrado`. | ✅ **Já existe** (Sistema de Tags de contexto já implementado em `bujo.service.ts`). | 🟢 **Manter e ampliar o uso diário**. |
+| **4. Central de Delegados** | Lista única para acompanhar o que está pendente com terceiros (`@aguardando`). | 🟡 **Parcial** (A tag `@aguardando` existe, mas exige buscar dia a dia). | 🔴 **Criar Painel Centralizado de "@aguardando" e Delegados**. |
+| **5. Registro Rápido (Rapid Logging)** | Marcadores visuais simples para Tarefas (`•`), Eventos (`O`) e Notas (`-`). | ✅ **Já existe** (Módulo `Daily Log` com símbolos BuJo/GTD completos). | 🟢 **Manter**. |
+| **6. Visão de Longo Prazo / Horizontes** | Quadro visual de sonhos, metas de 1 a 5 anos e propósito de vida. | ✅ **Já existe** (Módulo `Dream Board` em `/dreams`). | 🟢 **Manter**. |
+| **7. Orçamento e Finanças** | Controle de entradas, saídas e orçamento categorizado. | ✅ **Já existe** (Módulo `Planner Financeiro` em `/budget`). | 🟢 **Manter**. |
+| **8. Foco na Execução** | Timer Pomodoro ajustável com controle de áudio para focar no trabalho. | ✅ **Já existe** (Módulo `Focus Mode` em `/focus`). | 🟢 **Manter**. |
+| **9. Exportação para IA / NotebookLM** | Gerar arquivo `.md` consolidado para estudo e análise no NotebookLM. | ✅ **Já existe** (Botão de Exportação de Contexto nas Configurações). | 🟢 **Manter**. |
+| **10. Preloader sem FOUC** | Tela de entrada em 2 segundos com ícone PWA sem distorção e frase motivacional. | ✅ **Já existe** (`index.html` com 365 frases e ícone responsivo). | 🟢 **Manter**. |
+| **11. Migração Diária de Pendências** | Ao abrir o app em um novo dia, perguntar o que fazer com pendências de ontem. | ❌ **Não existe** (Hoje a remarcação é manual tarefa por tarefa). | 🟡 **Criar Assistente de Migração Diária (Daily Migration)**. |
+| **12. Revisão Semanal Guiada** | Checklist de 4 passos no fim de semana para limpar o sistema e definir o foco. | ❌ **Não existe** (Existe apenas a visualização visual do Weekly Log). | 🟡 **Criar Assistente de Revisão Semanal (Weekly Review Wizard)**. |
+| **13. Incubadora "Algum Dia / Talvez"** | Lista separada para guardar ideias futuras sem poluir a lista do dia a dia. | ❌ **Não existe** (Ideias futuras ficam soltas nas Coleções sem destaque GTD). | 🟢 **Criar aba Someday/Maybe**. |
+| **14. Vínculo Projeto ➔ Ação** | Conectar Coleções/Projetos a pelo menos 1 próxima ação física no Daily Log. | ❌ **Não existe** (As coleções estão isoladas do Daily Log). | 🟢 **Adicionar botão "Enviar Próxima Ação para o Daily Log" nas Coleções**. |
+| **15. Matriz de Hábitos Diários** | Acompanhamento visual de hábitos diários no rodapé do log diário. | 🟡 **Parcial** (A estrutura de dados existe no backend, mas não tem interface no Daily Log). | 🔴 **Ativar Régua de Hábitos no rodapé do Daily Log**. |
+
+---
+
+## 3. 🎯 Roteiro de Implementação por Grau de Importância
+
+Para implementar as novidades **sem gerar sobrecarga cognitiva**, o desenvolvimento deve seguir **3 etapas claras**:
+
+### 🔴 GRAU 1: FUNDAMENTAL (Fazer Primeiro — Máxima Prioridade)
+1. **Caixa de Entrada Geral (Inbox Zero Unificado):**
+   * Botão/Atalho rápido para digitar pendências sem obrigar a escolher data ou contexto.
+2. **Painel Centralizado de "@aguardando" e Delegados:**
+   * Tela única exibindo todas as cobranças pendentes com pessoas/instituições.
+3. **Régua Diária de Hábitos (Habit Tracker Matrix):**
+   * Exibir no rodapé do Daily Log a marcação em 1 clique dos seus hábitos diários.
+
+### 🟡 GRAU 2: FLUXO E MANUTENÇÃO (Consistência do Sistema)
+4. **Assistente de Migração Diária Guiada (Daily Migration):**
+   * Modal ao iniciar o dia: `Mover para Hoje`, `Agendar no Future Log` ou `Cancelar`.
+5. **Assistente de Revisão Semanal Guiada (Weekly Review Wizard):**
+   * Checklist interativo no sábado/domingo para limpar a Caixa de Entrada e definir as 3 "Big Rocks" da semana.
+6. **Módulo de Tarefas Recorrentes Automáticas:**
+   * Repetição programada para compromissos fixos (faturas, relatórios, aulas).
+
+### 🟢 GRAU 3: MAESTRIA E VISÃO ESTRATÉGICA (Alta Performance)
+7. **Aba "Algum Dia / Talvez" (Someday / Maybe):**
+   * Incubadora de ideias para viagens, livros e projetos futuros sem poluir o dia a dia.
+8. **Próxima Ação Vinculada a Coleções de Projetos:**
+   * Botão em cada Coleção para gerar a próxima tarefa acionável direto no Daily Log.
+9. **Filtro de Execução por Energia & Tempo:**
+   * Filtrar tarefas por tempo disponível (ex.: 15 min) e nível de energia (baixa/alta).
+
+---
+
+## 4. 📋 Prompt Mestre para o NotebookLM (Painel Studio)
+
+Copie e cole este comando atualizado no chat do **NotebookLM** para que ele gere o **Mapa Mental interativo no seu painel Studio** consolidando todo o sistema:
 
 ```text
-Crie um mapa mental detalhado no painel Studio com o tema central "Sistema Integrado de Gestão Pessoal, Acadêmica e Profissional (Bullet Journal + GTD)".
+Crie um mapa mental detalhado no painel Studio com o tema central "Sistema Integrado de Gestão Pessoal, Acadêmica e Profissional (Bullet Journal + GTD Digital)".
 
 Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes do caderno:
 
 1. TÓPICOS DE FOCO E ESTRUTURA DOS RAMOS:
-   - Ramo 1: Horizontes de Foco GTD
-     * Propósito e Valores (Longo Prazo)
-     * Visão (3 a 5 anos)
-     * Metas Estratégicas (1 a 2 anos - Médio Prazo)
-     * Áreas de Responsabilidade (Pessoal, Acadêmica, Profissional)
-     * Projetos Ativos
-     * Ações Próximas do Dia a Dia (Curto Prazo)
+   - Ramo 1: Horizontes de Foco GTD (David Allen)
+     * Propósito e Valores (Dream Board - 50.000 pés)
+     * Visão de 3 a 5 anos (Dream Board - 40.000 pés)
+     * Metas Estratégicas de 1 a 2 anos (Future Log - 30.000 pés)
+     * Áreas de Responsabilidade (Pessoal, Acadêmica, Profissional - 20.000 pés)
+     * Projetos Ativos (Coleções - 10.000 pés)
+     * Próximas Ações do Dia a Dia (Daily Log - Térreo)
 
    - Ramo 2: Operação do Bullet Journal (BuJo)
-     * Registro Rápido (Tarefas •, Eventos O, Notas -, Prioridades *)
+     * Rapid Logging (Tarefas •, Eventos O, Notas -, Prioridades *)
      * Fluxo Diário (Daily Log e Intenção do Dia)
-     * Planejamento Temporal (Monthly Log e Future Log)
-     * Regras de Migração e Flexibilidade de Reagendamento
+     * Planejamento Temporal (Weekly Log, Monthly Log e Future Log)
+     * Regras de Migração e Flexibilidade de Datas
      * Rituais de Revisão (Diária, Semanal e Mensal)
 
-   - Ramo 3: Gestão Financeira e Controle
-     * Entradas, Saídas e Categorização de Gastos
-     * Orçamento por Dimensão (Pessoal, Acadêmico, Profissional)
-     * Metas de Reservas e Assinaturas
+   - Ramo 3: Dicas de Software e GTD Digital (Pág. 383-389)
+     * Captura sem Fricção (Caixa de Entrada Geral)
+     * A Agenda é Sagrada (Data apenas para prazos exatos)
+     * Central de Delegados (@aguardando)
+     * Incubadora (Algum Dia / Talvez)
+     * Revisão Semanal Guiada como Motor do Sistema
 
-   - Ramo 4: Dimensões da Rotina
-     * Dimensão Pessoal (Saúde, Hábitos, Lazer)
-     * Dimensão Acadêmica (Mestrado, Estudos, Prazos)
-     * Dimensão Profissional (Projetos, Entregas, Reuniões)
+   - Ramo 4: Gestão Financeira e Hábitos
+     * Orçamento por Dimensão (Pessoal, Acadêmico, Profissional)
+     * Entradas, Saídas e Reservas
+     * Matriz de Hábitos Diários (Habit Tracker)
 
 2. NÍVEL DE DETALHAMENTO:
-   - Profundo e estruturado, conectando os objetivos de longo prazo às ações diárias do Bullet Journal e organizando o fluxo de revisões e migração de datas.
+   - Profundo e estruturado, conectando os objetivos de longo prazo às ações diárias do Bullet Journal e organizando o fluxo de revisões sem sobrecarga cognitiva.
 ```
-
----
-
-## 2. 🔍 Análise das Funcionalidades Reais do Software Atual
-
-Diagnóstico realizado no código-fonte em `src/app/`:
-
-| Módulo / Recurso | Localização no Código | Descrição das Funcionalidades Reais | Alinhamento Metodológico |
-| :--- | :--- | :--- | :--- |
-| **Daily Log** | `features/daily-log` | Rapid Logging completo com tipos (`task`, `event`, `note`), status (`todo`, `completed`, `cancelled`, `in_progress`, `migrated`, `scheduled`), horários, subtarefas, prioridade (`*`), energia, complexidade e delegação. | **BuJo / GTD (Térreo)** |
-| **Logs Visuais** | `features/weekly-log`<br>`features/monthly-log`<br>`features/future-log` | Visualizações temporais para acompanhamento diário/semanal, visão mensal em formato calendário e agendamento futuro para meses posteriores. | **BuJo (Future/Monthly Log)** |
-| **Contextos & Tags** | `services/bujo.service.ts` | Sistema de tags pré-configuradas para contextos GTD (`@computador`, `@online`, `@rua`, `@casa`, `@trabalho`, `@mestrado`, `@programando`, `@financeiro`, `@aguardando`, etc.). | **GTD (Contextos & Agendas)** |
-| **Modo Foco & Pomodoro** | `features/focus` | Timer Pomodoro ajustável (foco, pausa curta, pausa longa) com controle de áudio, efeitos sonoros e escolha de acompanhante de foco. | **Execução / Foco Diário** |
-| **Dream Board** | `features/dreams` | Quadro visual de sonhos, metas de vida e objetivos de longo prazo. | **GTD (Níveis 4 e 5)** |
-| **Planner Financeiro** | `features/budget` | Módulo estruturado para gestão de orçamento, controle de gastos e planejamento financeiro. | **BuJo (Coleção Financeira)** |
-| **Coleções & Linha do Tempo** | `features/collections`<br>`features/timeline`<br>`features/trash` | Biblioteca de coleções livres para notas/projetos, linha do tempo cronológica e lixeira com recuperação de itens excluídos. | **BuJo (Collections / Index)** |
-| **Autenticação & Nuvem** | `services/auth.service.ts`<br>`services/sync-status.service.ts` | Autenticação via Supabase (Magic Link / Google OAuth), persistência na nuvem na tabela `bujo_user_data`, merge inteligente por timestamp e fallback offline no `LocalStorage`. | **Infraestrutura / Persistência** |
-
----
-
-## 3. 💡 Proposta de Novas Funcionalidades Internas (GTD + BuJo)
-
-Para potencializar o planejamento e a execução dentro da própria ferramenta:
-
-### 📥 A. Caixa de Entrada & Processamento GTD (*In-Basket Wizard*)
-* **Como é hoje:** Novas tarefas entram direto com data no Daily Log.
-* **Proposta:** Criar um painel de **Caixa de Entrada Geral** para captura rápida de pensamentos e pendências não triadas. Incluir um botão *"Processar Caixa de Entrada"* com o questionário GTD (*"É acionável? -> Próxima Ação, Projeto, Agendado ou Incubadora/Someday"*).
-
-### 🔄 B. Assistente de Migração Guiada (*BuJo Migration*)
-* **Como é hoje:** A troca de data/status de migração é feita manualmente item a item.
-* **Proposta:** Ao abrir o app ou iniciar um novo dia, exibir um modal leve com as tarefas não concluídas do dia anterior para decisão em lote:
-  * `>` Mover para Hoje
-  * `<` Agendar no Future Log
-  * `*` Marcar Prioridade do Dia
-  * `X` Cancelar / Descartar
-
-### 🧹 C. Checklist de Revisão Semanal Guiada (*Weekly Review*)
-* **Como é hoje:** Visualização visual no `weekly-log`.
-* **Proposta:** Um assistente interativo em 4 passos para rodar no final de semana:
-  1. Esvaziar a Caixa de Entrada.
-  2. Revisar pendências e conquistas da semana.
-  3. Checar o Future Log e o Dream Board.
-  4. Selecionar as **3 Grandes Metas (Big Rocks)** da próxima semana.
-
-### 🏷️ D. Visão Centralizada "Aguardando / Delegado"
-* **Como é hoje:** O filtro por `@aguardando` depende da navegação entre os dias.
-* **Proposta:** Painel único consolidando todas as tarefas com a tag `@aguardando` ou com o campo `delegatedTo` preenchido.
-
-### 📈 E. Rastreador de Hábitos Integrado (Habit Tracker Matrix)
-* **Como é hoje:** A estrutura de dados já existe no `BujoService` (`habits$` e `habitLogs$`).
-* **Proposta:** Exibir uma régua/matriz diária no rodapé do Daily Log para marcação em 1 clique de hábitos diários (ex.: *Estudo, Exercício, Leitura*).
-
----
-
-## 4. 📊 Tabela de Limitações e Lacunas do Sistema
-
-O que o sistema (manual ou via app atual sem integrações externas) **não provê nativamente** e como contornar:
-
-| Recurso / Necessidade | O que o Sistema NÃO provê nativamente | Impacto | Solução Sugerida |
-| :--- | :--- | :--- | :--- |
-| **Notificações Ativas de Horário** | Não dispara alarmes sonoros ou pop-ups no SO fora do navegador aberto. | Risco de perder reuniões com hora exata. | Google Calendar / Apple Calendar para compromissos com hora marcada. |
-| **Cálculos Bancários Automáticos** | Não se conecta a APIs bancárias (Open Finance) nem faz conciliação automática. | Exige digitação manual de entradas/saídas. | Planilha dedicada ou módulo de exportação CSV para o `budget`. |
-| **Sincronização com o NotebookLM** | O NotebookLM não aceita requisições via webhook/API ativa direta de bancos de dados. | O NotebookLM não atualiza o mapa sozinho sem novos dados. | Gerar exportação em arquivo Markdown (`.md`) no app e subir como fonte no NotebookLM. |
-| **Automação de Repetição** | Não recria tarefas recorrentes automaticamente (ex.: "Pagar fatura todo dia 10"). | Necessidade de remarcar tarefas frequentes. | Implementar módulo interno de *Tarefas Recorrentes*. |
-
----
-
-## 5. 🔒 Estratégia de Integração Segura de Dados (Supabase ➔ NotebookLM)
-
-Como o NotebookLM **não possui integração pública por API/Webhook com bancos de dados**, a forma 100% segura e privada de alimentá-lo é através da **Exportação de Contexto Formatado**:
-
-### Abordagem Recomendada: Botão "Exportar Contexto (.md)" no App
-
-Adicionar no módulo de **Settings** do seu app uma função que lê a base local/Supabase e gera um arquivo `meu_bujo_contexto.md` com a seguinte estrutura limpa:
-
-```markdown
-# RELATÓRIO DE CONTEXTO DO SISTEMA (BUJO + GTD)
-Data da Exportação: YYYY-MM-DD
-
-## 1. METAS E SONHOS DE LONGO PRAZO (DREAM BOARD)
-- [ ] Meta 1...
-- [ ] Meta 2...
-
-## 2. PROJETOS ATIVOS E FUTURE LOG
-- Projeto Mestrado: ...
-- Projeto Trabalho: ...
-
-## 3. TAREFAS PENDENTES POR CONTEXTO (GTD)
-### @computador
-- [ ] Tarefa A
-### @mestrado
-- [ ] Tarefa B
-### @aguardando
-- [ ] Item pendente com fulano
-
-## 4. RESUMO FINANCEIRO DO MÊS
-- Orçamento total / Saldo atual
-```
-
-#### Benefícios desta Estratégia:
-1. **Privacidade Absoluta:** Nenhuma chave de API do Supabase ou senha é exposta.
-2. **Compatibilidade Total:** O NotebookLM processa arquivos Markdown com precisão máxima e gera mapas mentais e resumos impecáveis.
-3. **Execução Rápida:** Basta 1 clique no app para baixar o arquivo e arrastá-lo para a caixa de fontes do NotebookLM.
