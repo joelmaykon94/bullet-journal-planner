@@ -9,6 +9,7 @@ import { SyncStatusService } from './sync-status.service';
 export interface User {
   id: string;
   email: string;
+  user_metadata?: Record<string, any>;
 }
 
 @Injectable({
@@ -43,7 +44,11 @@ export class AuthService {
 
     this.supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
-        const loggedUser: User = { id: session.user.id, email: session.user.email || '' };
+        const loggedUser: User = { 
+          id: session.user.id, 
+          email: session.user.email || '',
+          user_metadata: session.user.user_metadata || {}
+        };
         localStorage.setItem('bujo_user', JSON.stringify(loggedUser));
         this.currentUserSubject.next(loggedUser);
         

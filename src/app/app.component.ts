@@ -345,12 +345,30 @@ export class App implements OnInit {
     }).replace('.','');
   }
 
-  getUserFirstName(): string {
+  getUserDisplayName(): string {
     const user = this.authService.currentUser;
     if (!user || user.id === 'anonymous-user-id') return 'Visitante';
+    
+    // 1. Tenta pegar o nome completo retornado pelo Supabase (ex: Google OAuth metadata)
+    const metaName = user.user_metadata?.['full_name'] || user.user_metadata?.['name'];
+    if (metaName && typeof metaName === 'string' && metaName.trim()) {
+      return metaName.trim();
+    }
+
+    // 2. Se não houver nome nos metadados, limpa e formata o e-mail (ex: "joel.maykon" -> "Joel Maykon")
     const email = user.email || '';
     if (!email) return 'Usuário';
-    return email.split('@')[0];
+
+    const prefix = email.split('@')[0];
+    return prefix
+      .split(/[._-]/)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  getUserFirstName(): string {
+    const displayName = this.getUserDisplayName();
+    return displayName.split(' ')[0];
   }
 
   getUserInitial(): string {

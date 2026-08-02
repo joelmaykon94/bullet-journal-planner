@@ -130,6 +130,9 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 👤 **v1.4.1** — *Correção do Nome de Usuário e Avatar no Celular* (02/08/2026)
+- **Avatar e Nome no Celular:** O menu mobile agora exibe a letra inicial correta do avatar e o nome amigável do usuário (extraído do Google OAuth via Supabase ou formatado a partir do e-mail), alinhando o cabeçalho mobile perfeitamente com o computador.
+
 ### 🚀 **v1.4.0** — *Tela de Recepção Motivacional, Ícones Nítidos e Melhoria de Desempenho* (02/08/2026)
 - **Tela de Boas-Vindas Motivacional:** Adicionada uma tela inicial de carregamento de 2 segundos que sorteia uma entre 365 frases motivacionais curtas para inspirar o seu dia a cada atualização.
 - **Ícone Nítido em Qualquer Tela:** O ícone do aplicativo agora se ajusta automaticamente a computadores, celulares e telas de alta resolução sem ficar esticado ou borrado.
