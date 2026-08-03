@@ -130,6 +130,11 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 📊 **v1.8.3** — *Barra de Progresso Pulsante & Botão Quadrado de Edição Exclusivo* (02/08/2026)
+- **Barra de Progresso Dinâmica & Pulsante:** Subtituiu o texto do título por uma barra de progresso no topo da régua que transita do Vermelho Claro (0-33%) -> Amarelo (34-66%) -> Verde Claro (67-100%) à medida que os hábitos são concluídos.
+- **Botão de Gerenciamento Quadrado:** Botão compacto e minimalista de edição (`w-9 h-9`).
+- **Exclusividade do Ícone de Exclusão:** O ícone vermelho `✕` de remover hábito **NÃO** aparece mais ao passar o mouse. Ele só fica visível quando o modo de edição for ativado no botão quadrado.
+
 ### ➕ **v1.8.2** — *Botão Circular + Novo Inline na Régua de Hábitos* (02/08/2026)
 - **Botão `+ Novo` em Círculo Inline:** O botão para adicionar novos hábitos agora é exibido como um botão circular pontilhado diretamente após o último hábito adicionado no grid.
 - **Harmonia Visual & Usabilidade:** Fluxo de adição contínuo e integrado ao mesmo formato de círculos da régua.

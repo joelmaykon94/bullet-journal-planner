@@ -154,4 +154,17 @@ export class HabitTrackerMatrixComponent implements OnInit, OnDestroy {
   getCompletedCount(): number {
     return this.habitItems.filter(h => this.isCompleted(h.title)).length;
   }
+
+  getCompletionPercentage(): number {
+    if (!this.habitItems || this.habitItems.length === 0) return 0;
+    return Math.round((this.getCompletedCount() / this.habitItems.length) * 100);
+  }
+
+  getProgressBarColorClass(): string {
+    const pct = this.getCompletionPercentage();
+    if (pct === 0) return 'bg-rose-400 dark:bg-rose-600';
+    if (pct <= 33) return 'bg-[#f87171] dark:bg-rose-500';
+    if (pct <= 66) return 'bg-[#fbbf24] dark:bg-amber-400';
+    return 'bg-[#34d399] dark:bg-emerald-400';
+  }
 }
