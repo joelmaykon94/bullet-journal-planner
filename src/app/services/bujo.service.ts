@@ -264,8 +264,8 @@ export class BujoService {
   }
 
   getHabitItems(): HabitItem[] {
-    const raw = this.getParsedStorage('bujo_habit_items', []);
-    if (!raw || raw.length === 0) {
+    const isInitialized = typeof localStorage !== 'undefined' && localStorage.getItem('bujo_habits_init_v1') === 'true';
+    if (!isInitialized) {
       const defaultHabits: HabitItem[] = [
         { id: '1', title: 'Água', icon: 'droplet' },
         { id: '2', title: 'Mestrado', icon: 'graduation-cap' },
@@ -275,9 +275,12 @@ export class BujoService {
         { id: '6', title: 'Medicamento', icon: 'pill' }
       ];
       this.saveToStorage('bujo_habit_items', defaultHabits);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('bujo_habits_init_v1', 'true');
+      }
       return defaultHabits;
     }
-    return raw;
+    return this.getParsedStorage('bujo_habit_items', []);
   }
 
   addHabit(habit: string, icon: string = 'target') {
@@ -305,6 +308,9 @@ export class BujoService {
   removeHabitItem(idOrTitle: string) {
     const items = this.getHabitItems().filter(h => h.id !== idOrTitle && h.title !== idOrTitle);
     this.saveToStorage('bujo_habit_items', items);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('bujo_habits_init_v1', 'true');
+    }
     this.habitsSubject.next(items.map(h => h.title));
   }
 

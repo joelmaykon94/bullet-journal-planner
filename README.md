@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🔒 **v1.8.5** — *Persistência Definitiva de Deleção de Hábitos* (02/08/2026)
+- **Zero Ressurreição de Hábitos Deletados:** Ajustada a flag de inicialização do `BujoService` (`bujo_habits_init_v1`) no `localStorage`.
+- **Garantia de Persistência:** Quando um hábito for excluído, essa exclusão é permanente no seu navegador mesmo após recarregar a página com `F5` ou reabrir o aplicativo.
+
 ### 📏 **v1.8.4** — *Barra de Progresso Full-Width & Botão Circular de Edição Inline* (02/08/2026)
 - **Barra de Progresso 100% Full-Width:** A barra de progresso diário agora se estende por toda a largura superior da régua de hábitos.
 - **Botão Circular de Edição Inline (`Editar`):** O botão de editar passou a ser um botão circular (`w-12 h-12`) posicionado diretamente ao lado do botão circular `+ Novo`.
