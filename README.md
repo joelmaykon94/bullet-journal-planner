@@ -130,6 +130,12 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ⭕ **v1.8.1** — *Régua Circular de Hábitos com Seletor de Ícones & Multi-Linha* (02/08/2026)
+- **Botoes Circulares 1-Tap por Hábito:** Exibição em botões circulares com ícones dedicados (Água, Mestrado, Musculação, Óleo/Água, Lixo, Medicamento, etc.).
+- **Seletor de Ícones com Busca & Rolagem:** Modal com catálogo de 24 ícones SVG e busca em tempo real para cadastrar novos hábitos.
+- **Quebra Automática em Novas Linhas (`flex-wrap`):** Ao cadastrar múltiplos hábitos, a régua gera automaticamente novas linhas organizadas.
+- **Modo de Remoção/Gerenciamento:** Botão `✏️ Gerenciar` para remover qualquer hábito da régua em 1-clique.
+
 ### ✨ **v1.8.0** — *Recurso 3: Régua Diária de Hábitos (Habit Tracker Matrix)* (02/08/2026)
 - **Barra de Hábitos Minimalista no Topo (`HabitTrackerMatrixComponent`):** Posicionada no topo do Log Diário (estilo Streaks e Notion), permitindo a marcação em 1-clique dos hábitos diários sem poluir a lista de tarefas.
 - **Micro-Indicadores e Badge de Progresso:** Badge circular com contador de hábitos cumpridos (`3/4`) que fica verde-esmeralda ao atingir 100% de hábitos do dia.

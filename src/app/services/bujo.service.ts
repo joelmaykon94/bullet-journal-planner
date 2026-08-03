@@ -37,6 +37,12 @@ export interface BujoTag {
   deletedAt?: string;
 }
 
+export interface HabitItem {
+  id: string;
+  title: string;
+  icon: string;
+}
+
 export interface BujoSettings {
   theme: string;
   font: string;
@@ -254,29 +260,52 @@ export class BujoService {
 
   // Habits Actions
   getHabits(): string[] {
-    const habits = this.habitsSubject.value;
-    if (!habits || habits.length === 0) {
-      const defaultHabits = ['💧 Beber 2L de Água', '🏋️ Exercício Físico', '🧘 Meditação', '📚 15min de Leitura'];
-      this.habitsSubject.next(defaultHabits);
-      this.saveToStorage('bujo_habits', defaultHabits);
-      return defaultHabits;
-    }
-    return habits;
+    return this.getHabitItems().map(h => h.title);
   }
 
-  addHabit(habit: string) {
-    const habits = this.getHabits();
-    if (!habits.includes(habit)) {
-      const newHabits = [...habits, habit];
-      this.habitsSubject.next(newHabits);
-      this.saveToStorage('bujo_habits', newHabits);
+  getHabitItems(): HabitItem[] {
+    const raw = this.getParsedStorage('bujo_habit_items', []);
+    if (!raw || raw.length === 0) {
+      const defaultHabits: HabitItem[] = [
+        { id: '1', title: 'Água', icon: 'droplet' },
+        { id: '2', title: 'Mestrado', icon: 'graduation-cap' },
+        { id: '3', title: 'Musculação', icon: 'dumbbell' },
+        { id: '4', title: 'Óleo/Água', icon: 'car' },
+        { id: '5', title: 'Lixo', icon: 'trash' },
+        { id: '6', title: 'Medicamento', icon: 'pill' }
+      ];
+      this.saveToStorage('bujo_habit_items', defaultHabits);
+      return defaultHabits;
+    }
+    return raw;
+  }
+
+  addHabit(habit: string, icon: string = 'target') {
+    this.addHabitItem(habit, icon);
+  }
+
+  addHabitItem(title: string, icon: string = 'target') {
+    const items = this.getHabitItems();
+    if (!items.some(h => h.title === title)) {
+      const newItem: HabitItem = {
+        id: Date.now().toString(),
+        title,
+        icon: icon || 'target'
+      };
+      const updated = [...items, newItem];
+      this.saveToStorage('bujo_habit_items', updated);
+      this.habitsSubject.next(updated.map(h => h.title));
     }
   }
 
   removeHabit(habit: string) {
-    const habits = this.getHabits().filter(h => h !== habit);
-    this.habitsSubject.next(habits);
-    this.saveToStorage('bujo_habits', habits);
+    this.removeHabitItem(habit);
+  }
+
+  removeHabitItem(idOrTitle: string) {
+    const items = this.getHabitItems().filter(h => h.id !== idOrTitle && h.title !== idOrTitle);
+    this.saveToStorage('bujo_habit_items', items);
+    this.habitsSubject.next(items.map(h => h.title));
   }
 
   getHabitLogs(): Record<string, string[]> {
