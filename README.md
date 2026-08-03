@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🔄 **v1.9.5** — *Fusão Inteligente por Data dos Hábitos Concluídos no Supabase* (02/08/2026)
+- **União de Logs por Data (`bujo_habit_logs`):** Atualizado o algoritmo de mesclagem na nuvem para realizar a união de arrays de hábitos marcados por data (`Array.from(new Set([...cDateLogs, ...lDateLogs]))`).
+- **Zero Sobrescrita entre Dispositivos:** Hábitos marcados localmente são mesclados aos hábitos já salvos na nuvem sem substituir o dia.
+
 ### ☁️ **v1.9.4** — *Sincronização Imediata com a Nuvem ao Marcar Hábito* (02/08/2026)
 - **Sincronização Cloud em Tempo Real:** Tocar ou clicar para concluir ou desmarcar um hábito salva localmente e spara instantaneamente a sincronização com o banco de dados Supabase na nuvem.
 - **Multidispositivos em Sintonia:** Acompanhamento de hábitos atualizado sem atraso em todos os seus celulares, tablets e computadores.

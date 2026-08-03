@@ -193,9 +193,36 @@ export class AuthService {
             mergedData[key] = Array.from(new Set([...cVal, ...lVal]));
           }
         } else if (typeof lVal === 'object' && typeof cVal === 'object') {
-          mergedData[key] = { ...cVal, ...lVal };
+          if (key === 'bujo_habit_logs') {
+            const mergedLogs: Record<string, string[]> = { ...cVal, ...lVal };
+            const allDates = new Set([...Object.keys(cVal || {}), ...Object.keys(lVal || {})]);
+            for (const d of allDates) {
+              const cDateLogs = Array.isArray(cVal[d]) ? cVal[d] : [];
+              const lDateLogs = Array.isArray(lVal[d]) ? lVal[d] : [];
+              mergedLogs[d] = Array.from(new Set([...cDateLogs, ...lDateLogs]));
+            }
+            mergedData[key] = mergedLogs;
+          } else {
+            mergedData[key] = { ...cVal, ...lVal };
+          }
         } else {
           mergedData[key] = lVal || cVal;
+        }
+      }
+
+      // Enforce deleted habits blacklist filter on merged habit arrays and habit logs
+      const deletedHabits: string[] = mergedData['bujo_deleted_habits'] || localData['bujo_deleted_habits'] || cloudData['bujo_deleted_habits'] || [];
+      if (Array.isArray(mergedData['bujo_habit_items'])) {
+        mergedData['bujo_habit_items'] = mergedData['bujo_habit_items'].filter((h: any) => h && !deletedHabits.includes(h.id) && !deletedHabits.includes(h.title));
+      }
+      if (Array.isArray(mergedData['bujo_habits'])) {
+        mergedData['bujo_habits'] = mergedData['bujo_habits'].filter((title: string) => !deletedHabits.includes(title));
+      }
+      if (mergedData['bujo_habit_logs'] && typeof mergedData['bujo_habit_logs'] === 'object') {
+        for (const d of Object.keys(mergedData['bujo_habit_logs'])) {
+          if (Array.isArray(mergedData['bujo_habit_logs'][d])) {
+            mergedData['bujo_habit_logs'][d] = mergedData['bujo_habit_logs'][d].filter((h: string) => !deletedHabits.includes(h));
+          }
         }
       }
 
