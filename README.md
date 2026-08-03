@@ -48,10 +48,10 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
 
 | Recurso Recomendado pelo Livro GTD | O que a Funcionalidade faz | Status Atual no BuJo Focus | Ação Recomendada |
 | :--- | :--- | :--- | :--- |
-| **1. Captura Rápida (Inbox Zero)** | Digitar pendências soltas em 1 clique sem exigir data inicial. | ❌ **Não existe** (Hoje exige data no Daily Log). | 🔴 **Criar Caixa de Entrada Geral** (Atalho `Ctrl+K`). |
+| **1. Captura Rápida (Inbox Zero)** | Digitar pendências soltas em 1 clique sem exigir data inicial. | ✅ **Existe** (`Inbox Zero` em `/inbox`, atalho `Ctrl+K` e Botão Flutuante Universal). | 🟢 **Manter e utilizar**. |
 | **2. Triagem e Processamento** | Pergunta chave do GTD (*É acionável? < 2 min?*). | 🟡 **Parcial** (Triagem manual). | 🟡 **Criar Assistente de Processamento**. |
 | **3. Listas por Contexto** | Organizar ações por `@computador`, `@trabalho`, `@rua`, `@mestrado`. | ✅ **Existe** (Sistema de Tags ativas em `bujo.service.ts`). | 🟢 **Manter e utilizar**. |
-| **4. Central de Delegados** | Acompanhar cobranças pendentes com terceiros. | 🟡 **Parcial** (Tag `@aguardando` existe, mas pulverizada). | 🔴 **Criar Painel Centralizado de `@aguardando`**. |
+| **4. Central de Delegados** | Acompanhar cobranças pendentes com terceiros. | ✅ **Existe** (`Central de Delegados` em `/waiting`). | 🟢 **Manter e utilizar**. |
 | **5. Rapid Logging (BuJo)** | Marcadores de Tarefas (`•`), Eventos (`O`) e Notas (`-`). | ✅ **Existe** (`Daily Log` em `/daily`). | 🟢 **Manter**. |
 | **6. Quadro de Sonhos / Horizontes** | Visão de metas de 1 a 5 anos e propósito de vida. | ✅ **Existe** (`Dream Board` em `/dreams`). | 🟢 **Manter**. |
 | **7. Planner Financeiro** | Controle de entradas, saídas e orçamento por dimensão. | ✅ **Existe** (`Planner Financeiro` em `/budget`). | 🟢 **Manter**. |
@@ -62,16 +62,16 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
 | **12. Revisão Semanal Guiada** | Checklist de 4 passos no fim de semana para organizar a mente. | ❌ **Não existe** (Apenas visão do Weekly Log). | 🟡 **Criar Assistente de Revisão Semanal**. |
 | **13. Incubadora "Algum Dia / Talvez"** | Guardar projetos futuros sem poluir o dia a dia. | ❌ **Não existe** (Projetos soltos nas Coleções). | 🟢 **Criar aba Someday/Maybe**. |
 | **14. Vínculo Projeto ➔ Ação** | Botão na Coleção para enviar 1 próxima ação ao Daily Log. | ❌ **Não existe** (Coleções isoladas). | 🟢 **Adicionar botão de Próxima Ação nas Coleções**. |
-| **15. Matriz de Hábitos Diários** | Régua visual no rodapé do Daily Log para marcação de hábitos. | 🟡 **Parcial** (Dados no backend, falta UI). | 🔴 **Ativar Régua de Hábitos no Daily Log**. |
+| **15. Matriz de Hábitos Diários** | Régua visual no topo do Daily Log para marcação de hábitos. | ✅ **Existe** (`Régua de Hábitos Diários` em `/daily`). | 🟢 **Manter e utilizar**. |
 
 ---
 
 ### 3. Roteiro de Evolução por Grau de Importância
 
-* 🔴 **GRAU 1: FUNDAMENTAL (Fazer Primeiro — Máxima Prioridade)**
-  1. **Caixa de Entrada Geral (Inbox Zero Unificado):** Botão/Atalho rápido `Ctrl + K` para digitar pendências sem obrigar a escolher data ou contexto.
-  2. **Painel Centralizado de "@aguardando" e Delegados:** Tela única exibindo todas as cobranças pendentes com pessoas/instituições.
-  3. **Régua Diária de Hábitos (Habit Tracker Matrix):** Exibir no rodapé do Daily Log a marcação em 1 clique dos seus hábitos diários.
+* ✅ **GRAU 1: FUNDAMENTAL (Concluído & Implementado 100%)**
+  1. ✅ **Caixa de Entrada Geral (Inbox Zero Unificado):** Botão flutuante universal e atalho `Ctrl + K` para digitar pendências sem obrigar a escolher data ou contexto.
+  2. ✅ **Painel Centralizado de "@aguardando" e Delegados:** Tela única `/waiting` exibindo todas as cobranças pendentes com pessoas/instituições.
+  3. ✅ **Régua Diária de Hábitos (Habit Tracker Matrix):** Régua visual em marrom café `#4a3b32` no cabeçalho do Daily Log com ícone do olho 👁️, contagem de dias concluídos, sincronização imediata no Supabase e filtro anti-ressurreição `bujo_deleted_habits`.
 
 * 🟡 **GRAU 2: FLUXO E MANUTENÇÃO (Consistência do Sistema)**
   4. **Assistente de Migração Diária Guiada (Daily Migration):** Modal ao iniciar o dia: `Mover para Hoje`, `Agendar no Future Log` ou `Cancelar`.
