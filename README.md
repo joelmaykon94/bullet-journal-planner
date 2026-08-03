@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ➕ **v1.8.2** — *Botão Circular + Novo Inline na Régua de Hábitos* (02/08/2026)
+- **Botão `+ Novo` em Círculo Inline:** O botão para adicionar novos hábitos agora é exibido como um botão circular pontilhado diretamente após o último hábito adicionado no grid.
+- **Harmonia Visual & Usabilidade:** Fluxo de adição contínuo e integrado ao mesmo formato de círculos da régua.
+
 ### ⭕ **v1.8.1** — *Régua Circular de Hábitos com Seletor de Ícones & Multi-Linha* (02/08/2026)
 - **Botoes Circulares 1-Tap por Hábito:** Exibição em botões circulares com ícones dedicados (Água, Mestrado, Musculação, Óleo/Água, Lixo, Medicamento, etc.).
 - **Seletor de Ícones com Busca & Rolagem:** Modal com catálogo de 24 ícones SVG e busca em tempo real para cadastrar novos hábitos.

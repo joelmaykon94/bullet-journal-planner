@@ -10,16 +10,11 @@
       </span>
     </div>
 
-    <!-- Actions: Manage / Edit & Add -->
+    <!-- Actions: Manage / Edit -->
     <div class="flex items-center gap-3">
       <button class="text-xs font-mono font-bold text-[#7a6656] dark:text-[#afa393] hover:text-[#382c25] hover:underline cursor-pointer flex items-center gap-1"
               (click)="toggleEditMode()">
         <span>{{ isEditMode ? '✓ Concluir Edição' : '✏️ Gerenciar' }}</span>
-      </button>
-
-      <button class="text-xs font-mono font-bold text-[#59493d] dark:text-[#e3dac9] hover:underline cursor-pointer flex items-center gap-1"
-              (click)="openAddModal()">
-        <span>+ Novo Hábito</span>
       </button>
     </div>
   </div>
@@ -27,6 +22,7 @@
   <!-- Circle Buttons Multi-Line Flex Wrap Container -->
   <div class="flex flex-wrap items-start justify-start gap-4 sm:gap-6 py-1 px-1">
     
+    <!-- Active Habit Circles -->
     <div *ngFor="let item of habitItems" 
          class="flex flex-col items-center gap-1.5 shrink-0 group relative">
       
@@ -113,6 +109,21 @@
               title="Remover hábito">
         ✕
       </button>
+    </div>
+
+    <!-- Inline + Novo Circle Button (Placed directly after the last habit) -->
+    <div class="flex flex-col items-center gap-1.5 shrink-0 group">
+      <button (click)="openAddModal()"
+              title="Adicionar novo hábito"
+              class="w-12 h-12 rounded-full border-2 border-dashed border-[#d7c8b4] dark:border-[#e3dac9]/30 bg-[#f2ebdf]/60 dark:bg-[#1c1917]/60 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#59493d] dark:text-[#e3dac9] flex items-center justify-center transition-all duration-150 active:scale-90 cursor-pointer shadow-2xs">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <span class="text-[11px] font-sans font-bold text-[#7a6656] dark:text-[#afa393] text-center max-w-[64px] truncate leading-tight">
+        Novo
+      </span>
     </div>
 
   </div>
