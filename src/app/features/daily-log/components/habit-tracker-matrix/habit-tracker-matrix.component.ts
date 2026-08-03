@@ -136,6 +136,11 @@ export class HabitTrackerMatrixComponent implements OnInit, OnDestroy {
         type: 'success',
         message: `✓ Hábito feito: ${habitTitle}!`
       });
+    } else {
+      this.syncStatusService.showToast({
+        type: 'offline',
+        message: `↩ Hábito desmarcado: ${habitTitle}`
+      });
     }
   }
 

@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ↩️ **v1.9.9** — *Marcação e Desmarcação Retroativa de Hábitos para Qualquer Data* (02/08/2026)
+- **Navegação Histórica de Datas:** Você pode marcar ou desmarcar qualquer hábito em qualquer data (passada, presente ou futura) selecionada no diário.
+- **Feedback de Notificação Desmarcado:** Adicionado aviso toast de confirmação `↩ Hábito desmarcado: {nome}` ao alternar hábitos em qualquer dia, atualizando instantaneamente o contador e a nuvem.
+
 ### 📱 **v1.9.8** — *Modo Recolhido por Padrão para Hábitos em Telas Mobile* (02/08/2026)
 - **Régua Recolhida no Mobile:** Em telas de smartphone (`window.innerWidth < 640px`), os círculos de hábitos iniciam recolhidos (`isCollapsed = true`) por padrão, economizando espaço de tela.
 - **Expansão em 1 Toque:** Basta tocar no ícone do olho 👁️ no cabeçalho "Hábitos Diários" para expandir a grade. Em telas de computador, permanece aberto por padrão.
