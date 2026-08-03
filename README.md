@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ⚡ **v1.9.6** — *Captura Rápida Exclusiva via Botão Flutuante Universal (Mobile & Desktop)* (02/08/2026)
+- **Remoção da Sidebar:** Removido o botão de Captura Rápida do menu lateral para manter a navegação limpa.
+- **Botão Flutuante Universal (FAB):** O botão circular flutuante no canto inferior direito (`bottom-6 right-6`) agora é visível em qualquer tamanho de tela (celular, tablet e computador), com atalho `Ctrl+K` e animação de rotação ao passar o mouse.
+
 ### 🔄 **v1.9.5** — *Fusão Inteligente por Data dos Hábitos Concluídos no Supabase* (02/08/2026)
 - **União de Logs por Data (`bujo_habit_logs`):** Atualizado o algoritmo de mesclagem na nuvem para realizar a união de arrays de hábitos marcados por data (`Array.from(new Set([...cDateLogs, ...lDateLogs]))`).
 - **Zero Sobrescrita entre Dispositivos:** Hábitos marcados localmente são mesclados aos hábitos já salvos na nuvem sem substituir o dia.

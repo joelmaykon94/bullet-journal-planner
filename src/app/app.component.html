@@ -58,15 +58,7 @@
       </div>
     </div>
 
-    <!-- Quick Capture Trigger Button (Desktop Sidebar only) -->
-    <div class="px-2.5 py-2 w-full border-b border-stone-200 dark:border-stone-800 hidden sm:block">
-      <button class="w-full bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-stone-200 text-white dark:text-stone-900 font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider border border-stone-900 dark:border-stone-100"
-              (click)="openQuickCapture()">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-        <span>+ Captura Rápida</span>
-        <span class="text-[10px] opacity-75 font-mono font-normal lowercase">(ctrl+k)</span>
-      </button>
-    </div>
+
 
     <!-- Nav -->
     <nav class="sidebar-nav">
@@ -407,11 +399,11 @@
   </div>
 </div>
 
-<!-- Mobile Floating Action Button (FAB) for Quick Capture -->
-<button class="fixed bottom-20 right-4 sm:hidden z-[99999] bg-[#59493d] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] p-3.5 rounded-full shadow-[4px_4px_16px_rgba(0,0,0,0.35)] border border-[#59493d] dark:border-[#e3dac9] flex items-center justify-center cursor-pointer transition-transform active:scale-90"
+<!-- Universal Floating Action Button (FAB) for Quick Capture (Mobile & Desktop) -->
+<button class="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[99999] bg-[#4a3b32] hover:bg-[#382c25] dark:bg-[#e3dac9] dark:hover:bg-[#f5f5f4] text-[#fdfbf7] dark:text-[#2a2724] p-3.5 sm:p-4 rounded-full shadow-[4px_4px_20px_rgba(0,0,0,0.35)] border-2 border-[#4a3b32] dark:border-[#e3dac9] flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 group"
         (click)="openQuickCapture()"
-        title="Captura Rápida">
-  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        title="Captura Rápida (Ctrl+K)">
+  <svg class="w-6 h-6 transition-transform group-hover:rotate-12 duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
     <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
   </svg>
