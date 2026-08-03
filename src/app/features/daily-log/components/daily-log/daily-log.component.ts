@@ -6,11 +6,12 @@ import { BujoService, BujoItem } from '../../../../services/bujo.service';
 import { parseSmartTask, getLocalDateString } from '../../../../utils/smartParser';
 import { BulletItemComponent } from '../bullet-item/bullet-item.component';
 import { HabitTrackerMatrixComponent } from '../habit-tracker-matrix/habit-tracker-matrix.component';
+import { DailyMigrationModalComponent } from '../daily-migration-modal/daily-migration-modal.component';
 
 @Component({
   selector: 'app-daily-log',
   standalone: true,
-  imports: [CommonModule, FormsModule, BulletItemComponent, HabitTrackerMatrixComponent],
+  imports: [CommonModule, FormsModule, BulletItemComponent, HabitTrackerMatrixComponent, DailyMigrationModalComponent],
   styles: [`
     :host {
       display: block;
@@ -138,6 +139,20 @@ import { HabitTrackerMatrixComponent } from '../habit-tracker-matrix/habit-track
             </div>
           </div>
 
+          <!-- Pending Migration Banner -->
+          <div *ngIf="pendingPastItemsCount > 0" 
+               class="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 rounded-xl text-[#4a3b32] dark:text-[#e3dac9] animate-in fade-in duration-200">
+            <div class="flex items-center gap-2 text-xs font-mono">
+              <span class="text-sm">☀️</span>
+              <span><strong>{{ pendingPastItemsCount }}</strong> pendência(s) de dias anteriores.</span>
+            </div>
+            <button (click)="openMigrationModal()" 
+                    class="px-3 py-1 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-[11px] font-bold rounded-lg transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1">
+              <span>Migrar Agora</span>
+              <span>➔</span>
+            </button>
+          </div>
+
           <!-- Minimalist Habit Tracker Bar at the Top -->
           <app-habit-tracker-matrix [selectedDate]="selectedDate"></app-habit-tracker-matrix>
 
@@ -210,6 +225,8 @@ import { HabitTrackerMatrixComponent } from '../habit-tracker-matrix/habit-track
 
       </div>
     </div>
+
+    <app-daily-migration-modal [(isOpen)]="showMigrationModal"></app-daily-migration-modal>
   `,
   encapsulation: ViewEncapsulation.None
 })
@@ -220,6 +237,7 @@ export class DailyLogComponent implements OnInit, OnDestroy {
   selectedDate: string = '';
   pageTurnClass: string = '';
   targetDateStr: string = '';
+  showMigrationModal: boolean = false;
   
   private dataUpdateTimer: any;
   
@@ -275,6 +293,20 @@ export class DailyLogComponent implements OnInit, OnDestroy {
         class: t.colorClass
       }));
     });
+  }
+
+  get pendingPastItemsCount(): number {
+    const today = getLocalDateString();
+    return this.items.filter(item => {
+      const isPastDate = item.date && item.date < today;
+      const isPending = item.status === 'todo' || item.status === 'in_progress';
+      const isNotDeleted = !item.deletedAt;
+      return isPastDate && isPending && isNotDeleted;
+    }).length;
+  }
+
+  openMigrationModal() {
+    this.showMigrationModal = true;
   }
 
   ngOnDestroy() {

@@ -58,7 +58,7 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
 | **8. Foco na Execução** | Timer Pomodoro ajustável com áudio de foco. | ✅ **Implementado** (`Focus Mode` em `/focus` com mascotes anime). | 🟢 **Manter e utilizar**. |
 | **9. Exportação para NotebookLM** | Gerador de arquivo `.md` consolidado para o NotebookLM. | ✅ **Implementado** (Botão nas Configurações). | 🟢 **Manter e utilizar**. |
 | **10. Preloader Instantâneo** | Loading de 2s com ícone PWA sem distorção e 365 frases. | ✅ **Implementado** (`index.html` + `loading-phrases.js`). | 🟢 **Manter e utilizar**. |
-| **11. Migração Diária Guiada** | Perguntar o que fazer com pendências de ontem ao abrir o app. | ❌ **Pendente** (Remarcação manual). | 🟡 **Criar Assistente de Migração Diária (Grau 2)**. |
+| **11. Migração Diária Guiada** | Perguntar o que fazer com pendências de ontem ao abrir o app. | ✅ **Implementado** (`Assistente de Migração Diária Guiada` em `/daily`). | 🟢 **Manter e utilizar**. |
 | **12. Revisão Semanal Guiada** | Checklist de 4 passos no fim de semana para organizar a mente. | ❌ **Pendente** (Apenas visão do Weekly Log). | 🟡 **Criar Assistente de Revisão Semanal (Grau 2)**. |
 | **13. Incubadora "Algum Dia / Talvez"** | Guardar projetos futuros sem poluir o dia a dia. | ❌ **Pendente** (Projetos soltos nas Coleções). | 🟢 **Criar aba Someday/Maybe (Grau 3)**. |
 | **14. Vínculo Projeto ➔ Ação** | Botão na Coleção para enviar 1 próxima ação ao Daily Log. | ❌ **Pendente** (Coleções isoladas). | 🟢 **Adicionar Próxima Ação nas Coleções (Grau 3)**. |
@@ -74,7 +74,7 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
   3. ✅ **Régua Diária de Hábitos (Habit Tracker Matrix):** Régua visual em marrom café `#4a3b32` no cabeçalho do Daily Log com ícone do olho 👁️, contagem de dias concluídos, sincronização imediata no Supabase e filtro anti-ressurreição `bujo_deleted_habits`.
 
 * 🟡 **GRAU 2: FLUXO E MANUTENÇÃO (Consistência do Sistema)**
-  4. **Assistente de Migração Diária Guiada (Daily Migration):** Modal ao iniciar o dia: `Mover para Hoje`, `Agendar no Future Log` ou `Cancelar`.
+  4. ✅ **Assistente de Migração Diária Guiada (Daily Migration):** Componente `DailyMigrationModalComponent` ativado no Daily Log ao detectar pendências de dias anteriores (`Mover para Hoje`, `Agendar Data`, `Cancelar` ou `Mover Todas em Lote`).
   5. **Assistente de Revisão Semanal Guiada (Weekly Review Wizard):** Checklist interativo no sábado/domingo para limpar a Caixa de Entrada e definir as 3 "Big Rocks" da semana.
   6. **Módulo de Tarefas Recorrentes Automáticas:** Repetição programada para compromissos fixos (faturas, relatórios, aulas).
 
@@ -129,6 +129,11 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 ## 📜 Changelog de Releases & Versões Aprovadas
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
+
+### ☀️ **v2.1.0** — *Lançamento do Assistente de Migração Diária Guiada (Grau 2 - Feature 4)* (02/08/2026)
+- **Detecção Automática de Pendências Passadas:** O Daily Log verifica pendências acumuladas de dias anteriores e exibe um banner de aviso com atalho rápido `☀️ Migrar Agora`.
+- **Assistente Interativo de Triagem (`DailyMigrationModalComponent`):** Carrossel guiado para processar pendências anteriores em 1 clique: Mover para Hoje 📌, Agendar Nova Data 📅, Cancelar ❌ ou Manter Assim ⏩.
+- **Ação em Lote (Bulk Migration):** Botão `⚡ Mover Todas para Hoje` para migrar todo o acúmulo em menos de 1 segundo.
 
 ### 📐 **v2.0.1** — *Alinhamento em Linha Única do Cabeçalho de Data no Mobile* (02/08/2026)
 - **Layout Responsivo Único:** A data selecionada, o botão "Hoje" e as setas de navegação (`<` e `>`) agora permanecem alinhados na mesma linha no smartphone.
