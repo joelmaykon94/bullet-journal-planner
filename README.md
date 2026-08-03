@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🎯 **v2.0.0** — *Correção Crítica: Liberdade Total para Desmarcar Hábitos e Sincronizar na Nuvem* (02/08/2026)
+- **Correção no Algoritmo da Nuvem:** Removida a união por Set que re-injetava hábitos desmarcados vindo do Supabase.
+- **Desmarcação Instantânea:** Desmarcar um hábito atualiza imediatamente o `localStorage` e substitui o registro do dia na nuvem Supabase, permitindo marcar e desmarcar hábitos quantas vezes quiser sem que o ícone retorne.
+
 ### ↩️ **v1.9.9** — *Marcação e Desmarcação Retroativa de Hábitos para Qualquer Data* (02/08/2026)
 - **Navegação Histórica de Datas:** Você pode marcar ou desmarcar qualquer hábito em qualquer data (passada, presente ou futura) selecionada no diário.
 - **Feedback de Notificação Desmarcado:** Adicionado aviso toast de confirmação `↩ Hábito desmarcado: {nome}` ao alternar hábitos em qualquer dia, atualizando instantaneamente o contador e a nuvem.

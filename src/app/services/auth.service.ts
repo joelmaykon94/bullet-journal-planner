@@ -193,18 +193,7 @@ export class AuthService {
             mergedData[key] = Array.from(new Set([...cVal, ...lVal]));
           }
         } else if (typeof lVal === 'object' && typeof cVal === 'object') {
-          if (key === 'bujo_habit_logs') {
-            const mergedLogs: Record<string, string[]> = { ...cVal, ...lVal };
-            const allDates = new Set([...Object.keys(cVal || {}), ...Object.keys(lVal || {})]);
-            for (const d of allDates) {
-              const cDateLogs = Array.isArray(cVal[d]) ? cVal[d] : [];
-              const lDateLogs = Array.isArray(lVal[d]) ? lVal[d] : [];
-              mergedLogs[d] = Array.from(new Set([...cDateLogs, ...lDateLogs]));
-            }
-            mergedData[key] = mergedLogs;
-          } else {
-            mergedData[key] = { ...cVal, ...lVal };
-          }
+          mergedData[key] = { ...cVal, ...lVal };
         } else {
           mergedData[key] = lVal || cVal;
         }
