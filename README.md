@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🔢 **v1.9.7** — *Distintivo Esquerdo de Total de Dias Concluídos em Cada Hábito* (02/08/2026)
+- **Contador Total de Dias Concluídos (Badge Esquerdo):** Adicionado um pequeno círculo numérico no canto superior esquerdo (`-top-1 -left-1`) de cada hábito exibindo o total de dias em que ele foi concluído.
+- **Simetria Perfeita:** Espelha o círculo verde com checkmark `✓` do lado direito, proporcionando um feedback imediato do seu streak e consistência de hábitos.
+
 ### ⚡ **v1.9.6** — *Captura Rápida Exclusiva via Botão Flutuante Universal (Mobile & Desktop)* (02/08/2026)
 - **Remoção da Sidebar:** Removido o botão de Captura Rápida do menu lateral para manter a navegação limpa.
 - **Botão Flutuante Universal (FAB):** O botão circular flutuante no canto inferior direito (`bottom-6 right-6`) agora é visível em qualquer tamanho de tela (celular, tablet e computador), com atalho `Ctrl+K` e animação de rotação ao passar o mouse.

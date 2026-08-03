@@ -61,9 +61,16 @@
                 : 'bg-[#f2ebdf] dark:bg-[#1c1917] border-[#d7c8b4] dark:border-[#e3dac9]/20 text-[#4a3b32] dark:text-[#e3dac9] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/10 shadow-xs'"
               class="w-9 h-9 rounded-full border-2 flex items-center justify-center relative transition-all duration-150 active:scale-90 cursor-pointer">
         
+        <!-- Left Badge: Total Days Completed Counter Badge -->
+        <span *ngIf="!isEditMode"
+              [title]="getHabitTotalCount(item.title) + ' dias concluídos no total'"
+              class="absolute -top-1 -left-1 min-w-[15px] h-[15px] px-1 rounded-full bg-[#4a3b32] dark:bg-[#e3dac9] text-white dark:text-[#2a2724] font-mono font-bold text-[8px] flex items-center justify-center border border-white dark:border-stone-900 shadow-xs z-10 leading-none">
+          {{ getHabitTotalCount(item.title) }}
+        </span>
+
         <!-- Completed Check Badge -->
         <span *ngIf="isCompleted(item.title) && !isEditMode" 
-              class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-600 text-white font-bold text-[8px] flex items-center justify-center border border-white dark:border-stone-900 shadow-xs animate-in zoom-in-50 duration-150">
+              class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-600 text-white font-bold text-[8px] flex items-center justify-center border border-white dark:border-stone-900 shadow-xs animate-in zoom-in-50 duration-150 z-10">
           ✓
         </span>
 

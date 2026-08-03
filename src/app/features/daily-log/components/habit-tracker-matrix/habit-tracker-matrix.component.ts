@@ -175,4 +175,16 @@ export class HabitTrackerMatrixComponent implements OnInit, OnDestroy {
     if (pct <= 66) return 'bg-[#fbbf24] dark:bg-amber-400';
     return 'bg-[#34d399] dark:bg-emerald-400';
   }
+
+  getHabitTotalCount(habitTitle: string): number {
+    const logs = this.bujoService.getHabitLogs();
+    if (!logs) return 0;
+    let total = 0;
+    for (const dateStr of Object.keys(logs)) {
+      if (Array.isArray(logs[dateStr]) && logs[dateStr].includes(habitTitle)) {
+        total++;
+      }
+    }
+    return total;
+  }
 }
