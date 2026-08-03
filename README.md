@@ -130,6 +130,11 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🔽 **v1.8.7** — *Modo Retrátil/Collapsible com 1-Toque na Barra de Hábitos* (02/08/2026)
+- **Recolher / Expandir com 1-Toque:** Tocar ou clicar na barra de progresso da régua de hábitos recolhe ou expande instantaneamente a lista de círculos.
+- **Indicador Visual Chevron (`▼` / `▲`):** Setinha animada indicando o estado atual da régua.
+- **Foco Máximo no Log Diário:** No modo recolhido, exibe apenas a barra de progresso em 1 linha, liberando 100% da área da tela para o gerenciamento de tarefas.
+
 ### 📐 **v1.8.6** — *Régua de Hábitos Ultra-Compacta (Economia de Espaço Mobile & Desktop)* (02/08/2026)
 - **Círculos Ultra-Compactos (`w-9 h-9`):** Diâmetro reduzido para 36px, economizando mais de 40% de altura vertical sem perder legibilidade nem interatividade.
 - **Rótulos & Ícones Otimizados (`text-[10px]` & `w-4 h-4`):** Ícones e textos perfeitamente proporcionais para evitar poluição visual em qualquer tamanho de tela.

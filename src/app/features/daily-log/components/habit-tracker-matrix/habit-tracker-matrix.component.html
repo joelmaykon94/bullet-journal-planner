@@ -1,13 +1,29 @@
-<!-- Ultra-Compact Circle Icon Habit Tracker Bar (Space-Efficient for Mobile & Desktop) -->
+<!-- Ultra-Compact Circle Icon Habit Tracker Bar (Collapsible for Mobile & Desktop) -->
 <div class="habit-matrix-top mb-3 pb-2.5 border-b border-[#e2d5c3]/80 dark:border-[#e3dac9]/15 flex flex-col gap-2.5 select-none">
   
-  <!-- Full-Width Dynamic Progress Bar Header -->
-  <div class="w-full flex flex-col gap-1 px-0.5">
+  <!-- Full-Width Dynamic Progress Bar Header (Clickable to Collapse / Expand) -->
+  <div class="w-full flex flex-col gap-1 px-0.5 cursor-pointer group" (click)="toggleCollapse()" title="Clique para recolher / expandir a régua de hábitos">
     <div class="flex items-center justify-between text-[11px] font-mono font-bold text-[#7a6656] dark:text-[#afa393]">
-      <span class="font-serif text-xs font-bold text-[#292524] dark:text-[#f5f5f4] tracking-tight">Progresso Diário</span>
-      <span class="bg-[#f2ebdf] dark:bg-[#1c1917] text-[#382c25] dark:text-[#e3dac9] px-2 py-0.5 rounded-full border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[10px]">
-        {{ getCompletedCount() }}/{{ habitItems.length }} ({{ getCompletionPercentage() }}%)
+      
+      <!-- Title + Chevron Indicator -->
+      <span class="font-serif text-xs font-bold text-[#292524] dark:text-[#f5f5f4] tracking-tight flex items-center gap-1.5 group-hover:text-[#59493d] dark:group-hover:text-white transition-colors">
+        <span>Progresso Diário</span>
+        <svg class="w-3.5 h-3.5 text-[#7a6656] dark:text-[#afa393] transition-transform duration-200"
+             [ngClass]="isCollapsed ? 'rotate-180' : ''"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
       </span>
+
+      <!-- Count & Toggle Hint -->
+      <div class="flex items-center gap-1.5">
+        <span class="bg-[#f2ebdf] dark:bg-[#1c1917] text-[#382c25] dark:text-[#e3dac9] px-2 py-0.5 rounded-full border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[10px]">
+          {{ getCompletedCount() }}/{{ habitItems.length }} ({{ getCompletionPercentage() }}%)
+        </span>
+        <span class="text-[10px] text-[#7a6656] dark:text-[#afa393] underline font-sans hidden sm:inline">
+          {{ isCollapsed ? 'Expandir' : 'Recolher' }}
+        </span>
+      </div>
     </div>
     
     <!-- Full-Width Progress Bar Track -->
@@ -19,8 +35,9 @@
     </div>
   </div>
 
-  <!-- Compact Circle Buttons Flex Wrap Container -->
-  <div class="flex flex-wrap items-start justify-start gap-3 sm:gap-4 py-0.5 px-0.5">
+  <!-- Compact Circle Buttons Flex Wrap Container (Hidden when Collapsed) -->
+  <div *ngIf="!isCollapsed" 
+       class="flex flex-wrap items-start justify-start gap-3 sm:gap-4 py-0.5 px-0.5 animate-in fade-in-50 slide-in-from-top-1 duration-200">
     
     <!-- Active Habit Circles -->
     <div *ngFor="let item of habitItems" 

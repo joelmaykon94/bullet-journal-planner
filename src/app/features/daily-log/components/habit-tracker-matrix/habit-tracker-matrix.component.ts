@@ -54,6 +54,7 @@ export class HabitTrackerMatrixComponent implements OnInit, OnDestroy {
 
   showAddModal = false;
   isEditMode = false;
+  isCollapsed = false;
   newHabitName = '';
   selectedIconId = 'droplet';
   iconSearchQuery = '';
@@ -95,6 +96,10 @@ export class HabitTrackerMatrixComponent implements OnInit, OnDestroy {
     );
   }
 
+  toggleCollapse() {
+    this.isCollapsed = !this.isCollapsed;
+  }
+
   openAddModal() {
     this.newHabitName = '';
     this.selectedIconId = 'droplet';
@@ -104,6 +109,9 @@ export class HabitTrackerMatrixComponent implements OnInit, OnDestroy {
 
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
+    if (this.isEditMode) {
+      this.isCollapsed = false; // Expand when editing
+    }
   }
 
   selectIcon(iconId: string) {
