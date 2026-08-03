@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 📏 **v1.8.4** — *Barra de Progresso Full-Width & Botão Circular de Edição Inline* (02/08/2026)
+- **Barra de Progresso 100% Full-Width:** A barra de progresso diário agora se estende por toda a largura superior da régua de hábitos.
+- **Botão Circular de Edição Inline (`Editar`):** O botão de editar passou a ser um botão circular (`w-12 h-12`) posicionado diretamente ao lado do botão circular `+ Novo`.
+
 ### 📊 **v1.8.3** — *Barra de Progresso Pulsante & Botão Quadrado de Edição Exclusivo* (02/08/2026)
 - **Barra de Progresso Dinâmica & Pulsante:** Subtituiu o texto do título por uma barra de progresso no topo da régua que transita do Vermelho Claro (0-33%) -> Amarelo (34-66%) -> Verde Claro (67-100%) à medida que os hábitos são concluídos.
 - **Botão de Gerenciamento Quadrado:** Botão compacto e minimalista de edição (`w-9 h-9`).

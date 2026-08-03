@@ -1,36 +1,22 @@
 <!-- Minimalist Circle Icon Habit Tracker Bar at the Top -->
-<div class="habit-matrix-top mb-4 pb-3 border-b border-[#e2d5c3]/80 dark:border-[#e3dac9]/15 flex flex-col gap-3 select-none">
+<div class="habit-matrix-top mb-4 pb-3 border-b border-[#e2d5c3]/80 dark:border-[#e3dac9]/15 flex flex-col gap-3.5 select-none">
   
-  <!-- Header Row with Dynamic Progress Bar and Square Edit Button -->
-  <div class="flex items-center justify-between gap-3 px-0.5">
+  <!-- Full-Width Dynamic Progress Bar Header (Spans 100% across top) -->
+  <div class="w-full flex flex-col gap-1.5 px-0.5">
+    <div class="flex items-center justify-between text-xs font-mono font-bold text-[#7a6656] dark:text-[#afa393]">
+      <span class="font-serif text-xs font-bold text-[#292524] dark:text-[#f5f5f4] tracking-tight">Progresso Diário</span>
+      <span class="bg-[#f2ebdf] dark:bg-[#1c1917] text-[#382c25] dark:text-[#e3dac9] px-2 py-0.5 rounded-full border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[11px]">
+        {{ getCompletedCount() }}/{{ habitItems.length }} ({{ getCompletionPercentage() }}%)
+      </span>
+    </div>
     
-    <!-- Dynamic Pulsing Progress Bar Header (Red -> Yellow -> Green) -->
-    <div class="flex flex-col flex-1 max-w-xs sm:max-w-md gap-1">
-      <div class="flex items-center justify-between text-xs font-mono font-bold text-[#7a6656] dark:text-[#afa393]">
-        <span class="font-serif text-xs font-bold text-[#292524] dark:text-[#f5f5f4]">Progresso Diário</span>
-        <span>{{ getCompletedCount() }}/{{ habitItems.length }} ({{ getCompletionPercentage() }}%)</span>
-      </div>
-      
-      <!-- Progress Bar Track -->
-      <div class="w-full h-2.5 bg-[#f2ebdf] dark:bg-[#1c1917] rounded-full border border-[#e2d5c3] dark:border-[#e3dac9]/20 overflow-hidden shadow-inner relative">
-        <div [style.width.%]="getCompletionPercentage()"
-             [ngClass]="getProgressBarColorClass()"
-             class="h-full rounded-full transition-all duration-500 ease-out animate-pulse shadow-xs">
-        </div>
+    <!-- Full-Width Progress Bar Track -->
+    <div class="w-full h-3 bg-[#f2ebdf] dark:bg-[#1c1917] rounded-full border border-[#e2d5c3] dark:border-[#e3dac9]/20 overflow-hidden shadow-inner relative">
+      <div [style.width.%]="getCompletionPercentage()"
+           [ngClass]="getProgressBarColorClass()"
+           class="h-full rounded-full transition-all duration-500 ease-out animate-pulse shadow-xs">
       </div>
     </div>
-
-    <!-- Square Management / Edit Button (w-9 h-9) -->
-    <button (click)="toggleEditMode()"
-            [ngClass]="isEditMode ? 'bg-[#59493d] text-white border-[#382c25]' : 'bg-[#f2ebdf] dark:bg-[#1c1917] text-[#59493d] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/10'"
-            class="w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
-            [title]="isEditMode ? 'Concluir Edição' : 'Gerenciar / Remover Hábitos'">
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-      </svg>
-    </button>
-
   </div>
 
   <!-- Circle Buttons Multi-Line Flex Wrap Container -->
@@ -125,7 +111,7 @@
       </button>
     </div>
 
-    <!-- Inline + Novo Circle Button (Placed directly after the last habit) -->
+    <!-- Inline + Novo Circle Button -->
     <div class="flex flex-col items-center gap-1.5 shrink-0 group">
       <button (click)="openAddModal()"
               title="Adicionar novo hábito"
@@ -137,6 +123,24 @@
       </button>
       <span class="text-[11px] font-sans font-bold text-[#7a6656] dark:text-[#afa393] text-center max-w-[64px] truncate leading-tight">
         Novo
+      </span>
+    </div>
+
+    <!-- Inline Circle Edit/Manage Button (Placed right next to + Novo) -->
+    <div class="flex flex-col items-center gap-1.5 shrink-0 group">
+      <button (click)="toggleEditMode()"
+              [title]="isEditMode ? 'Concluir Edição' : 'Gerenciar / Remover Hábitos'"
+              [ngClass]="isEditMode 
+                ? 'bg-[#59493d] dark:bg-[#e3dac9] border-[#382c25] dark:border-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] shadow-md scale-105' 
+                : 'border-2 border-dashed border-[#d7c8b4] dark:border-[#e3dac9]/30 bg-[#f2ebdf]/60 dark:bg-[#1c1917]/60 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#59493d] dark:text-[#e3dac9] shadow-2xs'"
+              class="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-150 active:scale-90 cursor-pointer">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </button>
+      <span class="text-[11px] font-sans font-bold text-[#7a6656] dark:text-[#afa393] text-center max-w-[64px] truncate leading-tight">
+        {{ isEditMode ? 'Pronto' : 'Editar' }}
       </span>
     </div>
 
