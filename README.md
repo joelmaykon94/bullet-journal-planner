@@ -130,6 +130,25 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🛡️ **v1.9.3** — *Filtro Definitivo Anti-Ressurreição de Hábitos Deletados (`bujo_deleted_habits`)* (02/08/2026)
+- **Blacklist de Hábitos Excluídos:** Criado o registro permanente `bujo_deleted_habits` para impedir que hábitos removidos voltem ao sincronizar com a nuvem Supabase ou recarregar a página.
+- **Sincronização Dupla `bujo_habits` e `bujo_habit_items`:** Exclusões agora atualizam simultaneamente a lista detalhada e a lista resumida de hábitos no `localStorage`.
+
+### 🏷️ **v1.9.2** — *Atualização do Título para "Hábitos Diários"* (02/08/2026)
+- **Título "Hábitos Diários":** Substituído o texto do cabeçalho de "Progresso Diário" por "Hábitos Diários", mantendo a cor marrom café `#4a3b32` e a dica de interação no olho 👁️.
+
+### 👁️ **v1.9.1** — *Ícone do Olho Exclusivo com Dica Interativa de Tooltip* (02/08/2026)
+- **Remoção do Texto Rótulo:** Removido o botão de texto "Ocultar"/"Mostrar", deixando o visual da régua minimalista e despoluído.
+- **Dica de Interação no Ícone (Tooltip):** Adicionado `title="Clique para ocultar/mostrar hábitos"` e efeito de zoom ao passar o mouse ou tocar no olho.
+
+### ☕ **v1.9.0** — *Título em Marrom Café Escuro `#4a3b32` & Contador em Bege Claro `#7a6656`* (02/08/2026)
+- **Título & Olho em Marrom Café `#4a3b32`:** Título "Progresso Diário" e o ícone do Olho 👁️ definidos estritamente na cor nobre `#4a3b32`.
+- **Contador em Bege Claro `#7a6656`:** Texto do contador de hábitos e rótulo de estado ("Ocultar"/"Mostrar") ajustados para o tom bege claro suave `#7a6656`.
+
+### 🎨 **v1.8.9** — *Padronização de Fontes e Ícones em Tom Escuro #1c1917* (02/08/2026)
+- **Tom Escuro de Alto Contraste (#1c1917):** Substituídas todas as ocorrências de marrom claro/bege desbotado (`#7a6656` / `#afa393`) pelo tom escuro `#1c1917` (em modo claro) e `#f5f5f4` (em modo escuro).
+- **Legibilidade Nítida:** Título, contador, ícones de olho, botões `+ Novo` e `Editar`, e rótulos de hábitos agora possuem contraste perfeito em todas as telas.
+
 ### 👁️ **v1.8.8** — *Ícone de Olho (Mostrar/Ocultar) & Título em Tom Escuro #1c1917* (02/08/2026)
 - **Ícone de Olho Aberto / Fechado (Eye Toggle):** Subtituiu a setinha pelo ícone vetorial de olho 👁️ (olho aberto quando visível e olho cortado quando oculto).
 - **Título em Tom Escuro Elegante (`#1c1917`):** Alterada a cor da fonte do título "Progresso Diário" para o tom escuro de alto contraste `#1c1917`, tornando a leitura perfeita em qualquer brilho de tela.

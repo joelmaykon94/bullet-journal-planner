@@ -264,6 +264,7 @@ export class BujoService {
   }
 
   getHabitItems(): HabitItem[] {
+    const deletedHabits: string[] = this.getParsedStorage('bujo_deleted_habits', []);
     const isInitialized = typeof localStorage !== 'undefined' && localStorage.getItem('bujo_habits_init_v1') === 'true';
     if (!isInitialized) {
       const defaultHabits: HabitItem[] = [
@@ -274,13 +275,16 @@ export class BujoService {
         { id: '5', title: 'Lixo', icon: 'trash' },
         { id: '6', title: 'Medicamento', icon: 'pill' }
       ];
-      this.saveToStorage('bujo_habit_items', defaultHabits);
+      const filteredDefaults = defaultHabits.filter(h => !deletedHabits.includes(h.id) && !deletedHabits.includes(h.title));
+      this.saveToStorage('bujo_habit_items', filteredDefaults);
+      this.saveToStorage('bujo_habits', filteredDefaults.map(h => h.title));
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('bujo_habits_init_v1', 'true');
       }
-      return defaultHabits;
+      return filteredDefaults;
     }
-    return this.getParsedStorage('bujo_habit_items', []);
+    const rawItems: HabitItem[] = this.getParsedStorage('bujo_habit_items', []);
+    return rawItems.filter(h => !deletedHabits.includes(h.id) && !deletedHabits.includes(h.title));
   }
 
   addHabit(habit: string, icon: string = 'target') {
@@ -289,6 +293,12 @@ export class BujoService {
 
   addHabitItem(title: string, icon: string = 'target') {
     const items = this.getHabitItems();
+    
+    // Remove title from deleted habits blacklist if user re-adds it
+    const deletedHabits: string[] = this.getParsedStorage('bujo_deleted_habits', []);
+    const updatedBlacklist = deletedHabits.filter(d => d !== title);
+    this.saveToStorage('bujo_deleted_habits', updatedBlacklist);
+
     if (!items.some(h => h.title === title)) {
       const newItem: HabitItem = {
         id: Date.now().toString(),
@@ -297,6 +307,7 @@ export class BujoService {
       };
       const updated = [...items, newItem];
       this.saveToStorage('bujo_habit_items', updated);
+      this.saveToStorage('bujo_habits', updated.map(h => h.title));
       this.habitsSubject.next(updated.map(h => h.title));
     }
   }
@@ -306,12 +317,30 @@ export class BujoService {
   }
 
   removeHabitItem(idOrTitle: string) {
-    const items = this.getHabitItems().filter(h => h.id !== idOrTitle && h.title !== idOrTitle);
-    this.saveToStorage('bujo_habit_items', items);
+    const currentItems = this.getHabitItems();
+    const itemToRemove = currentItems.find(h => h.id === idOrTitle || h.title === idOrTitle);
+    const updatedItems = currentItems.filter(h => h.id !== idOrTitle && h.title !== idOrTitle);
+
+    // Save ID and title to deleted habits blacklist to prevent cloud sync resurrection
+    const deletedHabits: string[] = this.getParsedStorage('bujo_deleted_habits', []);
+    if (idOrTitle && !deletedHabits.includes(idOrTitle)) {
+      deletedHabits.push(idOrTitle);
+    }
+    if (itemToRemove && itemToRemove.id && !deletedHabits.includes(itemToRemove.id)) {
+      deletedHabits.push(itemToRemove.id);
+    }
+    if (itemToRemove && itemToRemove.title && !deletedHabits.includes(itemToRemove.title)) {
+      deletedHabits.push(itemToRemove.title);
+    }
+
+    this.saveToStorage('bujo_deleted_habits', deletedHabits);
+    this.saveToStorage('bujo_habit_items', updatedItems);
+    this.saveToStorage('bujo_habits', updatedItems.map(h => h.title));
+    
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('bujo_habits_init_v1', 'true');
     }
-    this.habitsSubject.next(items.map(h => h.title));
+    this.habitsSubject.next(updatedItems.map(h => h.title));
   }
 
   getHabitLogs(): Record<string, string[]> {

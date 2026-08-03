@@ -2,35 +2,37 @@
 <div class="habit-matrix-top mb-3 pb-2.5 border-b border-[#e2d5c3]/80 dark:border-[#e3dac9]/15 flex flex-col gap-2.5 select-none">
   
   <!-- Full-Width Dynamic Progress Bar Header (Clickable Eye Toggle) -->
-  <div class="w-full flex flex-col gap-1 px-0.5 cursor-pointer group" (click)="toggleCollapse()" title="Clique para ocultar / mostrar os hábitos">
-    <div class="flex items-center justify-between text-[11px] font-mono font-bold text-[#1c1917] dark:text-[#f5f5f4]">
+  <div class="w-full flex flex-col gap-1 px-0.5 cursor-pointer group" (click)="toggleCollapse()" title="Clique para ocultar ou mostrar a régua de hábitos">
+    <div class="flex items-center justify-between text-[11px] font-mono font-bold">
       
-      <!-- Title + Eye Open / Eye Closed Toggle Icon -->
-      <span class="font-serif text-xs font-bold text-[#1c1917] dark:text-[#f5f5f4] tracking-tight flex items-center gap-1.5 transition-colors">
-        <span>Progresso Diário</span>
+      <!-- Title "Hábitos Diários" + Eye Open / Eye Closed Toggle Icon (Strictly #4a3b32 Espresso Brown) -->
+      <span class="font-serif text-xs font-bold tracking-tight flex items-center gap-1.5 transition-colors" style="color: #4a3b32 !important;">
+        <span style="color: #4a3b32 !important;">Hábitos Diários</span>
         
-        <!-- Eye Open Icon (Visible Habits) -->
-        <svg *ngIf="!isCollapsed" class="w-4 h-4 text-[#1c1917] dark:text-[#f5f5f4] transition-transform duration-150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
+        <!-- Interactive Eye Icon with Tooltip Info & Hover Effect -->
+        <span [title]="isCollapsed ? 'Clique para mostrar hábitos' : 'Clique para ocultar hábitos'" 
+              class="inline-flex items-center justify-center p-0.5 rounded-full hover:bg-[#e2d5c3]/50 dark:hover:bg-white/10 transition-all cursor-pointer hover:scale-110 active:scale-95">
+          
+          <!-- Eye Open Icon (Visible Habits) -->
+          <svg *ngIf="!isCollapsed" class="w-4 h-4 transition-transform duration-150" style="color: #4a3b32 !important; stroke: #4a3b32 !important;" viewBox="0 0 24 24" fill="none" stroke="#4a3b32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
 
-        <!-- Eye Closed / Slash Icon (Hidden Habits) -->
-        <svg *ngIf="isCollapsed" class="w-4 h-4 text-[#7a6656] dark:text-[#afa393] transition-transform duration-150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-          <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
-          <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
-          <line x1="2" y1="2" x2="22" y2="22"/>
-        </svg>
+          <!-- Eye Closed / Slash Icon (Hidden Habits) -->
+          <svg *ngIf="isCollapsed" class="w-4 h-4 transition-transform duration-150" style="color: #4a3b32 !important; stroke: #4a3b32 !important;" viewBox="0 0 24 24" fill="none" stroke="#4a3b32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+            <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+            <line x1="2" y1="2" x2="22" y2="22"/>
+          </svg>
+        </span>
       </span>
 
-      <!-- Count & Status Badge -->
-      <div class="flex items-center gap-1.5">
-        <span class="bg-[#f2ebdf] dark:bg-[#1c1917] text-[#1c1917] dark:text-[#e3dac9] px-2 py-0.5 rounded-full border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[10px] font-bold">
+      <!-- Count Badge ONLY (Light Beige #7a6656) -->
+      <div class="flex items-center">
+        <span class="bg-[#f2ebdf] dark:bg-[#1c1917] px-2 py-0.5 rounded-full border border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[10px] font-bold" style="color: #7a6656 !important;">
           {{ getCompletedCount() }}/{{ habitItems.length }} ({{ getCompletionPercentage() }}%)
-        </span>
-        <span class="text-[10px] text-[#1c1917] dark:text-[#e3dac9] font-bold underline font-sans hidden sm:inline">
-          {{ isCollapsed ? 'Mostrar' : 'Ocultar' }}
         </span>
       </div>
     </div>
@@ -55,8 +57,8 @@
       <!-- Compact Circle Icon Button (w-9 h-9 / 36px) -->
       <button (click)="toggleHabit(item.title)"
               [ngClass]="isCompleted(item.title) 
-                ? 'bg-[#59493d] dark:bg-[#e3dac9] border-[#382c25] dark:border-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] shadow-md scale-105' 
-                : 'bg-[#f2ebdf] dark:bg-[#1c1917] border-[#d7c8b4] dark:border-[#e3dac9]/20 text-[#59493d] dark:text-[#e3dac9] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/10 shadow-xs'"
+                ? 'bg-[#4a3b32] dark:bg-[#e3dac9] border-[#29201a] dark:border-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] shadow-md scale-105' 
+                : 'bg-[#f2ebdf] dark:bg-[#1c1917] border-[#d7c8b4] dark:border-[#e3dac9]/20 text-[#4a3b32] dark:text-[#e3dac9] hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/10 shadow-xs'"
               class="w-9 h-9 rounded-full border-2 flex items-center justify-center relative transition-all duration-150 active:scale-90 cursor-pointer">
         
         <!-- Completed Check Badge -->
@@ -141,13 +143,13 @@
     <div class="flex flex-col items-center gap-1 shrink-0 group">
       <button (click)="openAddModal()"
               title="Adicionar novo hábito"
-              class="w-9 h-9 rounded-full border-2 border-dashed border-[#d7c8b4] dark:border-[#e3dac9]/30 bg-[#f2ebdf]/60 dark:bg-[#1c1917]/60 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#59493d] dark:text-[#e3dac9] flex items-center justify-center transition-all duration-150 active:scale-90 cursor-pointer shadow-2xs">
+              class="w-9 h-9 rounded-full border-2 border-dashed border-[#4a3b32]/50 dark:border-[#e3dac9]/30 bg-[#f2ebdf]/60 dark:bg-[#1c1917]/60 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#4a3b32] dark:text-[#e3dac9] flex items-center justify-center transition-all duration-150 active:scale-90 cursor-pointer shadow-2xs">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
-      <span class="text-[10px] font-sans font-bold text-[#7a6656] dark:text-[#afa393] text-center max-w-[56px] truncate leading-tight">
+      <span class="text-[10px] font-sans font-bold text-[#7a6656] dark:text-[#afa393] text-center max-w-[56px] truncate leading-tight" style="color: #7a6656 !important;">
         Novo
       </span>
     </div>
@@ -157,15 +159,15 @@
       <button (click)="toggleEditMode()"
               [title]="isEditMode ? 'Concluir Edição' : 'Gerenciar / Remover Hábitos'"
               [ngClass]="isEditMode 
-                ? 'bg-[#59493d] dark:bg-[#e3dac9] border-[#382c25] dark:border-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] shadow-md scale-105' 
-                : 'border-2 border-dashed border-[#d7c8b4] dark:border-[#e3dac9]/30 bg-[#f2ebdf]/60 dark:bg-[#1c1917]/60 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#59493d] dark:text-[#e3dac9] shadow-2xs'"
+                ? 'bg-[#4a3b32] dark:bg-[#e3dac9] border-[#29201a] dark:border-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] shadow-md scale-105' 
+                : 'border-2 border-dashed border-[#4a3b32]/50 dark:border-[#e3dac9]/30 bg-[#f2ebdf]/60 dark:bg-[#1c1917]/60 hover:bg-[#e6dbcd] dark:hover:bg-[#e3dac9]/20 text-[#4a3b32] dark:text-[#e3dac9] shadow-2xs'"
               class="w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all duration-150 active:scale-90 cursor-pointer">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
         </svg>
       </button>
-      <span class="text-[10px] font-sans font-bold text-[#7a6656] dark:text-[#afa393] text-center max-w-[56px] truncate leading-tight">
+      <span class="text-[10px] font-sans font-bold text-[#7a6656] dark:text-[#afa393] text-center max-w-[56px] truncate leading-tight" style="color: #7a6656 !important;">
         {{ isEditMode ? 'Pronto' : 'Editar' }}
       </span>
     </div>
@@ -177,29 +179,29 @@
        class="fixed inset-0 bg-[#292524]/40 dark:bg-black/80 backdrop-blur-xs z-[999999] flex items-center justify-center p-4"
        (click)="showAddModal = false">
     
-    <div class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[#1c1917] dark:text-[#e3dac9] rounded-xl w-full max-w-md p-5 shadow-2xl flex flex-col gap-4 relative animate-in zoom-in-95 duration-150"
+    <div class="bg-[#faf7f5] dark:bg-[#2a2724] border-2 border-[#e2d5c3] dark:border-[#e3dac9]/20 text-[#4a3b32] dark:text-[#e3dac9] rounded-xl w-full max-w-md p-5 shadow-2xl flex flex-col gap-4 relative animate-in zoom-in-95 duration-150"
          (click)="$event.stopPropagation()">
       
       <div class="flex items-center justify-between border-b border-[#e2d5c3] dark:border-[#e3dac9]/20 pb-3">
-        <h3 class="font-serif text-lg font-bold text-[#1c1917] dark:text-[#f5f5f4]">Novo Hábito com Ícone</h3>
-        <button class="w-7 h-7 rounded-lg bg-[#f2ebdf] dark:bg-[#1c1917] text-[#1c1917] dark:text-[#e3dac9] font-bold text-xs" (click)="showAddModal = false">✕</button>
+        <h3 class="font-serif text-lg font-bold text-[#4a3b32] dark:text-[#f5f5f4]" style="color: #4a3b32 !important;">Novo Hábito com Ícone</h3>
+        <button class="w-7 h-7 rounded-lg bg-[#f2ebdf] dark:bg-[#1c1917] text-[#4a3b32] dark:text-[#e3dac9] font-bold text-xs" (click)="showAddModal = false">✕</button>
       </div>
 
       <div class="flex flex-col gap-3">
         <!-- Habit Name Input -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-[#382c25] dark:text-[#e3dac9]">Nome do Hábito:</label>
+          <label class="text-xs font-bold text-[#4a3b32] dark:text-[#e3dac9]" style="color: #4a3b32 !important;">Nome do Hábito:</label>
           <input type="text" 
                  [(ngModel)]="newHabitName" 
                  placeholder="ex: Água 2L, Mestrado, Musculação..." 
-                 class="w-full bg-[#fdfbf7] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg p-2.5 text-sm text-[#1c1917] dark:text-[#f5f5f4] font-medium outline-none focus:border-[#59493d]" 
+                 class="w-full bg-[#fdfbf7] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg p-2.5 text-sm text-[#1c1917] dark:text-[#f5f5f4] font-medium outline-none focus:border-[#4a3b32]" 
                  (keydown.enter)="addHabit()" />
         </div>
 
         <!-- Icon Picker Header & Search -->
         <div class="flex flex-col gap-1.5 mt-1">
           <div class="flex items-center justify-between">
-            <label class="text-xs font-bold text-[#382c25] dark:text-[#e3dac9]">Selecione o Ícone ({{ filteredIcons.length }} opções):</label>
+            <label class="text-xs font-bold text-[#4a3b32] dark:text-[#e3dac9]" style="color: #4a3b32 !important;">Selecione o Ícone ({{ filteredIcons.length }} opções):</label>
           </div>
 
           <!-- Icon Search Field -->
@@ -207,7 +209,7 @@
             <input type="text" 
                    [(ngModel)]="iconSearchQuery" 
                    placeholder="🔍 Buscar ícone (ex: água, treino, livro)..." 
-                   class="w-full bg-[#fdfbf7] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg py-2 px-3 text-xs text-[#1c1917] dark:text-[#f5f5f4] outline-none focus:border-[#59493d] font-sans font-medium" />
+                   class="w-full bg-[#fdfbf7] dark:bg-[#1c1917] border border-[#e2d5c3] dark:border-[#e3dac9]/20 rounded-lg py-2 px-3 text-xs text-[#1c1917] dark:text-[#f5f5f4] outline-none focus:border-[#4a3b32] font-sans font-medium" />
           </div>
 
           <!-- Scrollable Icon Grid (Grid de 24 Ícones) -->
@@ -216,8 +218,8 @@
                     (click)="selectIcon(icon.id)"
                     [title]="icon.name"
                     [ngClass]="selectedIconId === icon.id 
-                      ? 'bg-[#59493d] dark:bg-[#e3dac9] text-white dark:text-[#2a2724] border-[#382c25] scale-110 shadow-md' 
-                      : 'bg-[#faf7f5] dark:bg-[#2a2724] text-[#382c25] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20 hover:bg-[#e6dbcd]'"
+                      ? 'bg-[#4a3b32] dark:bg-[#e3dac9] text-white dark:text-[#2a2724] border-[#29201a] scale-110 shadow-md' 
+                      : 'bg-[#faf7f5] dark:bg-[#2a2724] text-[#4a3b32] dark:text-[#e3dac9] border-[#e2d5c3] dark:border-[#e3dac9]/20 hover:bg-[#e6dbcd]'"
                     class="w-9 h-9 rounded-full border flex items-center justify-center transition-all cursor-pointer">
               
               <ng-container [ngSwitch]="icon.id">
@@ -244,20 +246,18 @@
                 <svg *ngSwitchCase="'smile'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
                 <svg *ngSwitchCase="'shield'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
                 <svg *ngSwitchCase="'award'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-                <svg *ngSwitchDefault class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-              </ng-container>
 
-            </button>
-          </div>
-        </div>
-      </div>
+          <!-- Default Target -->
+          <svg *ngSwitchDefault class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        </ng-container>
 
-      <div class="flex items-center justify-end gap-2 border-t border-[#e2d5c3] dark:border-[#e3dac9]/20 pt-3">
-        <button class="bg-[#f2ebdf] dark:bg-[#1c1917] text-[#1c1917] dark:text-[#e3dac9] text-xs font-bold py-2 px-4 rounded-xl border border-[#e2d5c3] dark:border-[#e3dac9]/20" (click)="showAddModal = false">Cancelar</button>
-        <button class="bg-[#59493d] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold py-2 px-5 rounded-xl border border-[#59493d]" (click)="addHabit()">Salvar Hábito</button>
-      </div>
-
+      </button>
     </div>
-  </div>
 
+    <div class="flex items-center justify-end gap-2 border-t border-[#e2d5c3] dark:border-[#e3dac9]/20 pt-3">
+      <button class="bg-[#f2ebdf] dark:bg-[#1c1917] text-[#4a3b32] dark:text-[#e3dac9] text-xs font-bold py-2 px-4 rounded-xl border border-[#e2d5c3] dark:border-[#e3dac9]/20" (click)="showAddModal = false">Cancelar</button>
+      <button class="bg-[#4a3b32] dark:bg-[#e3dac9] text-[#fdfbf7] dark:text-[#2a2724] text-xs font-bold py-2 px-5 rounded-xl border border-[#4a3b32]" (click)="addHabit()">Salvar Hábito</button>
+    </div>
+
+  </div>
 </div>
