@@ -130,6 +130,11 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 📐 **v1.8.6** — *Régua de Hábitos Ultra-Compacta (Economia de Espaço Mobile & Desktop)* (02/08/2026)
+- **Círculos Ultra-Compactos (`w-9 h-9`):** Diâmetro reduzido para 36px, economizando mais de 40% de altura vertical sem perder legibilidade nem interatividade.
+- **Rótulos & Ícones Otimizados (`text-[10px]` & `w-4 h-4`):** Ícones e textos perfeitamente proporcionais para evitar poluição visual em qualquer tamanho de tela.
+- **Layout Responsivo Flex-Wrap:** Transição suave e limpa entre linhas em telas pequenas.
+
 ### 🔒 **v1.8.5** — *Persistência Definitiva de Deleção de Hábitos* (02/08/2026)
 - **Zero Ressurreição de Hábitos Deletados:** Ajustada a flag de inicialização do `BujoService` (`bujo_habits_init_v1`) no `localStorage`.
 - **Garantia de Persistência:** Quando um hábito for excluído, essa exclusão é permanente no seu navegador mesmo após recarregar a página com `F5` ou reabrir o aplicativo.
