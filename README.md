@@ -48,21 +48,21 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
 
 | Recurso Recomendado pelo Livro GTD | O que a Funcionalidade faz | Status Atual no BuJo Focus | Ação Recomendada |
 | :--- | :--- | :--- | :--- |
-| **1. Captura Rápida (Inbox Zero)** | Digitar pendências soltas em 1 clique sem exigir data inicial. | ✅ **Existe** (`Inbox Zero` em `/inbox`, atalho `Ctrl+K` e Botão Flutuante Universal). | 🟢 **Manter e utilizar**. |
-| **2. Triagem e Processamento** | Pergunta chave do GTD (*É acionável? < 2 min?*). | 🟡 **Parcial** (Triagem manual). | 🟡 **Criar Assistente de Processamento**. |
-| **3. Listas por Contexto** | Organizar ações por `@computador`, `@trabalho`, `@rua`, `@mestrado`. | ✅ **Existe** (Sistema de Tags ativas em `bujo.service.ts`). | 🟢 **Manter e utilizar**. |
-| **4. Central de Delegados** | Acompanhar cobranças pendentes com terceiros. | ✅ **Existe** (`Central de Delegados` em `/waiting`). | 🟢 **Manter e utilizar**. |
-| **5. Rapid Logging (BuJo)** | Marcadores de Tarefas (`•`), Eventos (`O`) e Notas (`-`). | ✅ **Existe** (`Daily Log` em `/daily`). | 🟢 **Manter**. |
-| **6. Quadro de Sonhos / Horizontes** | Visão de metas de 1 a 5 anos e propósito de vida. | ✅ **Existe** (`Dream Board` em `/dreams`). | 🟢 **Manter**. |
-| **7. Planner Financeiro** | Controle de entradas, saídas e orçamento por dimensão. | ✅ **Existe** (`Planner Financeiro` em `/budget`). | 🟢 **Manter**. |
-| **8. Foco na Execução** | Timer Pomodoro ajustável com áudio de foco. | ✅ **Existe** (`Focus Mode` em `/focus`). | 🟢 **Manter**. |
-| **9. Exportação para NotebookLM** | Gerador de arquivo `.md` consolidado para o NotebookLM. | ✅ **Existe** (Botão nas Configurações). | 🟢 **Manter**. |
-| **10. Preloader Instantâneo** | Loading de 2s com ícone PWA sem distorção e 365 frases. | ✅ **Existe** (`index.html` + `loading-phrases.js`). | 🟢 **Manter**. |
-| **11. Migração Diária Guiada** | Perguntar o que fazer com pendências de ontem ao abrir o app. | ❌ **Não existe** (Remarcação manual). | 🟡 **Criar Assistente de Migração Diária**. |
-| **12. Revisão Semanal Guiada** | Checklist de 4 passos no fim de semana para organizar a mente. | ❌ **Não existe** (Apenas visão do Weekly Log). | 🟡 **Criar Assistente de Revisão Semanal**. |
-| **13. Incubadora "Algum Dia / Talvez"** | Guardar projetos futuros sem poluir o dia a dia. | ❌ **Não existe** (Projetos soltos nas Coleções). | 🟢 **Criar aba Someday/Maybe**. |
-| **14. Vínculo Projeto ➔ Ação** | Botão na Coleção para enviar 1 próxima ação ao Daily Log. | ❌ **Não existe** (Coleções isoladas). | 🟢 **Adicionar botão de Próxima Ação nas Coleções**. |
-| **15. Matriz de Hábitos Diários** | Régua visual no topo do Daily Log para marcação de hábitos. | ✅ **Existe** (`Régua de Hábitos Diários` em `/daily`). | 🟢 **Manter e utilizar**. |
+| **1. Captura Rápida (Inbox Zero)** | Digitar pendências soltas em 1 clique sem exigir data inicial. | ✅ **Implementado** (`Inbox Zero` em `/inbox`, atalho `Ctrl+K` e Botão Flutuante Universal). | 🟢 **Manter e utilizar**. |
+| **2. Triagem e Processamento** | Pergunta chave do GTD (*É acionável? < 2 min?*). | 🟡 **Parcial** (Mover pendências da Caixa para o Daily Log com data e contexto). | 🟡 **Criar Assistente de Processamento (Grau 2)**. |
+| **3. Listas por Contexto** | Organizar ações por `@computador`, `@trabalho`, `@rua`, `@mestrado`. | ✅ **Implementado** (Sistema de Tags dinâmicas ativas no Daily Log e Inbox). | 🟢 **Manter e utilizar**. |
+| **4. Central de Delegados** | Acompanhar cobranças pendentes com terceiros. | ✅ **Implementado** (`Central de Delegados` em `/waiting`). | 🟢 **Manter e utilizar**. |
+| **5. Rapid Logging (BuJo)** | Marcadores de Tarefas (`•`), Eventos (`O`) e Notas (`-`). | ✅ **Implementado** (`Daily Log` em `/daily`). | 🟢 **Manter e utilizar**. |
+| **6. Quadro de Sonhos / Horizontes** | Visão de metas de 1 a 5 anos e propósito de vida. | ✅ **Implementado** (`Dream Board` em `/dreams`). | 🟢 **Manter e utilizar**. |
+| **7. Planner Financeiro** | Controle de entradas, saídas e orçamento por dimensão. | ✅ **Implementado** (`Planner Financeiro` em `/budget`). | 🟢 **Manter e utilizar**. |
+| **8. Foco na Execução** | Timer Pomodoro ajustável com áudio de foco. | ✅ **Implementado** (`Focus Mode` em `/focus` com mascotes anime). | 🟢 **Manter e utilizar**. |
+| **9. Exportação para NotebookLM** | Gerador de arquivo `.md` consolidado para o NotebookLM. | ✅ **Implementado** (Botão nas Configurações). | 🟢 **Manter e utilizar**. |
+| **10. Preloader Instantâneo** | Loading de 2s com ícone PWA sem distorção e 365 frases. | ✅ **Implementado** (`index.html` + `loading-phrases.js`). | 🟢 **Manter e utilizar**. |
+| **11. Migração Diária Guiada** | Perguntar o que fazer com pendências de ontem ao abrir o app. | ❌ **Pendente** (Remarcação manual). | 🟡 **Criar Assistente de Migração Diária (Grau 2)**. |
+| **12. Revisão Semanal Guiada** | Checklist de 4 passos no fim de semana para organizar a mente. | ❌ **Pendente** (Apenas visão do Weekly Log). | 🟡 **Criar Assistente de Revisão Semanal (Grau 2)**. |
+| **13. Incubadora "Algum Dia / Talvez"** | Guardar projetos futuros sem poluir o dia a dia. | ❌ **Pendente** (Projetos soltos nas Coleções). | 🟢 **Criar aba Someday/Maybe (Grau 3)**. |
+| **14. Vínculo Projeto ➔ Ação** | Botão na Coleção para enviar 1 próxima ação ao Daily Log. | ❌ **Pendente** (Coleções isoladas). | 🟢 **Adicionar Próxima Ação nas Coleções (Grau 3)**. |
+| **15. Matriz de Hábitos Diários** | Régua visual no topo do Daily Log para marcação de hábitos. | ✅ **Implementado** (`Régua de Hábitos Diários` em `/daily` com marrom café `#4a3b32`, ícone do olho 👁️, contagem de dias concluídos e sync Supabase). | 🟢 **Manter e utilizar**. |
 
 ---
 
