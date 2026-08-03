@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 👁️ **v1.8.8** — *Ícone de Olho (Mostrar/Ocultar) & Título em Tom Escuro #1c1917* (02/08/2026)
+- **Ícone de Olho Aberto / Fechado (Eye Toggle):** Subtituiu a setinha pelo ícone vetorial de olho 👁️ (olho aberto quando visível e olho cortado quando oculto).
+- **Título em Tom Escuro Elegante (`#1c1917`):** Alterada a cor da fonte do título "Progresso Diário" para o tom escuro de alto contraste `#1c1917`, tornando a leitura perfeita em qualquer brilho de tela.
+
 ### 🔽 **v1.8.7** — *Modo Retrátil/Collapsible com 1-Toque na Barra de Hábitos* (02/08/2026)
 - **Recolher / Expandir com 1-Toque:** Tocar ou clicar na barra de progresso da régua de hábitos recolhe ou expande instantaneamente a lista de círculos.
 - **Indicador Visual Chevron (`▼` / `▲`):** Setinha animada indicando o estado atual da régua.
