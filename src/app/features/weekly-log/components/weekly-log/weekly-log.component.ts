@@ -5,10 +5,13 @@ import { Subscription } from 'rxjs';
 import { BujoService, BujoItem } from '../../../../services/bujo.service';
 import { getLocalDateString } from '../../../../utils/smartParser';
 
+import { BulletItemComponent } from '../../../daily-log/components/bullet-item/bullet-item.component';
+import { WeeklyReviewModalComponent } from '../weekly-review-modal/weekly-review-modal.component';
+
 @Component({
   selector: 'app-weekly-log',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeeklyReviewModalComponent],
   template: `
     <div class="flex flex-col max-w-5xl mx-auto w-full pb-20 animate-fade-in">
       
@@ -19,20 +22,28 @@ import { getLocalDateString } from '../../../../utils/smartParser';
           <p class="text-sm text-stone-500 font-mono mt-1 uppercase tracking-widest">Plano & Avaliação de Ritmo</p>
         </div>
         
-        <div class="flex items-center gap-2 bg-stone-100 p-1 rounded border border-stone-200 shadow-sm self-start sm:self-auto">
-          <button (click)="navigateWeek(-1)" class="p-1.5 rounded hover:bg-stone-200 transition-colors text-stone-600" title="Semana Anterior">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <button (click)="openWeeklyReviewModal()" 
+                  class="px-3.5 py-1.5 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+            <span>🧹</span>
+            <span>Revisão Semanal GTD</span>
           </button>
-          <span class="text-xs font-mono font-bold px-3 text-stone-800 whitespace-nowrap">
-            {{ formatDateRange() }}
-          </span>
-          <button (click)="navigateWeek(1)" class="p-1.5 rounded hover:bg-stone-200 transition-colors text-stone-600" title="Próxima Semana">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
-          </button>
-          
-          <button *ngIf="!isCurrentWeek()" (click)="goToCurrentWeek()" class="ml-2 p-1 px-2.5 rounded bg-stone-800 text-stone-100 text-[10px] font-bold uppercase tracking-wider transition-all hover:bg-stone-700">
-            Hoje
-          </button>
+
+          <div class="flex items-center gap-2 bg-stone-100 p-1 rounded border border-stone-200 shadow-sm">
+            <button (click)="navigateWeek(-1)" class="p-1.5 rounded hover:bg-stone-200 transition-colors text-stone-600" title="Semana Anterior">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <span class="text-xs font-mono font-bold px-3 text-stone-800 whitespace-nowrap">
+              {{ formatDateRange() }}
+            </span>
+            <button (click)="navigateWeek(1)" class="p-1.5 rounded hover:bg-stone-200 transition-colors text-stone-600" title="Próxima Semana">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </button>
+            
+            <button *ngIf="!isCurrentWeek()" (click)="goToCurrentWeek()" class="ml-2 p-1 px-2.5 rounded bg-stone-800 text-stone-100 text-[10px] font-bold uppercase tracking-wider transition-all hover:bg-stone-700">
+              Hoje
+            </button>
+          </div>
         </div>
       </div>
 
@@ -118,6 +129,8 @@ import { getLocalDateString } from '../../../../utils/smartParser';
 
       </div>
     </div>
+
+    <app-weekly-review-modal [(isOpen)]="showWeeklyReviewModal"></app-weekly-review-modal>
   `,
   encapsulation: ViewEncapsulation.None
 })
@@ -128,6 +141,11 @@ export class WeeklyLogComponent implements OnInit, OnDestroy {
   selectedDate: string = '';
   weekDays: string[] = [];
   weeklyReview = '';
+  showWeeklyReviewModal = false;
+
+  openWeeklyReviewModal() {
+    this.showWeeklyReviewModal = true;
+  }
   
   private sub?: Subscription;
   private dateSub?: Subscription;

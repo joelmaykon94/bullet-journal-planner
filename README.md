@@ -59,7 +59,7 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
 | **9. Exportação para NotebookLM** | Gerador de arquivo `.md` consolidado para o NotebookLM. | ✅ **Implementado** (Botão nas Configurações). | 🟢 **Manter e utilizar**. |
 | **10. Preloader Instantâneo** | Loading de 2s com ícone PWA sem distorção e 365 frases. | ✅ **Implementado** (`index.html` + `loading-phrases.js`). | 🟢 **Manter e utilizar**. |
 | **11. Migração Diária Guiada** | Perguntar o que fazer com pendências de ontem ao abrir o app. | ✅ **Implementado** (`Assistente de Migração Diária Guiada` em `/daily`). | 🟢 **Manter e utilizar**. |
-| **12. Revisão Semanal Guiada** | Checklist de 4 passos no fim de semana para organizar a mente. | ❌ **Pendente** (Apenas visão do Weekly Log). | 🟡 **Criar Assistente de Revisão Semanal (Grau 2)**. |
+| **12. Revisão Semanal Guiada** | Checklist de 4 passos no fim de semana para organizar a mente. | ✅ **Implementado** (`Assistente de Revisão Semanal GTD` em `/weekly`). | 🟢 **Manter e utilizar**. |
 | **13. Incubadora "Algum Dia / Talvez"** | Guardar projetos futuros sem poluir o dia a dia. | ❌ **Pendente** (Projetos soltos nas Coleções). | 🟢 **Criar aba Someday/Maybe (Grau 3)**. |
 | **14. Vínculo Projeto ➔ Ação** | Botão na Coleção para enviar 1 próxima ação ao Daily Log. | ❌ **Pendente** (Coleções isoladas). | 🟢 **Adicionar Próxima Ação nas Coleções (Grau 3)**. |
 | **15. Matriz de Hábitos Diários** | Régua visual no topo do Daily Log para marcação de hábitos. | ✅ **Implementado** (`Régua de Hábitos Diários` em `/daily` com marrom café `#4a3b32`, ícone do olho 👁️, contagem de dias concluídos e sync Supabase). | 🟢 **Manter e utilizar**. |
@@ -75,7 +75,7 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
 
 * 🟡 **GRAU 2: FLUXO E MANUTENÇÃO (Consistência do Sistema)**
   4. ✅ **Assistente de Migração Diária Guiada (Daily Migration):** Componente `DailyMigrationModalComponent` ativado no Daily Log ao detectar pendências de dias anteriores (`Mover para Hoje`, `Agendar Data`, `Cancelar` ou `Mover Todas em Lote`).
-  5. **Assistente de Revisão Semanal Guiada (Weekly Review Wizard):** Checklist interativo no sábado/domingo para limpar a Caixa de Entrada e definir as 3 "Big Rocks" da semana.
+  5. ✅ **Assistente de Revisão Semanal Guiada (Weekly Review Wizard):** Componente `WeeklyReviewModalComponent` ativado no Log Semanal em 4 passos: Esvaziar Caixa de Entrada (Inbox Zero), Revisar Delegados (@aguardando), Revisar Diários & Projetos e Definir as 3 Big Rocks da semana.
   6. **Módulo de Tarefas Recorrentes Automáticas:** Repetição programada para compromissos fixos (faturas, relatórios, aulas).
 
 * 🟢 **GRAU 3: MAESTRIA E VISÃO ESTRATÉGICA (Alta Performance)**
@@ -129,6 +129,14 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 ## 📜 Changelog de Releases & Versões Aprovadas
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
+
+### 🧹 **v2.2.0** — *Lançamento do Assistente de Revisão Semanal Guiada GTD (Grau 2 - Feature 5)* (02/08/2026)
+- **Ritual GTD em 4 Passos (`WeeklyReviewModalComponent`):** Assistente interativo no Log Semanal para conduzir o ritual de fim de semana:
+  - **Passo 1 (Get Clear):** Esvaziar e processar a Caixa de Entrada (Inbox Zero).
+  - **Passo 2 (Get Current):** Revisar cobranças da Central de Delegados (`@aguardando`).
+  - **Passo 3 (Get Strategic):** Revisar diários passados e coleções de projetos.
+  - **Passo 4 (Big Rocks):** Formular e salvar as 3 Metas Principais da próxima semana.
+- **Persistência de Objetivos:** Armazenamento automático das Big Rocks no `localStorage` para acompanhamento de ritmo.
 
 ### ☀️ **v2.1.0** — *Lançamento do Assistente de Migração Diária Guiada (Grau 2 - Feature 4)* (02/08/2026)
 - **Detecção Automática de Pendências Passadas:** O Daily Log verifica pendências acumuladas de dias anteriores e exibe um banner de aviso com atalho rápido `☀️ Migrar Agora`.
