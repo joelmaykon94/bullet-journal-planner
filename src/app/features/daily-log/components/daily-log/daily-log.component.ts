@@ -116,24 +116,24 @@ import { HabitTrackerMatrixComponent } from '../habit-tracker-matrix/habit-track
         <div class="rounded-none border border-stone-300 bg-white shadow-[4px_4px_0px_rgba(41,37,36,0.1)] sm:shadow-[8px_8px_0px_rgba(41,37,36,0.1)] mb-1 sm:mb-2 mr-1 sm:mr-2 p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 relative transition-colors focus-within:border-stone-800">
           
           <!-- Cabeçalho de Data -->
-          <div class="border-b border-stone-200 pb-3 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
-            <div>
-              <h1 class="text-2xl sm:text-4xl font-serif text-stone-900 font-bold italic tracking-tight">{{ formattedSelectedDate }}</h1>
-              <p class="text-xs sm:text-sm text-stone-500 font-mono mt-1 uppercase tracking-widest">
-                Log Diário <span class="text-[10px] sm:text-xs text-stone-400 lowercase ml-1 normal-case">({{ dayOfWeek }})</span>
+          <div class="border-b border-stone-200 pb-3 flex flex-row items-center justify-between gap-2 sm:gap-4">
+            <div class="min-w-0 flex-1">
+              <h1 class="text-base sm:text-3xl md:text-4xl font-serif text-stone-900 font-bold italic tracking-tight truncate leading-tight">{{ formattedSelectedDate }}</h1>
+              <p class="text-[10px] sm:text-xs text-stone-500 font-mono mt-0.5 uppercase tracking-wider truncate">
+                Log Diário <span class="text-[9px] sm:text-xs text-stone-400 lowercase normal-case">({{ dayOfWeek }})</span>
               </p>
             </div>
             
             <!-- Controles de data -->
-            <div class="flex items-center gap-1 sm:gap-2 self-start sm:self-auto">
-              <button (click)="changeDay(-1)" class="p-1.5 sm:p-2 hover:bg-stone-100 rounded transition-colors text-stone-600 bujo-tooltip" data-tooltip="Dia Anterior">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+              <button (click)="changeDay(-1)" class="p-1 sm:p-2 hover:bg-stone-100 rounded transition-colors text-stone-600 bujo-tooltip" data-tooltip="Dia Anterior">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
-              <button (click)="goToToday()" class="px-2 sm:px-3 py-1 sm:py-1.5 font-mono text-xs sm:text-sm uppercase tracking-wider bg-stone-50 hover:bg-stone-100 text-stone-800 rounded border border-stone-300 transition-colors">
+              <button (click)="goToToday()" class="px-2 sm:px-3 py-1 sm:py-1.5 font-mono text-[11px] sm:text-sm uppercase tracking-wider bg-stone-50 hover:bg-stone-100 text-stone-800 rounded border border-stone-300 transition-colors">
                 Hoje
               </button>
-              <button (click)="changeDay(1)" class="p-1.5 sm:p-2 hover:bg-stone-100 rounded transition-colors text-stone-600 bujo-tooltip" data-tooltip="Próximo Dia">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              <button (click)="changeDay(1)" class="p-1 sm:p-2 hover:bg-stone-100 rounded transition-colors text-stone-600 bujo-tooltip" data-tooltip="Próximo Dia">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               </button>
             </div>
           </div>

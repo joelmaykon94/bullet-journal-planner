@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 📐 **v2.0.1** — *Alinhamento em Linha Única do Cabeçalho de Data no Mobile* (02/08/2026)
+- **Layout Responsivo Único:** A data selecionada, o botão "Hoje" e as setas de navegação (`<` e `>`) agora permanecem alinhados na mesma linha no smartphone.
+- **Tipografia Escala Adaptativa:** Aplicada a escala responsiva `text-base sm:text-3xl md:text-4xl` com `truncate` para garantir que a data não quebre em 2 linhas no mobile.
+
 ### 🎯 **v2.0.0** — *Correção Crítica: Liberdade Total para Desmarcar Hábitos e Sincronizar na Nuvem* (02/08/2026)
 - **Correção no Algoritmo da Nuvem:** Removida a união por Set que re-injetava hábitos desmarcados vindo do Supabase.
 - **Desmarcação Instantânea:** Desmarcar um hábito atualiza imediatamente o `localStorage` e substitui o registro do dia na nuvem Supabase, permitindo marcar e desmarcar hábitos quantas vezes quiser sem que o ícone retorne.
