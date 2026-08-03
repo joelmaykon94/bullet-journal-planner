@@ -370,6 +370,13 @@ export class BujoService {
     logs[dateStr] = dateLogs;
     this.habitLogsSubject.next(logs);
     this.saveToStorage('bujo_habit_logs', logs);
+
+    // Immediate Cloud Sync when toggling habit
+    const user = this.authService.currentUser;
+    if (user && user.id !== 'anonymous-user-id') {
+      this.authService.uploadLocalToCloud(user.id);
+    }
+
     return isCompleted;
   }
 

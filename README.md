@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### ☁️ **v1.9.4** — *Sincronização Imediata com a Nuvem ao Marcar Hábito* (02/08/2026)
+- **Sincronização Cloud em Tempo Real:** Tocar ou clicar para concluir ou desmarcar um hábito salva localmente e spara instantaneamente a sincronização com o banco de dados Supabase na nuvem.
+- **Multidispositivos em Sintonia:** Acompanhamento de hábitos atualizado sem atraso em todos os seus celulares, tablets e computadores.
+
 ### 🛡️ **v1.9.3** — *Filtro Definitivo Anti-Ressurreição de Hábitos Deletados (`bujo_deleted_habits`)* (02/08/2026)
 - **Blacklist de Hábitos Excluídos:** Criado o registro permanente `bujo_deleted_habits` para impedir que hábitos removidos voltem ao sincronizar com a nuvem Supabase ou recarregar a página.
 - **Sincronização Dupla `bujo_habits` e `bujo_habit_items`:** Exclusões agora atualizam simultaneamente a lista detalhada e a lista resumida de hábitos no `localStorage`.
