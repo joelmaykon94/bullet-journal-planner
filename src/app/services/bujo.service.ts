@@ -26,6 +26,30 @@ export interface BujoItem {
   reminderType?: 'notification' | 'email' | 'both' | 'none';
   constantReminder?: boolean;
   subtasks?: any[];
+  recurrence?: 'daily' | 'weekly' | 'monthly' | 'weekdays' | 'none';
+}
+
+export function calculateNextRecurrenceDate(startDateStr: string, pattern: 'daily' | 'weekly' | 'monthly' | 'weekdays'): string {
+  const d = new Date(startDateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return startDateStr;
+
+  if (pattern === 'daily') {
+    d.setDate(d.getDate() + 1);
+  } else if (pattern === 'weekly') {
+    d.setDate(d.getDate() + 7);
+  } else if (pattern === 'monthly') {
+    d.setMonth(d.getMonth() + 1);
+  } else if (pattern === 'weekdays') {
+    d.setDate(d.getDate() + 1);
+    while (d.getDay() === 0 || d.getDay() === 6) {
+      d.setDate(d.getDate() + 1);
+    }
+  }
+
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 export interface BujoTag {
@@ -255,7 +279,45 @@ export class BujoService {
   updateItem(id: string, updates: Partial<BujoItem>) {
     const items = this.getItems();
     const now = getIsoTimestamp();
-    this.saveItems(items.map(item => item.id === id ? { ...item, ...updates, updatedAt: now } : item));
+    const existing = items.find(i => i.id === id);
+
+    let updatedList = items.map(item => item.id === id ? { ...item, ...updates, updatedAt: now } : item);
+
+    // Auto-recurrence spawn logic
+    if (existing && updates.status === 'completed' && existing.status !== 'completed') {
+      const recurrence = updates.recurrence || existing.recurrence;
+      if (recurrence && recurrence !== 'none') {
+        const currentDate = updates.date || existing.date || getLocalDateString();
+        const nextDate = calculateNextRecurrenceDate(currentDate, recurrence);
+        
+        // Check if next recurrence already exists
+        const existsNext = items.some(i => i.content === existing.content && i.date === nextDate && !i.deletedAt);
+        if (!existsNext) {
+          const nextItem: BujoItem = {
+            id: Math.random().toString(36).substring(2, 9),
+            content: existing.content,
+            type: existing.type || 'task',
+            status: 'todo',
+            date: nextDate,
+            recurrence: recurrence,
+            priority: existing.priority,
+            delegatedTo: existing.delegatedTo,
+            energy: existing.energy,
+            complexity: existing.complexity,
+            createdAt: now,
+            updatedAt: now
+          };
+          updatedList = [...updatedList, nextItem];
+          
+          this.syncStatusService.showToast({
+            type: 'success',
+            message: `🔄 Tarefa recorrente agendada para ${nextDate}!`
+          });
+        }
+      }
+    }
+
+    this.saveItems(updatedList);
   }
 
   // Habits Actions

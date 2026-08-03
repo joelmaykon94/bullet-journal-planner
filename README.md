@@ -73,10 +73,10 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
   2. ✅ **Painel Centralizado de "@aguardando" e Delegados:** Tela única `/waiting` exibindo todas as cobranças pendentes com pessoas/instituições.
   3. ✅ **Régua Diária de Hábitos (Habit Tracker Matrix):** Régua visual em marrom café `#4a3b32` no cabeçalho do Daily Log com ícone do olho 👁️, contagem de dias concluídos, sincronização imediata no Supabase e filtro anti-ressurreição `bujo_deleted_habits`.
 
-* 🟡 **GRAU 2: FLUXO E MANUTENÇÃO (Consistência do Sistema)**
+* ✅ **GRAU 2: FLUXO E MANUTENÇÃO (Concluído & Implementado 100%)**
   4. ✅ **Assistente de Migração Diária Guiada (Daily Migration):** Componente `DailyMigrationModalComponent` ativado no Daily Log ao detectar pendências de dias anteriores (`Mover para Hoje`, `Agendar Data`, `Cancelar` ou `Mover Todas em Lote`).
   5. ✅ **Assistente de Revisão Semanal Guiada (Weekly Review Wizard):** Componente `WeeklyReviewModalComponent` ativado no Log Semanal em 4 passos: Esvaziar Caixa de Entrada (Inbox Zero), Revisar Delegados (@aguardando), Revisar Diários & Projetos e Definir as 3 Big Rocks da semana.
-  6. **Módulo de Tarefas Recorrentes Automáticas:** Repetição programada para compromissos fixos (faturas, relatórios, aulas).
+  6. ✅ **Módulo de Tarefas Recorrentes Automáticas:** Suporte nativo no `BujoItem.recurrence` e modal `RecurringTasksModalComponent` com auto-geração da próxima ocorrência ao concluir tarefas fixas (diária, dias úteis, semanal e mensal).
 
 * 🟢 **GRAU 3: MAESTRIA E VISÃO ESTRATÉGICA (Alta Performance)**
   7. **Aba "Algum Dia / Talvez" (Someday / Maybe):** Incubadora de ideias para viagens, livros e projetos futuros sem poluir o dia a dia.
@@ -129,6 +129,12 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 ## 📜 Changelog de Releases & Versões Aprovadas
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
+
+### 🔄 **v2.3.0** — *Lançamento do Módulo de Tarefas Recorrentes Automáticas (Grau 2 - Feature 6 / Grau 2 Concluído 100%)* (02/08/2026)
+- **Agendamento Recorrente Inteligente (`BujoItem.recurrence`):** Suporte nativo a tarefas com repetição Diária (`daily`), Dias Úteis (`weekdays`), Semanal (`weekly`) e Mensal (`monthly`).
+- **Gerenciador de Regras Recorrentes (`RecurringTasksModalComponent`):** Modal dedicado para cadastrar e gerenciar compromissos recorrentes automáticos.
+- **Auto-Geração em 1 Clique:** Ao marcar qualquer tarefa recorrente como concluída, o sistema calcula e programa automaticamente a próxima ocorrência para a data futura correspondente.
+- **Grau 2 Concluído 100%:** Todas as 3 funcionalidades do Grau 2 (Migração Diária Guiada, Revisão Semanal Guiada e Tarefas Recorrentes Automáticas) foram finalizadas com sucesso!
 
 ### 🧹 **v2.2.0** — *Lançamento do Assistente de Revisão Semanal Guiada GTD (Grau 2 - Feature 5)* (02/08/2026)
 - **Ritual GTD em 4 Passos (`WeeklyReviewModalComponent`):** Assistente interativo no Log Semanal para conduzir o ritual de fim de semana:

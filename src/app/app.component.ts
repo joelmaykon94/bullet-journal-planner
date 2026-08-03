@@ -18,6 +18,7 @@ import { ModalComponent } from './shared/components/modal/modal.component';
 import { InboxViewComponent } from './features/inbox/components/inbox-view/inbox-view.component';
 import { QuickCaptureModalComponent } from './features/inbox/components/quick-capture-modal/quick-capture-modal.component';
 import { DelegatesPanelComponent } from './features/delegates/components/delegates-panel/delegates-panel.component';
+import { RecurringTasksModalComponent } from './features/daily-log/components/recurring-tasks-modal/recurring-tasks-modal.component';
 import { NotificationService, AppNotification } from './services/notification.service';
 import { BujoService } from './services/bujo.service';
 import { AuthService } from './services/auth.service';
@@ -49,7 +50,8 @@ interface LocalWeather {
     CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent,
     WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent,
     FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent,
-    SidebarPomodoroComponent, InboxViewComponent, QuickCaptureModalComponent, DelegatesPanelComponent
+    SidebarPomodoroComponent, InboxViewComponent, QuickCaptureModalComponent, DelegatesPanelComponent,
+    RecurringTasksModalComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
@@ -57,6 +59,13 @@ interface LocalWeather {
 })
 export class App implements OnInit {
   @ViewChild(QuickCaptureModalComponent) quickCaptureModal!: QuickCaptureModalComponent;
+  @ViewChild(RecurringTasksModalComponent) recurringTasksModal!: RecurringTasksModalComponent;
+
+  openRecurringTasksModal() {
+    if (this.recurringTasksModal) {
+      this.recurringTasksModal.isOpen = true;
+    }
+  }
 
   private readonly weatherService = inject(WeatherService);
   public readonly notificationService = inject(NotificationService);
