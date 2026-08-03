@@ -69,6 +69,10 @@ export class HabitTrackerMatrixComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      this.isCollapsed = true;
+    }
+
     this.habitsSub = this.bujoService.habits$.subscribe(() => {
       this.habitItems = this.bujoService.getHabitItems();
       this.cdr.markForCheck();

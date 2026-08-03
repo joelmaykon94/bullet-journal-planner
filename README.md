@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 📱 **v1.9.8** — *Modo Recolhido por Padrão para Hábitos em Telas Mobile* (02/08/2026)
+- **Régua Recolhida no Mobile:** Em telas de smartphone (`window.innerWidth < 640px`), os círculos de hábitos iniciam recolhidos (`isCollapsed = true`) por padrão, economizando espaço de tela.
+- **Expansão em 1 Toque:** Basta tocar no ícone do olho 👁️ no cabeçalho "Hábitos Diários" para expandir a grade. Em telas de computador, permanece aberto por padrão.
+
 ### 🔢 **v1.9.7** — *Distintivo Esquerdo de Total de Dias Concluídos em Cada Hábito* (02/08/2026)
 - **Contador Total de Dias Concluídos (Badge Esquerdo):** Adicionado um pequeno círculo numérico no canto superior esquerdo (`-top-1 -left-1`) de cada hábito exibindo o total de dias em que ele foi concluído.
 - **Simetria Perfeita:** Espelha o círculo verde com checkmark `✓` do lado direito, proporcionando um feedback imediato do seu streak e consistência de hábitos.
