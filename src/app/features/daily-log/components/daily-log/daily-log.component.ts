@@ -7,11 +7,12 @@ import { parseSmartTask, getLocalDateString } from '../../../../utils/smartParse
 import { BulletItemComponent } from '../bullet-item/bullet-item.component';
 import { HabitTrackerMatrixComponent } from '../habit-tracker-matrix/habit-tracker-matrix.component';
 import { DailyMigrationModalComponent } from '../daily-migration-modal/daily-migration-modal.component';
+import { RecurringTasksModalComponent } from '../recurring-tasks-modal/recurring-tasks-modal.component';
 
 @Component({
   selector: 'app-daily-log',
   standalone: true,
-  imports: [CommonModule, FormsModule, BulletItemComponent, HabitTrackerMatrixComponent, DailyMigrationModalComponent],
+  imports: [CommonModule, FormsModule, BulletItemComponent, HabitTrackerMatrixComponent, DailyMigrationModalComponent, RecurringTasksModalComponent],
   styles: [`
     :host {
       display: block;
@@ -127,6 +128,12 @@ import { DailyMigrationModalComponent } from '../daily-migration-modal/daily-mig
             
             <!-- Controles de data -->
             <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+              <button (click)="showRecurringModal = true" 
+                      class="px-2 sm:px-2.5 py-1 sm:py-1.5 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-[#f2ebdf] hover:bg-[#e6dbcd] dark:bg-stone-800 text-[#4a3b32] dark:text-[#e3dac9] rounded border border-[#d7c8b4] dark:border-stone-700 transition-colors flex items-center gap-1 cursor-pointer">
+                <span>🔄</span>
+                <span class="hidden sm:inline">Recorrentes</span>
+              </button>
+
               <button (click)="changeDay(-1)" class="p-1 sm:p-2 hover:bg-stone-100 rounded transition-colors text-stone-600 bujo-tooltip" data-tooltip="Dia Anterior">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
@@ -227,6 +234,7 @@ import { DailyMigrationModalComponent } from '../daily-migration-modal/daily-mig
     </div>
 
     <app-daily-migration-modal [(isOpen)]="showMigrationModal"></app-daily-migration-modal>
+    <app-recurring-tasks-modal [(isOpen)]="showRecurringModal"></app-recurring-tasks-modal>
   `,
   encapsulation: ViewEncapsulation.None
 })
@@ -238,6 +246,7 @@ export class DailyLogComponent implements OnInit, OnDestroy {
   pageTurnClass: string = '';
   targetDateStr: string = '';
   showMigrationModal: boolean = false;
+  showRecurringModal: boolean = false;
   
   private dataUpdateTimer: any;
   

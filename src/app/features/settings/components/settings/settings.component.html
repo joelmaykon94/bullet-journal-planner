@@ -20,6 +20,19 @@
       </button>
     </div>
 
+    <!-- Tarefas Recorrentes Automáticas -->
+    <div class="set-card border-2 border-amber-500/20 bg-amber-500/5">
+      <div class="set-card-header">
+        <span class="text-xl">🔄</span>
+        <h4 class="text-amber-900 font-bold">Tarefas Recorrentes Automáticas</h4>
+      </div>
+      <p class="set-desc">Cadastre compromissos fixos e rituais (faturas, relatórios, aulas). Ao concluir a tarefa do dia, a próxima data é gerada automaticamente pelo planner.</p>
+      
+      <button (click)="showRecurringModal = true" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#4a3b32] hover:bg-[#382c25] text-white font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer">
+        🔄 Gerenciar Tarefas Recorrentes
+      </button>
+    </div>
+
     <!-- Visual Options -->
     <div class="set-card">
       <div class="set-card-header">
@@ -77,3 +90,5 @@
     </div>
   </div>
 </div>
+
+<app-recurring-tasks-modal [(isOpen)]="showRecurringModal"></app-recurring-tasks-modal>

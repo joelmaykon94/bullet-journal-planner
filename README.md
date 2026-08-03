@@ -130,6 +130,10 @@ Estruture os ramos do mapa mental utilizando as seguintes orientações e fontes
 
 Registro simplificado de todas as melhorias testadas, validadas e aprovadas para o seu dia a dia:
 
+### 🔘 **v2.3.1** — *Atalhos Rápidos de Acesso ao Gerenciador de Tarefas Recorrentes* (02/08/2026)
+- **Botão no Log Diário (`/daily`):** Adicionado o botão `🔄 Recorrentes` ao lado dos controles de navegação de data no diário para abrir instantaneamente o modal de regras.
+- **Card nas Configurações (`/settings`):** Adicionado o card temático `🔄 Tarefas Recorrentes Automáticas` com botão `Gerenciar Tarefas Recorrentes`.
+
 ### 🔄 **v2.3.0** — *Lançamento do Módulo de Tarefas Recorrentes Automáticas (Grau 2 - Feature 6 / Grau 2 Concluído 100%)* (02/08/2026)
 - **Agendamento Recorrente Inteligente (`BujoItem.recurrence`):** Suporte nativo a tarefas com repetição Diária (`daily`), Dias Úteis (`weekdays`), Semanal (`weekly`) e Mensal (`monthly`).
 - **Gerenciador de Regras Recorrentes (`RecurringTasksModalComponent`):** Modal dedicado para cadastrar e gerenciar compromissos recorrentes automáticos.

@@ -7,11 +7,12 @@ import { BujoService, BujoTag } from '../../../../services/bujo.service';
 import { ModalService } from '../../../../services/modal.service';
 import { MarkdownExporterService } from '../../../../services/markdown-exporter.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { RecurringTasksModalComponent } from '../../../daily-log/components/recurring-tasks-modal/recurring-tasks-modal.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RecurringTasksModalComponent],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css'],
   encapsulation: ViewEncapsulation.None
@@ -19,6 +20,7 @@ import { ChangeDetectorRef } from '@angular/core';
 export class SettingsComponent implements OnInit, OnDestroy {
   tags: BujoTag[] = [];
   private tagsSub?: Subscription;
+  showRecurringModal = false;
 
   isEditingTag = false;
   currentEditingTag: Partial<BujoTag> & { oldId?: string } = {};
