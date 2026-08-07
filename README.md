@@ -78,10 +78,10 @@ Os arquivos otimizados serão gerados em `dist/frontend/browser/`.
   5. ✅ **Assistente de Revisão Semanal Guiada (Weekly Review Wizard):** Componente `WeeklyReviewModalComponent` ativado no Log Semanal em 4 passos: Esvaziar Caixa de Entrada (Inbox Zero), Revisar Delegados (@aguardando), Revisar Diários & Projetos e Definir as 3 Big Rocks da semana.
   6. ✅ **Módulo de Tarefas Recorrentes Automáticas:** Suporte nativo no `BujoItem.recurrence` e modal `RecurringTasksModalComponent` com auto-geração da próxima ocorrência ao concluir tarefas fixas (diária, dias úteis, semanal e mensal).
 
-* 🟢 **GRAU 3: MAESTRIA E VISÃO ESTRATÉGICA (Alta Performance)**
-  7. **Aba "Algum Dia / Talvez" (Someday / Maybe):** Incubadora de ideias para viagens, livros e projetos futuros sem poluir o dia a dia.
-  8. **Próxima Ação Vinculada a Coleções de Projetos:** Botão em cada Coleção para gerar a próxima tarefa acionável direto no Daily Log.
-  9. **Filtro de Execução por Energia & Tempo:** Filtrar tarefas por tempo disponível (ex.: 15 min) e nível de energia (baixa/alta).
+* ✅ **GRAU 3: MAESTRIA E VISÃO ESTRATÉGICA (Concluído & Implementado 100%)**
+  7. ✅ **Aba "Algum Dia / Talvez" (Someday / Maybe):** Incubadora GTD de ideias para viagens, livros e projetos futuros sem poluir os diários, com categorização e ativação em 1-clique.
+  8. ✅ **Próxima Ação Vinculada a Coleções de Projetos:** Botão `📌 Hoje` em cada item de Coleção para enviar instantaneamente 1 próxima ação acionável direto ao Log Diário.
+  9. ✅ **Filtro de Execução por Energia & Tempo:** Filtragem dinâmica no cabeçalho do Daily Log para selecionar tarefas por nível de energia (baixa/média/alta) e tempo estimado (≤ 15 min, ≤ 30 min, ≤ 60 min).
 
 ---
 

@@ -19,8 +19,12 @@ import { getLocalDateString } from '../../../../utils/smartParser';
         
         <!-- Header -->
         <div class="px-5 py-4 border-b border-[#e2d5c3] dark:border-stone-800 flex items-center justify-between bg-[#f4ece1] dark:bg-[#262320]">
-          <div class="flex items-center gap-2.5">
-            <span class="text-2xl">🔄</span>
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-xl bg-[#4a3b32]/10 dark:bg-[#e3dac9]/10 text-[#4a3b32] dark:text-[#e3dac9]">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>
+              </svg>
+            </div>
             <div>
               <h3 class="font-serif text-lg font-bold text-[#4a3b32] dark:text-[#e3dac9] tracking-tight leading-snug">
                 Tarefas Recorrentes Automáticas
@@ -42,8 +46,10 @@ import { getLocalDateString } from '../../../../utils/smartParser';
           
           <!-- New Recurring Task Form -->
           <div class="bg-white dark:bg-[#262320] border-2 border-[#e2d5c3] dark:border-stone-700 rounded-xl p-4 flex flex-col gap-3 shadow-xs">
-            <h4 class="font-serif font-bold text-sm text-[#4a3b32] dark:text-[#e3dac9] flex items-center gap-1.5">
-              <span>✨</span>
+            <h4 class="font-serif font-bold text-sm text-[#4a3b32] dark:text-[#e3dac9] flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#4a3b32] dark:text-[#e3dac9]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
               <span>Cadastrar Nova Tarefa Recorrente</span>
             </h4>
 
@@ -58,10 +64,10 @@ import { getLocalDateString } from '../../../../utils/smartParser';
                   <label class="block text-[10px] font-mono text-stone-500 dark:text-stone-400 mb-1">Padrão de Repetição:</label>
                   <select [(ngModel)]="newRecurrence" 
                           class="w-full bg-[#f4ece1] dark:bg-stone-900 border border-[#e2d5c3] dark:border-stone-700 rounded-xl px-2.5 py-1.5 text-xs font-mono font-semibold text-[#4a3b32] dark:text-[#e3dac9] outline-none">
-                    <option value="daily">🔄 Diária</option>
-                    <option value="weekdays">📅 Dias Úteis (Seg-Sex)</option>
-                    <option value="weekly">📆 Semanal</option>
-                    <option value="monthly">🗓️ Mensal</option>
+                    <option value="daily">Diária</option>
+                    <option value="weekdays">Dias Úteis (Seg-Sex)</option>
+                    <option value="weekly">Semanal</option>
+                    <option value="monthly">Mensal</option>
                   </select>
                 </div>
 
@@ -74,8 +80,9 @@ import { getLocalDateString } from '../../../../utils/smartParser';
               </div>
 
               <button (click)="createRecurringTask()" 
-                      class="mt-1 w-full py-2 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer">
-                + Salvar Regra Recorrente
+                      class="mt-1 w-full py-2 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Salvar Regra Recorrente</span>
               </button>
             </div>
           </div>
@@ -95,8 +102,11 @@ import { getLocalDateString } from '../../../../utils/smartParser';
               
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 mb-0.5">
-                  <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#f2ebdf] dark:bg-stone-800 text-[#4a3b32] dark:text-[#e3dac9]">
-                    {{ getRecurrenceLabel(item.recurrence) }}
+                  <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#f2ebdf] dark:bg-stone-800 text-[#4a3b32] dark:text-[#e3dac9] flex items-center gap-1">
+                    <svg class="w-3 h-3 text-[#4a3b32] dark:text-[#e3dac9]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>
+                    </svg>
+                    <span>{{ getRecurrenceLabel(item.recurrence) }}</span>
                   </span>
                   <span class="text-[10px] font-mono text-stone-500 dark:text-stone-400">
                     Próxima: {{ item.date }}
@@ -108,9 +118,11 @@ import { getLocalDateString } from '../../../../utils/smartParser';
               </div>
 
               <button (click)="removeRecurringTask(item)" 
-                      class="text-rose-600 hover:text-rose-800 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors text-xs font-bold shrink-0"
+                      class="text-rose-600 hover:text-rose-800 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
                       title="Excluir regra recorrente">
-                🗑️
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
               </button>
 
             </div>
@@ -157,7 +169,6 @@ export class RecurringTasksModalComponent implements OnInit {
 
   refreshRecurringItems() {
     const allItems = this.bujoService.getItems();
-    // Unique recurring rules by content
     const seen = new Set<string>();
     this.recurringItems = allItems.filter(item => {
       const isRecurring = item.recurrence && item.recurrence !== 'none';
@@ -172,10 +183,10 @@ export class RecurringTasksModalComponent implements OnInit {
 
   getRecurrenceLabel(recurrence?: string): string {
     switch (recurrence) {
-      case 'daily': return '🔄 Diária';
-      case 'weekdays': return '📅 Dias Úteis';
-      case 'weekly': return '📆 Semanal';
-      case 'monthly': return '🗓️ Mensal';
+      case 'daily': return 'Diária';
+      case 'weekdays': return 'Dias Úteis';
+      case 'weekly': return 'Semanal';
+      case 'monthly': return 'Mensal';
       default: return 'Recorrente';
     }
   }
@@ -200,7 +211,7 @@ export class RecurringTasksModalComponent implements OnInit {
 
     this.syncStatusService.showToast({
       type: 'success',
-      message: `✨ Tarefa recorrente "${text}" cadastrada!`
+      message: `Tarefas recorrentes: "${text}" cadastrada!`
     });
 
     this.newContent = '';
@@ -211,7 +222,7 @@ export class RecurringTasksModalComponent implements OnInit {
     this.bujoService.deleteItem(item.id);
     this.syncStatusService.showToast({
       type: 'offline',
-      message: `🗑️ Regra recorrente "${item.content}" removida.`
+      message: `Regra recorrente "${item.content}" removida.`
     });
     this.refreshRecurringItems();
   }

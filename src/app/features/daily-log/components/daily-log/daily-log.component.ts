@@ -130,7 +130,7 @@ import { RecurringTasksModalComponent } from '../recurring-tasks-modal/recurring
             <div class="flex items-center gap-1 sm:gap-2 shrink-0">
               <button (click)="showRecurringModal = true" 
                       class="px-2 sm:px-2.5 py-1 sm:py-1.5 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-[#f2ebdf] hover:bg-[#e6dbcd] dark:bg-stone-800 text-[#4a3b32] dark:text-[#e3dac9] rounded border border-[#d7c8b4] dark:border-stone-700 transition-colors flex items-center gap-1 cursor-pointer">
-                <span>🔄</span>
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
                 <span class="hidden sm:inline">Recorrentes</span>
               </button>
 
@@ -150,18 +150,47 @@ import { RecurringTasksModalComponent } from '../recurring-tasks-modal/recurring
           <div *ngIf="pendingPastItemsCount > 0" 
                class="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 rounded-xl text-[#4a3b32] dark:text-[#e3dac9] animate-in fade-in duration-200">
             <div class="flex items-center gap-2 text-xs font-mono">
-              <span class="text-sm">☀️</span>
+              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
               <span><strong>{{ pendingPastItemsCount }}</strong> pendência(s) de dias anteriores.</span>
             </div>
             <button (click)="openMigrationModal()" 
-                    class="px-3 py-1 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-[11px] font-bold rounded-lg transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1">
+                    class="px-3 py-1 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-[11px] font-bold rounded-lg transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5">
               <span>Migrar Agora</span>
-              <span>➔</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
           </div>
 
           <!-- Minimalist Habit Tracker Bar at the Top -->
           <app-habit-tracker-matrix [selectedDate]="selectedDate"></app-habit-tracker-matrix>
+
+          <!-- Energy & Execution Time Filter Bar -->
+          <div class="flex items-center justify-between gap-2 pt-2 border-t border-stone-200 text-xs font-mono">
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              <span class="font-bold text-stone-500 shrink-0">⚡ Filtros:</span>
+              
+              <!-- Energy Filter -->
+              <select [(ngModel)]="energyFilter" class="bg-stone-50 border border-stone-200 rounded px-2 py-1 text-stone-700 font-mono text-[11px] outline-none cursor-pointer">
+                <option value="all">⚡ Energia: Todas</option>
+                <option value="low">🪫 Baixa (1-2)</option>
+                <option value="medium">⚡ Média (3)</option>
+                <option value="high">🔋 Alta (4-5)</option>
+              </select>
+
+              <!-- Time Filter -->
+              <select [(ngModel)]="timeFilter" class="bg-stone-50 border border-stone-200 rounded px-2 py-1 text-stone-700 font-mono text-[11px] outline-none cursor-pointer">
+                <option value="all">⏱️ Tempo: Todos</option>
+                <option value="15min">⚡ Rápido (≤ 15 min)</option>
+                <option value="30min">⏱️ Médio (≤ 30 min)</option>
+                <option value="60min">⏳ Longo (≤ 60 min)</option>
+              </select>
+
+              <button *ngIf="energyFilter !== 'all' || timeFilter !== 'all'" 
+                      (click)="energyFilter = 'all'; timeFilter = 'all'" 
+                      class="px-2 py-0.5 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded text-[10px] font-bold">
+                Limpar
+              </button>
+            </div>
+          </div>
 
           <!-- Rapid Logging Input -->
           <form (submit)="handleAddItem($event)" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -325,9 +354,35 @@ export class DailyLogComponent implements OnInit, OnDestroy {
     if (this.tagsSub) this.tagsSub.unsubscribe();
   }
 
+  energyFilter: 'all' | 'low' | 'medium' | 'high' = 'all';
+  timeFilter: 'all' | '15min' | '30min' | '60min' = 'all';
+
   get todayItems(): BujoItem[] {
-    const dailyItems = this.items.filter(item => item.date === this.selectedDate);
+    let dailyItems = this.items.filter(item => item.date === this.selectedDate);
     
+    // Apply Energy Filter
+    if (this.energyFilter !== 'all') {
+      dailyItems = dailyItems.filter(item => {
+        const energy = item.energy || 3;
+        if (this.energyFilter === 'low') return energy <= 2;
+        if (this.energyFilter === 'medium') return energy === 3;
+        if (this.energyFilter === 'high') return energy >= 4;
+        return true;
+      });
+    }
+
+    // Apply Time Filter
+    if (this.timeFilter !== 'all') {
+      dailyItems = dailyItems.filter(item => {
+        const complexity = item.complexity || 1;
+        // complexity 1 = 15m, 2 = 30m, 3+ = 60m+
+        if (this.timeFilter === '15min') return complexity <= 1;
+        if (this.timeFilter === '30min') return complexity <= 2;
+        if (this.timeFilter === '60min') return complexity <= 3;
+        return true;
+      });
+    }
+
     return dailyItems.sort((a, b) => {
       // Se os dois têm horário, ordena por horário
       if (a.time && b.time) {

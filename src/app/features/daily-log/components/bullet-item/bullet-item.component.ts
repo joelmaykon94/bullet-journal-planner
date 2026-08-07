@@ -44,9 +44,9 @@ export interface ContentChunk {
 
              <!-- Pomodoro Active Time & Count Badge (High Contrast Premium Style) -->
              <span *ngIf="item.type === 'task' && ($any(item).pomodoroCount || $any(item).timeSpentSeconds)" 
-                   class="bg-amber-600 text-white dark:bg-amber-950/90 dark:text-amber-300 font-bold px-2 py-0.5 rounded-md text-xs shadow-sm border border-amber-700 dark:border-amber-700/60 inline-flex items-center gap-1.5 mx-1 font-mono">
-               <span *ngIf="$any(item).pomodoroCount">🍅 {{ $any(item).pomodoroCount }}</span>
-               <span *ngIf="$any(item).timeSpentSeconds">⏱️ {{ formatTimeSpent($any(item).timeSpentSeconds) }}</span>
+                   class="bg-[#4a3b32] text-white dark:bg-stone-800 dark:text-[#e3dac9] font-bold px-2 py-0.5 rounded-md text-xs shadow-sm border border-[#382c25] dark:border-stone-700 inline-flex items-center gap-1.5 mx-1 font-mono">
+               <span *ngIf="$any(item).pomodoroCount" class="inline-flex items-center gap-0.5"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg> {{ $any(item).pomodoroCount }}</span>
+               <span *ngIf="$any(item).timeSpentSeconds" class="inline-flex items-center gap-0.5"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> {{ formatTimeSpent($any(item).timeSpentSeconds) }}</span>
              </span>
 
              <ng-container *ngFor="let chunk of contentChunks">
@@ -109,6 +109,13 @@ export interface ContentChunk {
                 data-tooltip="Adiar">
           <svg class="w-4 h-4 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </button>
+        <button (click)="onSendToSomeday($event)" 
+                class="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-[#4a3b32] active:text-[#382c25] hover:bg-stone-100 rounded transition-colors bujo-tooltip touch-manipulation active:scale-95" 
+                data-tooltip="Incubar (Algum Dia/Talvez)">
+          <svg class="w-4 h-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 20h10"/><path d="M12 20v-8"/><path d="M12 12a5 5 0 0 1 5-5 5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 1 5 5z"/>
           </svg>
         </button>
         <button (click)="onDelete($event)" 
@@ -212,6 +219,16 @@ export class BulletItemComponent implements OnInit, OnChanges {
       date: targetDate,
       status: newStatus 
     });
+  }
+
+  onSendToSomeday(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.statusChange.emit({
+      ...this.item,
+      date: 'someday',
+      isSomeday: true
+    } as any);
   }
 
   parseContent() {
