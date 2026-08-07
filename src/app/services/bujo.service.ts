@@ -27,6 +27,8 @@ export interface BujoItem {
   constantReminder?: boolean;
   subtasks?: any[];
   recurrence?: 'daily' | 'weekly' | 'monthly' | 'weekdays' | 'none';
+  collectionId?: string;
+  collectionItemId?: string;
 }
 
 export function calculateNextRecurrenceDate(startDateStr: string, pattern: 'daily' | 'weekly' | 'monthly' | 'weekdays'): string {
@@ -252,6 +254,22 @@ export class BujoService {
       
       // Remove from active
       this.saveItems(items.filter(item => item.id !== id));
+
+      // Sync deletion with Collection if linked
+      if (itemToDelete.collectionId && itemToDelete.collectionItemId) {
+        const cols = this.getCollections();
+        const updatedCols = cols.map(c => {
+          if (c.id === itemToDelete.collectionId) {
+            return {
+              ...c,
+              updatedAt: now,
+              items: (c.items || []).filter((ci: any) => ci.id !== itemToDelete.collectionItemId)
+            };
+          }
+          return c;
+        });
+        this.saveCollections(updatedCols);
+      }
     }
   }
 
@@ -282,6 +300,27 @@ export class BujoService {
     const existing = items.find(i => i.id === id);
 
     let updatedList = items.map(item => item.id === id ? { ...item, ...updates, updatedAt: now } : item);
+
+    // Sync status change with Collection if linked
+    if (existing && updates.status && (existing.collectionId || (existing as any).collectionId) && (existing.collectionItemId || (existing as any).collectionItemId)) {
+      const colId = existing.collectionId || (existing as any).collectionId;
+      const colItemId = existing.collectionItemId || (existing as any).collectionItemId;
+      const isDone = updates.status === 'completed';
+      const colStatus = isDone ? 'done' : 'todo';
+
+      const cols = this.getCollections();
+      const updatedCols = cols.map(c => {
+        if (c.id === colId) {
+          return {
+            ...c,
+            updatedAt: now,
+            items: (c.items || []).map((ci: any) => ci.id === colItemId ? { ...ci, status: colStatus, updatedAt: now } : ci)
+          };
+        }
+        return c;
+      });
+      this.saveCollections(updatedCols);
+    }
 
     // Auto-recurrence spawn logic
     if (existing && updates.status === 'completed' && existing.status !== 'completed') {

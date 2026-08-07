@@ -78,14 +78,14 @@
         </div>
 
         <div class="fl-form-group">
-          <label>Hora ⏱️</label>
+          <label>Hora</label>
           <input type="time" [(ngModel)]="inputTime" name="inputTime" />
         </div>
 
         <ng-container *ngIf="inputType === 'task'">
           <div class="fl-form-row">
             <div class="fl-form-group">
-              <label>Energia ⚡</label>
+              <label>Energia</label>
               <select [(ngModel)]="energy" name="energy">
                 <option [value]="1">1</option>
                 <option [value]="2">2</option>
@@ -95,7 +95,7 @@
               </select>
             </div>
             <div class="fl-form-group">
-              <label>Complex. 🧠</label>
+              <label>Complex.</label>
               <select [(ngModel)]="complexity" name="complexity">
                 <option [value]="1">1</option>
                 <option [value]="2">2</option>
@@ -107,7 +107,7 @@
           </div>
 
           <div class="fl-form-group">
-            <label>Tempo (min) ⏱️</label>
+            <label>Tempo (min)</label>
             <input type="number" min="0" placeholder="Minutos" [(ngModel)]="executionTime" name="executionTime" />
           </div>
         </ng-container>

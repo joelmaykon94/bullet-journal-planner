@@ -19,6 +19,7 @@ import { InboxViewComponent } from './features/inbox/components/inbox-view/inbox
 import { QuickCaptureModalComponent } from './features/inbox/components/quick-capture-modal/quick-capture-modal.component';
 import { DelegatesPanelComponent } from './features/delegates/components/delegates-panel/delegates-panel.component';
 import { RecurringTasksModalComponent } from './features/daily-log/components/recurring-tasks-modal/recurring-tasks-modal.component';
+import { SomedayMaybeViewComponent } from './features/someday/components/someday-maybe-view/someday-maybe-view.component';
 import { NotificationService, AppNotification } from './services/notification.service';
 import { BujoService } from './services/bujo.service';
 import { AuthService } from './services/auth.service';
@@ -27,7 +28,7 @@ import { environment } from '../environments/version';
 
 import { SyncStatusService } from './services/sync-status.service';
 
-export type TabId = 'dashboard' | 'inbox' | 'delegates' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
+export type TabId = 'dashboard' | 'inbox' | 'delegates' | 'someday' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
 
 interface Tab {
   id: TabId;
@@ -51,7 +52,7 @@ interface LocalWeather {
     WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent,
     FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent,
     SidebarPomodoroComponent, InboxViewComponent, QuickCaptureModalComponent, DelegatesPanelComponent,
-    RecurringTasksModalComponent
+    RecurringTasksModalComponent, SomedayMaybeViewComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
@@ -103,6 +104,7 @@ export class App implements OnInit {
     { id: 'dashboard', label: 'Dashboard', shortLabel: 'Início', icon: 'home' },
     { id: 'inbox', label: 'Caixa de Entrada', shortLabel: 'Inbox', icon: 'inbox' },
     { id: 'delegates', label: 'Cobranças / Delegados', shortLabel: '@Aguardando', icon: 'user-check' },
+    { id: 'someday', label: 'Algum Dia / Talvez', shortLabel: 'Incubadora', icon: 'sprout' },
     { id: 'timeline', label: 'Agenda Diária', shortLabel: 'Agenda', icon: 'clock' },
     { id: 'daily', label: 'Log Diário', shortLabel: 'Hoje', icon: 'calendar' },
     { id: 'weekly', label: 'Log Semanal', shortLabel: 'Semana', icon: 'calendar-days' },

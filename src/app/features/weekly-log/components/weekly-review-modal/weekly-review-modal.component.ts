@@ -24,8 +24,10 @@ export interface BigRock {
         
         <!-- Header -->
         <div class="px-5 py-4 border-b border-[#e2d5c3] dark:border-stone-800 flex items-center justify-between bg-[#f4ece1] dark:bg-[#262320]">
-          <div class="flex items-center gap-2.5">
-            <span class="text-2xl">🧹</span>
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-xl bg-[#4a3b32]/10 dark:bg-[#e3dac9]/10 text-[#4a3b32] dark:text-[#e3dac9]">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
             <div>
               <h3 class="font-serif text-lg font-bold text-[#4a3b32] dark:text-[#e3dac9] tracking-tight leading-snug">
                 Assistente de Revisão Semanal GTD
@@ -57,7 +59,7 @@ export interface BigRock {
             <span class="text-xs font-mono font-semibold hidden sm:inline text-[#4a3b32] dark:text-[#e3dac9]">
               {{ getStepName(stepNum) }}
             </span>
-            <span *ngIf="stepNum < 4" class="text-stone-300 dark:text-stone-700 hidden sm:inline">➔</span>
+            <span *ngIf="stepNum < 4" class="text-stone-300 dark:text-stone-700 hidden sm:inline"><svg class="w-3.5 h-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
           </div>
         </div>
 
@@ -67,7 +69,9 @@ export interface BigRock {
           <!-- STEP 1: Get Clear (Inbox Zero) -->
           <div *ngIf="currentStep === 1" class="flex flex-col gap-4 animate-in fade-in duration-150">
             <div class="flex items-start gap-3 bg-[#f4ece1]/80 dark:bg-[#262320] p-4 rounded-xl border border-[#e2d5c3] dark:border-stone-800">
-              <span class="text-3xl">📥</span>
+              <div class="p-2 rounded-xl bg-[#4a3b32]/10 dark:bg-[#e3dac9]/10 text-[#4a3b32] dark:text-[#e3dac9] shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+              </div>
               <div class="flex-1">
                 <h4 class="font-serif font-bold text-base text-[#4a3b32] dark:text-[#e3dac9]">
                   Passo 1: Esvaziar a Caixa de Entrada (Inbox Zero)
@@ -103,7 +107,9 @@ export interface BigRock {
           <!-- STEP 2: Get Current (Central de Delegados) -->
           <div *ngIf="currentStep === 2" class="flex flex-col gap-4 animate-in fade-in duration-150">
             <div class="flex items-start gap-3 bg-[#f4ece1]/80 dark:bg-[#262320] p-4 rounded-xl border border-[#e2d5c3] dark:border-stone-800">
-              <span class="text-3xl">⏳</span>
+              <div class="p-2 rounded-xl bg-[#4a3b32]/10 dark:bg-[#e3dac9]/10 text-[#4a3b32] dark:text-[#e3dac9] shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
               <div class="flex-1">
                 <h4 class="font-serif font-bold text-base text-[#4a3b32] dark:text-[#e3dac9]">
                   Passo 2: Central de Delegados (@aguardando)
@@ -138,7 +144,9 @@ export interface BigRock {
           <!-- STEP 3: Get Strategic (Log Diário & Coleções) -->
           <div *ngIf="currentStep === 3" class="flex flex-col gap-4 animate-in fade-in duration-150">
             <div class="flex items-start gap-3 bg-[#f4ece1]/80 dark:bg-[#262320] p-4 rounded-xl border border-[#e2d5c3] dark:border-stone-800">
-              <span class="text-3xl">📓</span>
+              <div class="p-2 rounded-xl bg-[#4a3b32]/10 dark:bg-[#e3dac9]/10 text-[#4a3b32] dark:text-[#e3dac9] shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              </div>
               <div class="flex-1">
                 <h4 class="font-serif font-bold text-base text-[#4a3b32] dark:text-[#e3dac9]">
                   Passo 3: Revisão do Log Diário & Coleções
@@ -169,7 +177,9 @@ export interface BigRock {
           <!-- STEP 4: Big Rocks (As 3 Metas da Próxima Semana) -->
           <div *ngIf="currentStep === 4" class="flex flex-col gap-4 animate-in fade-in duration-150">
             <div class="flex items-start gap-3 bg-[#f4ece1]/80 dark:bg-[#262320] p-4 rounded-xl border border-[#e2d5c3] dark:border-stone-800">
-              <span class="text-3xl">🎯</span>
+              <div class="p-2 rounded-xl bg-[#4a3b32]/10 dark:bg-[#e3dac9]/10 text-[#4a3b32] dark:text-[#e3dac9] shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              </div>
               <div class="flex-1">
                 <h4 class="font-serif font-bold text-base text-[#4a3b32] dark:text-[#e3dac9]">
                   Passo 4: As 3 Grandes Metas da Próxima Semana (Big Rocks)
@@ -214,8 +224,9 @@ export interface BigRock {
 
           <button *ngIf="currentStep === 4" 
                   (click)="finishWeeklyReview()" 
-                  class="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-mono text-xs uppercase tracking-wider font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2">
-            <span>🎉 Concluir Revisão Semanal GTD</span>
+                  class="px-6 py-2.5 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-xs uppercase tracking-wider font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Concluir Revisão Semanal GTD</span>
           </button>
         </div>
 

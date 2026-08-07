@@ -25,7 +25,7 @@ import { WeeklyReviewModalComponent } from '../weekly-review-modal/weekly-review
         <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <button (click)="openWeeklyReviewModal()" 
                   class="px-3.5 py-1.5 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
-            <span>🧹</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
             <span>Revisão Semanal GTD</span>
           </button>
 

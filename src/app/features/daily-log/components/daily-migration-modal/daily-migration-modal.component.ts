@@ -19,8 +19,10 @@ import { getLocalDateString } from '../../../../utils/smartParser';
         
         <!-- Modal Header -->
         <div class="px-5 py-4 border-b border-[#e2d5c3] dark:border-stone-800 flex items-center justify-between bg-[#f4ece1] dark:bg-[#262320]">
-          <div class="flex items-center gap-2.5">
-            <span class="text-xl">☀️</span>
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-xl bg-[#4a3b32]/10 dark:bg-[#e3dac9]/10 text-[#4a3b32] dark:text-[#e3dac9]">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </div>
             <div>
               <h3 class="font-serif text-lg font-bold text-[#4a3b32] dark:text-[#e3dac9] tracking-tight leading-snug">
                 Assistente de Migração Diária
@@ -42,8 +44,8 @@ import { getLocalDateString } from '../../../../utils/smartParser';
           
           <!-- State: No Pending Past Items -->
           <div *ngIf="pendingItems.length === 0" class="py-8 flex flex-col items-center justify-center text-center gap-3">
-            <div class="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl shadow-inner border border-emerald-200 dark:border-emerald-800">
-              🎉
+            <div class="w-14 h-14 rounded-full bg-[#f2ebdf] dark:bg-[#262320] text-[#4a3b32] dark:text-[#e3dac9] flex items-center justify-center shadow-inner border border-[#e2d5c3] dark:border-stone-800">
+              <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
             <div>
               <h4 class="font-serif font-bold text-base text-[#4a3b32] dark:text-[#e3dac9]">
@@ -69,8 +71,9 @@ import { getLocalDateString } from '../../../../utils/smartParser';
               </span>
               <div class="flex items-center gap-2">
                 <button (click)="bulkMoveAllToToday()" 
-                        class="text-[10px] text-[#4a3b32] dark:text-[#e3dac9] underline hover:font-bold font-semibold transition-all">
-                  ⚡ Mover Todas para Hoje
+                        class="text-[10px] text-[#4a3b32] dark:text-[#e3dac9] underline hover:font-bold font-semibold transition-all flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  Mover Todas para Hoje
                 </button>
               </div>
             </div>
@@ -110,28 +113,28 @@ import { getLocalDateString } from '../../../../utils/smartParser';
                 <!-- Action 1: Move to Today -->
                 <button (click)="moveToToday(currentItem)" 
                         class="px-3 py-2 bg-[#4a3b32] hover:bg-[#382c25] text-white font-mono text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer">
-                  <span>📌</span>
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   <span>Mover p/ Hoje</span>
                 </button>
 
                 <!-- Action 2: Schedule Future Date -->
                 <button (click)="toggleCustomDatePicker()" 
                         class="px-3 py-2 bg-[#f2ebdf] hover:bg-[#e6dbcd] dark:bg-stone-800 dark:hover:bg-stone-700 text-[#4a3b32] dark:text-[#e3dac9] font-mono text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 border border-[#d7c8b4] dark:border-stone-700 transition-all active:scale-95 cursor-pointer">
-                  <span>📅</span>
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   <span>Agendar Data</span>
                 </button>
 
                 <!-- Action 3: Cancel / Trash -->
                 <button (click)="cancelTask(currentItem)" 
                         class="px-3 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-mono text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-900/50 transition-all active:scale-95 cursor-pointer">
-                  <span>❌</span>
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   <span>Cancelar</span>
                 </button>
 
                 <!-- Action 4: Skip -->
                 <button (click)="skipCurrentItem()" 
                         class="px-3 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 font-mono text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 border border-stone-300 dark:border-stone-700 transition-all active:scale-95 cursor-pointer">
-                  <span>⏩</span>
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
                   <span>Manter Assim</span>
                 </button>
 
