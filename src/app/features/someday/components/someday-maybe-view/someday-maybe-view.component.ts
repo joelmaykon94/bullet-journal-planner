@@ -40,7 +40,7 @@ export class SomedayMaybeViewComponent implements OnInit, OnDestroy {
         i.status !== 'completed' && 
         i.status !== 'cancelled'
       );
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     });
   }
 

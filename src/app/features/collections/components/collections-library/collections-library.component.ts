@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CollectionsService, Collection, CollectionItem } from '../../services/collections.service';
@@ -44,12 +44,14 @@ export class CollectionsLibraryComponent implements OnInit {
     private collectionsService: CollectionsService, 
     private modalService: ModalService,
     private bujoService: BujoService,
-    private syncStatusService: SyncStatusService
+    private syncStatusService: SyncStatusService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.collectionsService.collections$.subscribe(cols => {
       this.collections = cols;
+      this.cdr.detectChanges();
     });
   }
 
