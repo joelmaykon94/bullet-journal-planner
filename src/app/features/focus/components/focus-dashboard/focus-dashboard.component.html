@@ -1,0 +1,179 @@
+<div class="focus-dashboard-wrapper">
+  <!-- Background Image -->
+  <div class="focus-bg-image" style="background-image: url('/img/samurai.png');"></div>
+  
+  <!-- Overlay to ensure text readability -->
+  <div class="focus-overlay"></div>
+
+  <!-- Main Content -->
+  <div class="focus-content">
+    
+    <!-- Left Area (Clock & Timer) -->
+    <div class="focus-left-area flex flex-col justify-between h-full py-12 pl-12 md:pl-24">
+      
+      <!-- 1. Top Date/Time -->
+      <div class="focus-date-time text-white flex flex-col gap-2">
+        <div class="text-sm tracking-wide font-bold font-sans" style="-webkit-text-stroke: 0.5px rgba(120, 113, 108, 0.5);">
+          {{ currentFormattedDateStr }}
+        </div>
+        <div class="text-4xl font-bold font-serif tracking-tight flex items-center gap-3">
+          <span style="-webkit-text-stroke: 1px rgba(120, 113, 108, 0.5);">{{ currentFormattedTimeStr }}</span>
+          
+          <!-- Sun (AM) -->
+          <span *ngIf="isAm" class="flex items-center justify-center flex-shrink-0" style="font-size: 2rem; filter: grayscale(100%) brightness(1.5);">
+            ☀️
+          </span>
+          
+          <!-- Moon (PM) -->
+          <span *ngIf="!isAm" class="flex items-center justify-center flex-shrink-0" style="font-size: 2rem; filter: grayscale(100%) brightness(1.5);">
+            🌙
+          </span>
+        </div>
+      </div>
+
+      <!-- 2. Middle Timer + Controls -->
+      <div class="focus-timer-section flex flex-col" style="margin-top: 10vh;">
+        <!-- Waiting state text -->
+        <div *ngIf="waitingForNextAction" class="text-sm font-bold font-sans uppercase tracking-[0.3em] text-white/70 mb-4 animate-pulse text-center w-full" style="margin-left: 2px;">
+          Aguardando próxima ação
+        </div>
+        
+        <div class="font-bold text-stone-100 leading-none font-serif tracking-tight cursor-pointer transition-opacity hover:opacity-80" 
+             [class.animate-pulse]="waitingForNextAction"
+             style="font-size: clamp(6rem, 12vw, 12rem); font-variant-numeric: tabular-nums; line-height: 1; -webkit-text-stroke: 2px rgba(120, 113, 108, 0.4); margin-bottom: 4vh;"
+             (click)="toggleTimer()">
+          {{ formatTimeLeft }}
+        </div>
+        
+        <!-- Controls and Dots Below -->
+        <div class="flex items-center justify-start gap-8 w-full" style="margin-top: 4vh; margin-bottom: 15vh;">
+          <!-- Controls -->
+          <div class="flex gap-2">
+            <button (click)="toggleTimer()" class="w-14 h-14 rounded-xl bg-stone-900/60 hover:bg-stone-900/80 backdrop-blur text-white flex items-center justify-center transition border border-white/10">
+              <svg *ngIf="timerState !== 'running'" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <svg *ngIf="timerState === 'running'" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+            </button>
+            <button (click)="resetTimer()" class="w-14 h-14 rounded-xl bg-stone-900/60 hover:bg-stone-900/80 backdrop-blur text-white flex items-center justify-center transition border border-white/10">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+          </div>
+
+          <!-- Session Dots (Horizontal) -->
+          <div class="flex gap-3">
+            <div class="w-4 h-4 rounded-full shadow-text transition-colors" [ngClass]="sessionCount % 4 >= 1 ? 'bg-stone-100' : 'bg-stone-400/30'"></div>
+            <div class="w-4 h-4 rounded-full shadow-text transition-colors" [ngClass]="sessionCount % 4 >= 2 ? 'bg-stone-100' : 'bg-stone-400/30'"></div>
+            <div class="w-4 h-4 rounded-full shadow-text transition-colors" [ngClass]="sessionCount % 4 >= 3 ? 'bg-stone-100' : 'bg-stone-400/30'"></div>
+            <div class="w-4 h-4 rounded-full shadow-text transition-colors" [ngClass]="sessionCount > 0 && sessionCount % 4 === 0 ? 'bg-stone-100' : 'bg-stone-400/30'"></div>
+          </div>
+        </div>
+        
+        <!-- 3. Bottom Modes -->
+        <div class="flex gap-3 mt-auto">
+          <button (click)="switchMode('focus')" [ngClass]="mode === 'focus' ? 'opacity-100' : 'opacity-50 hover:opacity-80'" class="px-6 py-2 rounded border border-white text-white bg-transparent backdrop-blur transition font-sans text-lg tracking-wide">
+            Focus
+          </button>
+          <button (click)="switchMode('short_break')" [ngClass]="mode === 'short_break' ? 'opacity-100' : 'opacity-50 hover:opacity-80'" class="px-6 py-2 rounded border border-white text-white bg-transparent backdrop-blur transition font-sans text-lg tracking-wide">
+            Short Break
+          </button>
+          <button (click)="switchMode('long_break')" [ngClass]="mode === 'long_break' ? 'opacity-100' : 'opacity-50 hover:opacity-80'" class="px-6 py-2 rounded border border-white text-white bg-transparent backdrop-blur transition font-sans text-lg tracking-wide">
+            Long Break
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invisible Overlay for clicking outside to close -->
+    <div *ngIf="isTaskListOpen" 
+         class="absolute inset-0 z-40 bg-transparent" 
+         (click)="isTaskListOpen = false">
+    </div>
+
+    <!-- Right Sidebar (Task List) -->
+    <div class="focus-task-sidebar" [class.closed]="!isTaskListOpen" style="z-index: 50;">
+      <!-- Toggle Button -->
+      <button class="focus-toggle-btn backdrop-blur-md text-white" (click)="toggleTaskList()">
+        <svg *ngIf="isTaskListOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <svg *ngIf="!isTaskListOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+
+      <!-- The List Panel -->
+      <div class="focus-task-panel bg-stone-900/30 backdrop-blur-md border-l border-white/30 text-white">
+        <div class="flex items-center justify-between p-4 border-b border-white/30">
+          <h2 class="font-serif text-lg font-bold text-white">Tarefas de Hoje</h2>
+        </div>
+
+        <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-3 min-h-0">
+          <div *ngIf="todayItems.length === 0" class="text-sm text-stone-500 italic text-center mt-4 font-sans">
+            Nenhuma tarefa pendente para hoje.
+          </div>
+
+          <div *ngFor="let item of todayItems" 
+               class="p-5 rounded-xl transition-all cursor-pointer relative overflow-hidden group border border-white/20 text-white bg-transparent flex justify-between items-center gap-4 min-h-[80px]"
+               [ngClass]="activeTaskId === item.id ? 'opacity-100 ring-1 ring-white/40' : 'opacity-50 hover:opacity-80'"
+               (click)="setActiveTask(item.id)">
+            
+            <div class="flex-1 w-full max-w-full">
+              <div class="font-normal font-serif text-[18px] leading-relaxed break-words whitespace-pre-wrap">
+                {{ item.content }}
+              </div>
+            </div>
+
+            <!-- Complete Check Button -->
+            <button class="w-6 h-6 rounded-full border border-white/30 flex items-center justify-center flex-shrink-0 hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:text-emerald-400 transition-all text-white/50"
+                    title="Concluir Tarefa"
+                    (click)="askCompleteTask(item.id, $event)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="focus-current-task-float cursor-pointer transition-transform hover:scale-105 active:scale-95" *ngIf="!isTaskListOpen && activeTask" (click)="askCompleteTask(activeTask.id)" title="Clique para concluir a tarefa">
+      <div class="bg-stone-900/30 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl w-96 text-white min-h-[120px]">
+        <div class="text-xs uppercase tracking-widest font-bold text-white/70 mb-2 font-sans">Tarefa Atual</div>
+        <div class="font-normal font-serif text-[18px] text-white leading-relaxed tracking-wide break-words whitespace-pre-wrap">
+          {{ activeTask.content }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Completion Modal (Standard Centered Dialog) -->
+    <div *ngIf="showCompleteModal" 
+         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 transition-opacity cursor-pointer"
+         (click)="cancelCompleteTask()">
+      
+      <!-- Modal Container -->
+      <div class="bg-stone-900/70 backdrop-blur-2xl border border-stone-100 rounded-lg shadow-2xl max-w-sm w-full text-center flex flex-col relative p-[10%] cursor-default"
+           (click)="$event.stopPropagation()">
+        
+        <!-- Standard Top Icon -->
+        <div class="w-10 h-10 rounded border border-stone-100 text-stone-100 flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        
+        <!-- Standard Text Content -->
+        <h2 class="text-base font-serif font-bold text-stone-100 tracking-tight mb-2">Concluir Tarefa?</h2>
+        <p class="text-stone-100 text-xs mb-6 font-sans leading-relaxed">
+          Tem certeza de que finalizou esta tarefa? O seu progresso será salvo.
+        </p>
+        
+        <!-- Standard Button Row -->
+        <div class="flex gap-3">
+          <button class="flex-1 py-1.5 px-3 rounded-sm font-medium font-sans text-xs text-stone-100 bg-transparent hover:bg-stone-100/10 border border-stone-100 transition-all focus:outline-none cursor-pointer"
+                  (click)="cancelCompleteTask()">
+            Ainda não
+          </button>
+          <button class="flex-1 py-2 px-4 rounded-sm font-semibold font-sans text-sm text-stone-100 bg-[#8a3324] hover:bg-[#9e3b2a] border-2 border-stone-100 transition-all shadow-md focus:outline-none cursor-pointer"
+                  (click)="confirmCompleteTask()">
+            Concluir
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,130 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+.focus-dashboard-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  background-color: var(--color-paper-bg);
+}
+
+.focus-bg-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: sepia(50%) grayscale(30%) contrast(1.15) brightness(0.85);
+  z-index: 1;
+}
+
+.focus-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0) 100%),
+              rgba(139, 90, 43, 0.25); /* Vintage warm film tint increased */
+  z-index: 2;
+  pointer-events: none;
+}
+
+.focus-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.focus-left-area {
+  padding: 32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.shadow-text {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.focus-task-sidebar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 50;
+  width: 480px;
+  height: 100%;
+  display: flex;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.focus-task-sidebar.closed {
+  transform: translateX(480px);
+}
+
+.focus-task-panel {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+}
+
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes flowVein {
+  0% { --border-angle: 0deg; }
+  100% { --border-angle: 360deg; }
+}
+
+.focus-toggle-btn {
+  position: absolute;
+  left: -56px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px 0 0 12px;
+  cursor: pointer;
+  box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+  transition: opacity 0.2s, transform 0.2s;
+  background: rgba(28, 25, 23, 0.25);
+  border: none;
+}
+
+.focus-toggle-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px; /* Espessura do laser */
+  padding-right: 0; /* Remove a borda da direita para encostar no menu */
+  background: conic-gradient(from var(--border-angle), transparent 40%, rgba(255,255,255,0.4) 85%, rgba(255,255,255,1) 100%);
+  -webkit-mask: 
+     linear-gradient(#fff 0 0) content-box, 
+     linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  animation: flowVein 1.5s linear infinite;
+}
+
+.focus-toggle-btn:hover {
+  opacity: 0.9;
+}
+
+.focus-current-task-float {
+  position: absolute;
+  top: 80px;
+  right: 40px;
+}

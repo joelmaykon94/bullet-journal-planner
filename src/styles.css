@@ -123,7 +123,6 @@ html, body {
 
 .sidebar-clock {
   padding: clamp(6px, 1vh, 12px);
-  border-bottom: 1px dashed rgba(0,0,0,0.1);
   text-align: center;
 }
 .mini-weather {
@@ -160,13 +159,13 @@ html, body {
 }
 
 .nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: clamp(5px, 0.9vh, 8px) 10px;
+  display: flex; align-items: center; gap: 8px;
+  padding: clamp(4px, 0.7vh, 6px) 8px;
   border-radius: 6px;
   color: var(--color-ink-muted);
   text-decoration: none;
   font-family: var(--font-serif);
-  font-size: 13.5px !important; font-weight: 500;
+  font-size: 12.5px !important; font-weight: 500;
   transition: all .2s;
   border: 1px solid transparent;
 }

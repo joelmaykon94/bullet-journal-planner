@@ -11,7 +11,7 @@ import { CollectionsLibraryComponent } from './features/collections/components/c
 import { BudgetPlannerComponent } from './features/budget/components/budget-planner/budget-planner.component';
 import { FutureLogComponent } from './features/future-log/components/future-log/future-log.component';
 import { DreamBoardComponent } from './features/dreams/components/dream-board/dream-board.component';
-import { SidebarPomodoroComponent } from './features/focus/components/sidebar-pomodoro/sidebar-pomodoro.component';
+import { FocusDashboardComponent } from './features/focus/components/focus-dashboard/focus-dashboard.component';
 import { SettingsComponent } from './features/settings/components/settings/settings.component';
 import { AuthScreenComponent } from './features/auth/components/auth-screen/auth-screen.component';
 import { ModalComponent } from './shared/components/modal/modal.component';
@@ -31,10 +31,11 @@ import { SyncStatusService } from './services/sync-status.service';
 export type TabId = 'dashboard' | 'inbox' | 'delegates' | 'someday' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
 
 interface Tab {
-  id: TabId;
+  id: TabId | string;
   label: string;
   shortLabel: string;
   icon: string;
+  isSeparator?: boolean;
 }
 
 interface LocalWeather {
@@ -51,7 +52,7 @@ interface LocalWeather {
     CommonModule, DashboardComponent, DailyLogComponent, TrashComponent, TimelineComponent,
     WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent,
     FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent,
-    SidebarPomodoroComponent, InboxViewComponent, QuickCaptureModalComponent, DelegatesPanelComponent,
+    FocusDashboardComponent, InboxViewComponent, QuickCaptureModalComponent, DelegatesPanelComponent,
     RecurringTasksModalComponent, SomedayMaybeViewComponent
   ],
   templateUrl: './app.component.html',
@@ -101,17 +102,21 @@ export class App implements OnInit {
   localWeather = signal<LocalWeather | null>(null);
 
   tabs: Tab[] = [
-    { id: 'dashboard', label: 'Dashboard', shortLabel: 'Início', icon: 'home' },
+    { id: 'sep-diario', label: 'Diário', shortLabel: '', icon: '', isSeparator: true },
     { id: 'inbox', label: 'Caixa de Entrada', shortLabel: 'Inbox', icon: 'inbox' },
-    { id: 'delegates', label: 'Cobranças / Delegados', shortLabel: '@Aguardando', icon: 'user-check' },
-    { id: 'someday', label: 'Algum Dia / Talvez', shortLabel: 'Incubadora', icon: 'sprout' },
-    { id: 'timeline', label: 'Agenda Diária', shortLabel: 'Agenda', icon: 'clock' },
     { id: 'daily', label: 'Log Diário', shortLabel: 'Hoje', icon: 'calendar' },
+    { id: 'timeline', label: 'Agenda Diária', shortLabel: 'Agenda', icon: 'clock' },
+    { id: 'focus', label: 'Modo Foco', shortLabel: 'Foco', icon: 'zap' },
+    { id: 'dashboard', label: 'Dashboard', shortLabel: 'Início', icon: 'home' },
+    { id: 'delegates', label: 'Cobranças / Delegados', shortLabel: '@Aguardando', icon: 'user-check' },
+    { id: 'sep-semanal', label: 'Semanal', shortLabel: '', icon: '', isSeparator: true },
     { id: 'weekly', label: 'Log Semanal', shortLabel: 'Semana', icon: 'calendar-days' },
-    { id: 'monthly', label: 'Log Mensal', shortLabel: 'Mês', icon: 'calendar-range' },
-    { id: 'future_log', label: 'Log do Futuro', shortLabel: 'Futuro', icon: 'book-open' },
-    { id: 'budget', label: 'Financeiro', shortLabel: 'Finanças', icon: 'wallet' },
     { id: 'collections', label: 'Coleções', shortLabel: 'Coleções', icon: 'library' },
+    { id: 'sep-mensal', label: 'Mensal', shortLabel: '', icon: '', isSeparator: true },
+    { id: 'monthly', label: 'Log Mensal', shortLabel: 'Mês', icon: 'calendar-range' },
+    { id: 'budget', label: 'Financeiro', shortLabel: 'Finanças', icon: 'wallet' },
+    { id: 'future_log', label: 'Log do Futuro', shortLabel: 'Futuro', icon: 'book-open' },
+    { id: 'someday', label: 'Algum Dia / Talvez', shortLabel: 'Incubadora', icon: 'sprout' },
     { id: 'dream_board', label: 'Sonhos', shortLabel: 'Sonhos', icon: 'sparkles' },
   ];
 
@@ -199,10 +204,11 @@ export class App implements OnInit {
     }
   }
 
-  setTab(id: TabId) {
-    this.activeTab.set(id);
+  setTab(id: TabId | string) {
+    if (id.toString().startsWith('sep-')) return;
+    this.activeTab.set(id as TabId);
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('bujo_active_tab', id);
+      localStorage.setItem('bujo_active_tab', id as string);
     }
     this.sidebarOpen.set(false);
   }
