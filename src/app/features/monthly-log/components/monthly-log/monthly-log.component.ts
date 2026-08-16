@@ -10,7 +10,7 @@ import { getLocalDateString } from '../../../../utils/smartParser';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="flex flex-col max-w-6xl mx-auto w-full pb-20 animate-fade-in">
+    <div class="flex flex-col w-full pb-20 animate-fade-in">
       
       <!-- Cabeçalho & Navegação do Mês -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-stone-800 pb-4 mb-6 gap-4">

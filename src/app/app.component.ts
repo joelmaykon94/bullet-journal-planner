@@ -14,6 +14,7 @@ import { DreamBoardComponent } from './features/dreams/components/dream-board/dr
 import { FocusDashboardComponent } from './features/focus/components/focus-dashboard/focus-dashboard.component';
 import { SettingsComponent } from './features/settings/components/settings/settings.component';
 import { AuthScreenComponent } from './features/auth/components/auth-screen/auth-screen.component';
+import { PlannerComponent } from './features/planner/components/planner/planner.component';
 import { ModalComponent } from './shared/components/modal/modal.component';
 import { InboxViewComponent } from './features/inbox/components/inbox-view/inbox-view.component';
 import { QuickCaptureModalComponent } from './features/inbox/components/quick-capture-modal/quick-capture-modal.component';
@@ -28,7 +29,7 @@ import { environment } from '../environments/version';
 
 import { SyncStatusService } from './services/sync-status.service';
 
-export type TabId = 'dashboard' | 'inbox' | 'delegates' | 'someday' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash';
+export type TabId = 'dashboard' | 'inbox' | 'delegates' | 'someday' | 'daily' | 'weekly' | 'monthly' | 'timeline' | 'budget' | 'collections' | 'dream_board' | 'future_log' | 'focus' | 'settings' | 'trash' | 'planner';
 
 interface Tab {
   id: TabId | string;
@@ -53,7 +54,7 @@ interface LocalWeather {
     WeeklyLogComponent, MonthlyLogComponent, CollectionsLibraryComponent, BudgetPlannerComponent,
     FutureLogComponent, DreamBoardComponent, SettingsComponent, AuthScreenComponent, ModalComponent,
     FocusDashboardComponent, InboxViewComponent, QuickCaptureModalComponent, DelegatesPanelComponent,
-    RecurringTasksModalComponent, SomedayMaybeViewComponent
+    RecurringTasksModalComponent, SomedayMaybeViewComponent, PlannerComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
@@ -102,6 +103,7 @@ export class App implements OnInit {
   localWeather = signal<LocalWeather | null>(null);
 
   tabs: Tab[] = [
+    { id: 'planner', label: 'Planner', shortLabel: 'Planner', icon: 'calendar-range' },
     { id: 'sep-diario', label: 'Diário', shortLabel: '', icon: '', isSeparator: true },
     { id: 'inbox', label: 'Caixa de Entrada', shortLabel: 'Inbox', icon: 'inbox' },
     { id: 'daily', label: 'Log Diário', shortLabel: 'Hoje', icon: 'calendar' },

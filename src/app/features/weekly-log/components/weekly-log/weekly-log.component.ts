@@ -13,7 +13,7 @@ import { WeeklyReviewModalComponent } from '../weekly-review-modal/weekly-review
   standalone: true,
   imports: [CommonModule, FormsModule, WeeklyReviewModalComponent],
   template: `
-    <div class="flex flex-col max-w-5xl mx-auto w-full pb-20 animate-fade-in">
+    <div class="flex flex-col w-full pb-20 animate-fade-in">
       
       <!-- Cabeçalho & Navegação da Semana -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-stone-800 pb-4 mb-6 gap-4">

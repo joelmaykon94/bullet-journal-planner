@@ -8,11 +8,12 @@ import { BulletItemComponent } from '../bullet-item/bullet-item.component';
 import { HabitTrackerMatrixComponent } from '../habit-tracker-matrix/habit-tracker-matrix.component';
 import { DailyMigrationModalComponent } from '../daily-migration-modal/daily-migration-modal.component';
 import { RecurringTasksModalComponent } from '../recurring-tasks-modal/recurring-tasks-modal.component';
+import { CalendarWidgetComponent } from '../../../../shared/components/calendar-widget/calendar-widget.component';
 
 @Component({
   selector: 'app-daily-log',
   standalone: true,
-  imports: [CommonModule, FormsModule, BulletItemComponent, HabitTrackerMatrixComponent, DailyMigrationModalComponent, RecurringTasksModalComponent],
+  imports: [CommonModule, FormsModule, BulletItemComponent, HabitTrackerMatrixComponent, DailyMigrationModalComponent, RecurringTasksModalComponent, CalendarWidgetComponent],
   styles: [`
     :host {
       display: block;
@@ -160,11 +161,23 @@ import { RecurringTasksModalComponent } from '../recurring-tasks-modal/recurring
             </button>
           </div>
 
-          <!-- Minimalist Habit Tracker Bar at the Top -->
-          <app-habit-tracker-matrix [selectedDate]="selectedDate"></app-habit-tracker-matrix>
+          <!-- Cabeçalho de Componentes (Hábitos e Calendário Lado a Lado) -->
+          <div class="flex flex-col sm:flex-row gap-4 shrink-0 w-full mb-4 items-start">
+            
+            <!-- Hábitos Diários (Ocupa o restante do espaço) -->
+            <div class="flex-1 w-full bg-white rounded-xl shadow-sm border border-stone-200 p-3">
+              <app-habit-tracker-matrix [selectedDate]="selectedDate"></app-habit-tracker-matrix>
+            </div>
+
+            <!-- Mini Calendário (Fixo no canto direito) -->
+            <div class="w-full sm:w-[120px] shrink-0 transform scale-[0.50] origin-top sm:origin-top-right transition-transform -mt-2 -mb-24">
+              <app-calendar-widget></app-calendar-widget>
+            </div>
+
+          </div>
 
           <!-- Energy & Execution Time Filter Bar -->
-          <div class="flex items-center justify-between gap-2 pt-2 border-t border-stone-200 text-xs font-mono">
+          <div class="flex items-center justify-between gap-2 pt-2 border-t border-stone-200 text-xs font-mono shrink-0">
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
               <span class="font-bold text-stone-500 shrink-0">⚡ Filtros:</span>
               
@@ -193,7 +206,7 @@ import { RecurringTasksModalComponent } from '../recurring-tasks-modal/recurring
           </div>
 
           <!-- Rapid Logging Input -->
-          <form (submit)="handleAddItem($event)" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <form (submit)="handleAddItem($event)" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4 shrink-0">
             
             <div class="flex flex-1 items-center gap-2 bg-stone-50 sm:bg-transparent rounded-lg border border-stone-200 sm:border-none p-1 sm:p-0 focus-within:border-stone-400">
               <div class="relative group shrink-0">
@@ -236,31 +249,29 @@ import { RecurringTasksModalComponent } from '../recurring-tasks-modal/recurring
               <span class="sm:hidden font-sans font-bold">Adicionar Registro +</span>
             </button>
           </form>
+
+          <!-- Lista de Itens do Dia -->
+          <div class="flex flex-col gap-1 content-scroll mt-6 overflow-y-auto min-h-0 flex-1 pb-10">
+            <ng-container *ngIf="todayItems.length > 0; else noItems">
+              <app-bullet-item 
+                *ngFor="let item of todayItems" 
+                [id]="'item-' + item.id"
+                [item]="item"
+                [class.highlight-pulse]="highlightedId === item.id"
+                (statusChange)="onStatusChange($event)"
+                (delete)="onDelete($event)">
+              </app-bullet-item>
+            </ng-container>
+            
+            <ng-template #noItems>
+              <div class="text-center py-12 text-stone-400 font-serif italic text-lg border-2 border-dashed border-stone-200 rounded">
+                Nenhum registro para este dia.
+              </div>
+            </ng-template>
+          </div>
+
         </div>
       </div>
-
-      <!-- Lista de Itens do Dia -->
-      <div class="flex flex-col gap-1 content-scroll">
-        <ng-container *ngIf="todayItems.length > 0; else noItems">
-          <app-bullet-item 
-            *ngFor="let item of todayItems" 
-            [id]="'item-' + item.id"
-            [item]="item"
-            [class.highlight-pulse]="highlightedId === item.id"
-            (statusChange)="onStatusChange($event)"
-            (delete)="onDelete($event)">
-          </app-bullet-item>
-        </ng-container>
-        
-        <ng-template #noItems>
-          <div class="text-center py-12 text-stone-400 font-serif italic text-lg border-2 border-dashed border-stone-200 rounded">
-            Nenhum registro para este dia.
-          </div>
-        </ng-template>
-      </div>
-
-      </div>
-    </div>
 
     <app-daily-migration-modal [(isOpen)]="showMigrationModal"></app-daily-migration-modal>
     <app-recurring-tasks-modal [(isOpen)]="showRecurringModal"></app-recurring-tasks-modal>

@@ -342,6 +342,7 @@
 
     <!-- Tab Content -->
     <main class="content-scroll" [class.!p-0]="activeTab() === 'focus'" [class.!bg-none]="activeTab() === 'focus'">
+      <app-planner *ngIf="activeTab() === 'planner'" class="block h-full w-full"></app-planner>
       <app-dashboard *ngIf="activeTab() === 'dashboard'" (tabChange)="setTab($any($event))"></app-dashboard>
       <app-inbox-view *ngIf="activeTab() === 'inbox'"></app-inbox-view>
       <app-delegates-panel *ngIf="activeTab() === 'delegates'"></app-delegates-panel>
